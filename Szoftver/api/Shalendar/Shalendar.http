@@ -1,0 +1,6 @@
+@Shalendar_HostAddress = http://localhost:5223
+
+GET {{Shalendar_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
