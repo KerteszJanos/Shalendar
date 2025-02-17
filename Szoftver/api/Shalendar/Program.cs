@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 
@@ -10,15 +9,21 @@ namespace Shalendar
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
+			// CORS Policy hozzáadása
+			builder.Services.AddCors(options =>
+			{
+				options.AddPolicy("AllowSpecificOrigin",
+					policy => policy.WithOrigins("http://localhost:5173")
+									.AllowAnyHeader()
+									.AllowAnyMethod()
+									.AllowCredentials());
+			});
 
-			builder.Services.AddDbContext<ShalendarDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
+			builder.Services.AddDbContext<ShalendarDbContext>(options =>
+				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 			// Add services to the container.
-
 			builder.Services.AddControllers();
-			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 
@@ -33,8 +38,10 @@ namespace Shalendar
 
 			app.UseHttpsRedirection();
 
-			app.UseAuthorization();
+			// CORS engedélyezése az alkalmazásban
+			app.UseCors("AllowSpecificOrigin");
 
+			app.UseAuthorization();
 
 			app.MapControllers();
 

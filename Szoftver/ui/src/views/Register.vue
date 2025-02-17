@@ -1,58 +1,76 @@
 <template>
-    <div class="register-container">
-      <h2>Regisztráció</h2>
-      <form @submit.prevent="registerUser">
-        <label for="username">Felhasználónév:</label>
+<div class="register-container">
+    <h2>Registration</h2>
+    <form @submit.prevent="registerUser">
+        <label for="username">Username:</label>
         <input type="text" id="username" v-model="user.username" required />
-  
+
         <label for="email">Email:</label>
         <input type="email" id="email" v-model="user.email" required />
-  
-        <label for="password">Jelszó:</label>
+
+        <label for="password">Password:</label>
         <input type="password" id="password" v-model="user.password" required />
-  
-        <button type="submit">Regisztráció</button>
-      </form>
-  
-      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-  
-      <p class="login-link">
-        Már van fiókod?
-        <router-link to="/login">Jelentkezz be itt!</router-link>
-      </p>
-    </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
+
+        <label for="passwordAgain">Confirm Password:</label>
+        <input type="password" id="passwordAgain" v-model="user.passwordAgain" required />
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+
+    <p class="login-link">
+        Already have an account?
+        <router-link to="/login">Sign in here!</router-link>
+    </p>
+</div>
+</template>
+
+<script>
+import axios from 'axios';
+import {
+    API_BASE_URL
+} from '@/utils/config/config';
+
+export default {
     data() {
-      return {
-        user: {
-          username: '',
-          email: '',
-          password: '',
-        },
-        errorMessage: '',
-      };
+        return {
+            user: {
+                email: '',
+                username: '',
+                password: '',
+                passwordAgain: '',
+            },
+            errorMessage: '',
+        };
     },
     methods: {
-      async registerUser() {
-        try {
-          const response = await axios.post('http://localhost:5000/api/auth/register', this.user); //kitenni services mappába
-          alert('Sikeres regisztráció!');
-          this.$router.push('/login'); // Átirányítás a bejelentkezésre
-        } catch (error) {
-          this.errorMessage = error.response?.data?.message || 'Hiba történt a regisztráció során.';
+        async registerUser() {
+            try {
+                if (this.user.password !== this.user.passwordAgain) {
+                    this.errorMessage = 'Passwords do not match!';
+                    return;
+                }
+
+                const userResponse = await axios.post(`${API_BASE_URL}/api/Users`, {
+                    email: this.user.email,
+                    username: this.user.username,
+                    password: this.user.password,
+                    defaultCalendarId: 0,
+                });
+                this.$router.push("/login");
+            } catch (error) {
+                console.error('Error registering user:', error);
+                this.errorMessage = 'Registration failed. Please try again!';
+            }
         }
-      },
+
     },
-  };
-  </script>
-  
-  <style scoped>
-  .register-container {
+};
+</script>
+
+<style scoped>
+.register-container {
     max-width: 400px;
     margin: auto;
     padding: 20px;
@@ -60,22 +78,22 @@
     border-radius: 10px;
     background: white;
     text-align: center;
-  }
-  
-  label {
+}
+
+label {
     display: block;
     margin-top: 10px;
-  }
-  
-  input {
+}
+
+input {
     width: 100%;
     padding: 8px;
     margin: 5px 0 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
-  }
-  
-  button {
+}
+
+button {
     width: 100%;
     padding: 10px;
     background-color: #007bff;
@@ -83,19 +101,18 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-  }
-  
-  button:hover {
+}
+
+button:hover {
     background-color: #0056b3;
-  }
-  
-  .error {
+}
+
+.error {
     color: red;
     margin-top: 10px;
-  }
-  
-  .login-link {
+}
+
+.login-link {
     margin-top: 15px;
-  }
-  </style>
-  
+}
+</style>

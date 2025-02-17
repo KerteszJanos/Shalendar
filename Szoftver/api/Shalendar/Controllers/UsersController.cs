@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Shalendar.Controllers
 {
@@ -76,16 +77,70 @@ namespace Shalendar.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
-        {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+		public async Task<ActionResult<User>> PostUser(User user)
+		{
+			using var transaction = await _context.Database.BeginTransactionAsync();
+			try
+			{
+				var passwordHasher = new PasswordHasher<User>();
+				user.PasswordHash = passwordHasher.HashPassword(user, user.PasswordHash);
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
-        }
+				var defaultCalendar = new Calendar
+				{
+					Name = $"{user.Username}'s Default Calendar"
+				};
 
-        // DELETE: api/Users/5
-        [HttpDelete("{id}")]
+				_context.Calendars.Add(defaultCalendar);
+				await _context.SaveChangesAsync();
+
+				user.DefaultCalendarId = defaultCalendar.Id;
+				_context.Users.Add(user);
+				await _context.SaveChangesAsync();
+
+				var calendarList = new CalendarList
+				{
+					Name = "Default List",
+					CalendarId = defaultCalendar.Id,
+					Color = "#CCCCCC"
+				};
+
+				_context.CalendarLists.Add(calendarList);
+				await _context.SaveChangesAsync();
+
+				await transaction.CommitAsync();
+				return CreatedAtAction("GetUser", new { id = user.Id }, user);
+			}
+			catch (Exception ex)
+			{
+				await transaction.RollbackAsync();
+				return StatusCode(500, $"Error creating user: {ex.Message}");
+			}
+		}
+
+		// GET: api/Users/login
+		[HttpPost("login")]
+		public async Task<IActionResult> LoginUser([FromBody] LoginModel loginModel)
+		{
+			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginModel.Email);
+
+			if (user == null)
+			{
+				return Unauthorized("Invalid email or password.");
+			}
+
+			var passwordHasher = new PasswordHasher<User>();
+			var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginModel.Password);
+
+			if (result == PasswordVerificationResult.Failed)
+			{
+				return Unauthorized("Invalid email or password.");
+			}
+
+			return Ok();
+		}
+
+		// DELETE: api/Users/5
+		[HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);

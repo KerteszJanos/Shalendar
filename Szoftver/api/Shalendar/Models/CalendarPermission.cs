@@ -8,10 +8,8 @@ namespace Shalendar.Models
 		[Key]
 		public int Id { get; set; }
 
-		[ForeignKey("Calendar")]
 		public int CalendarId { get; set; }
 
-		[ForeignKey("User")]
 		public int UserId { get; set; }
 
 		[Required]
