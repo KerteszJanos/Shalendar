@@ -21,15 +21,17 @@ namespace Shalendar.Controllers
             _context = context;
         }
 
-        // GET: api/CalendarLists
-        [HttpGet]
+		//TODO: kell auth!
+		// GET: api/CalendarLists
+		[HttpGet]
         public async Task<ActionResult<IEnumerable<CalendarList>>> GetCalendarLists()
         {
             return await _context.CalendarLists.ToListAsync();
         }
 
-        // GET: api/CalendarLists/5
-        [HttpGet("{id}")]
+		//TODO: kell auth!
+		// GET: api/CalendarLists/5
+		[HttpGet("{id}")]
         public async Task<ActionResult<CalendarList>> GetCalendarList(int id)
         {
             var calendarList = await _context.CalendarLists.FindAsync(id);
@@ -42,9 +44,10 @@ namespace Shalendar.Controllers
             return calendarList;
         }
 
-        // PUT: api/CalendarLists/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+		//TODO: kell auth!
+		// PUT: api/CalendarLists/5
+		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+		[HttpPut("{id}")]
         public async Task<IActionResult> PutCalendarList(int id, CalendarList calendarList)
         {
             if (id != calendarList.Id)
@@ -73,9 +76,10 @@ namespace Shalendar.Controllers
             return NoContent();
         }
 
-        // POST: api/CalendarLists
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+		//TODO: kell auth!
+		// POST: api/CalendarLists
+		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+		[HttpPost]
         public async Task<ActionResult<CalendarList>> PostCalendarList(CalendarList calendarList)
         {
             _context.CalendarLists.Add(calendarList);
@@ -84,8 +88,9 @@ namespace Shalendar.Controllers
             return CreatedAtAction("GetCalendarList", new { id = calendarList.Id }, calendarList);
         }
 
-        // DELETE: api/CalendarLists/5
-        [HttpDelete("{id}")]
+		//TODO: kell auth!
+		// DELETE: api/CalendarLists/5
+		[HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCalendarList(int id)
         {
             var calendarList = await _context.CalendarLists.FindAsync(id);

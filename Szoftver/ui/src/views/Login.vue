@@ -3,7 +3,7 @@
     <h2>Login</h2>
     <form @submit.prevent="loginUser">
         <label for="email">Email:</label>
-        <input type="text" id="email" v-model="user.email" required />
+        <input type="email" id="email" v-model="user.email" required />
 
         <label for="password">Password:</label>
         <input type="password" id="password" v-model="user.password" required />
@@ -44,10 +44,20 @@ export default {
                     password: this.user.password
                 });
 
-                this.$router.push("/dashboard");
+                if (response.data.token) {
+                    localStorage.setItem("token", response.data.token);
+
+                    localStorage.setItem("user", JSON.stringify(response.data.user));
+
+                    axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+
+                    window.dispatchEvent(new Event("storage"));
+
+                    this.$router.push("/dashboard");
+                }
             } catch (error) {
                 console.error("Login failed:", error);
-                this.errorMessage = "Invalid email or password.";
+                this.errorMessage = error.response.data;
             }
         }
 

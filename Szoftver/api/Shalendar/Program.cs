@@ -1,5 +1,8 @@
+ï»¿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Shalendar.Contexts;
+using System.Text;
 
 namespace Shalendar
 {
@@ -9,27 +12,49 @@ namespace Shalendar
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
-			// CORS Policy hozzáadása
+			//Configure CORS policy to allow frontend communication
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowSpecificOrigin",
-					policy => policy.WithOrigins("http://localhost:5173")
+					policy => policy.WithOrigins("http://localhost:5173") // Allow frontend at localhost:5173
 									.AllowAnyHeader()
 									.AllowAnyMethod()
 									.AllowCredentials());
 			});
 
+			//Add database context (SQL Server)
 			builder.Services.AddDbContext<ShalendarDbContext>(options =>
 				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-			// Add services to the container.
+			//Add JWT Authentication
+			builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+				.AddJwtBearer(options =>
+				{
+					options.TokenValidationParameters = new TokenValidationParameters
+					{
+						ValidateIssuer = true,
+						ValidateAudience = true,
+						ValidateLifetime = true,
+						ValidateIssuerSigningKey = true,
+						ValidIssuer = builder.Configuration["JwtSettings:Issuer"], // JWT Issuer
+						ValidAudience = builder.Configuration["JwtSettings:Audience"], // JWT Audience
+						IssuerSigningKey = new SymmetricSecurityKey(
+							Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]) // Secret key for token validation
+						)
+					};
+				});
+
+			//Add authorization service
+			builder.Services.AddAuthorization();
+
+			//Add controllers and API documentation (Swagger)
 			builder.Services.AddControllers();
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 
 			var app = builder.Build();
 
-			// Configure the HTTP request pipeline.
+			//Configure the HTTP request pipeline
 			if (app.Environment.IsDevelopment())
 			{
 				app.UseSwagger();
@@ -38,13 +63,17 @@ namespace Shalendar
 
 			app.UseHttpsRedirection();
 
-			// CORS engedélyezése az alkalmazásban
+			//Enable CORS globally
 			app.UseCors("AllowSpecificOrigin");
 
+			//Enable authentication and authorization
+			app.UseAuthentication();
 			app.UseAuthorization();
 
+			//Map controllers to handle API requests
 			app.MapControllers();
 
+			//Start the application
 			app.Run();
 		}
 	}

@@ -8,77 +8,100 @@ using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Shalendar.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
-    {
-        private readonly ShalendarDbContext _context;
+	[Route("api/[controller]")]
+	[ApiController]
+	public class UsersController : ControllerBase
+	{
+		private readonly ShalendarDbContext _context;
+		private readonly IConfiguration _configuration;
 
-        public UsersController(ShalendarDbContext context)
-        {
-            _context = context;
-        }
 
-        // GET: api/Users
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-        {
-            return await _context.Users.ToListAsync();
-        }
+		public UsersController(ShalendarDbContext context, IConfiguration configuration)
+		{
+			_context = context;
+			_configuration = configuration;
+		}
 
-        // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+		//TODO: kell auth!
+		// GET: api/Users
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+		{
+			return await _context.Users.ToListAsync();
+		}
 
-            return user;
-        }
+		//TODO: kell auth!
+		// GET: api/Users/5
+		[HttpGet("{id}")]
+		public async Task<ActionResult<User>> GetUser(int id)
+		{
+			var user = await _context.Users.FindAsync(id);
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
-        {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
+			if (user == null)
+			{
+				return NotFound();
+			}
 
-            _context.Entry(user).State = EntityState.Modified;
+			return user;
+		}
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+		//TODO: kell auth!
+		// PUT: api/Users/5
+		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+		[HttpPut("{id}")]
+		public async Task<IActionResult> PutUser(int id, User user)
+		{
+			if (id != user.Id)
+			{
+				return BadRequest();
+			}
 
-            return NoContent();
-        }
+			_context.Entry(user).State = EntityState.Modified;
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!UserExists(id))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}
+			}
+
+			return NoContent();
+		}
+
+		// POST: api/Users
+		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+		[HttpPost]
 		public async Task<ActionResult<User>> PostUser(User user)
 		{
+			bool emailExists = await _context.Users.AnyAsync(u => u.Email == user.Email);
+			if (emailExists)
+			{
+				return BadRequest("An account with this email already exists.");
+			}
+
+			var passwordValidationMessage = ValidatePassword(user.PasswordHash);
+			if (passwordValidationMessage != null)
+			{
+				return BadRequest(passwordValidationMessage);
+			}
+
 			using var transaction = await _context.Database.BeginTransactionAsync();
 			try
 			{
@@ -117,7 +140,7 @@ namespace Shalendar.Controllers
 			}
 		}
 
-		// GET: api/Users/login
+
 		[HttpPost("login")]
 		public async Task<IActionResult> LoginUser([FromBody] LoginModel loginModel)
 		{
@@ -125,7 +148,7 @@ namespace Shalendar.Controllers
 
 			if (user == null)
 			{
-				return Unauthorized("Invalid email or password.");
+				return Unauthorized("This email address is not registered.");
 			}
 
 			var passwordHasher = new PasswordHasher<User>();
@@ -133,31 +156,86 @@ namespace Shalendar.Controllers
 
 			if (result == PasswordVerificationResult.Failed)
 			{
-				return Unauthorized("Invalid email or password.");
+				return Unauthorized("Invalid password.");
 			}
 
-			return Ok();
+			var token = GenerateJwtToken(user);
+
+			return Ok(new
+			{
+				user = new
+				{
+					userId = user.Id,
+					username = user.Username,
+					email = user.Email,
+					defaultCalendarId = user.DefaultCalendarId,
+				},
+				token
+			});
 		}
 
+
+		//TODO: kell auth!
 		// DELETE: api/Users/5
 		[HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+		public async Task<IActionResult> DeleteUser(int id)
+		{
+			var user = await _context.Users.FindAsync(id);
+			if (user == null)
+			{
+				return NotFound();
+			}
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+			_context.Users.Remove(user);
+			await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+			return NoContent();
+		}
 
-        private bool UserExists(int id)
-        {
-            return _context.Users.Any(e => e.Id == id);
-        }
-    }
+		private bool UserExists(int id)
+		{
+			return _context.Users.Any(e => e.Id == id);
+		}
+
+		private string GenerateJwtToken(User user)
+		{
+			var jwtSettings = _configuration.GetSection("JwtSettings");
+			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
+			var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+			var claims = new[]
+			{
+		new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+		new Claim(JwtRegisteredClaimNames.Email, user.Email),
+		new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+	};
+
+			var token = new JwtSecurityToken(
+				issuer: jwtSettings["Issuer"],
+				audience: jwtSettings["Audience"],
+				claims: claims,
+				expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(jwtSettings["ExpirationInMinutes"])),
+				signingCredentials: credentials
+			);
+
+			return new JwtSecurityTokenHandler().WriteToken(token);
+		}
+
+		private string? ValidatePassword(string password)
+		{
+			if (string.IsNullOrEmpty(password) || password.Length < 8)
+				return "Password must be at least 8 characters long.";
+
+			bool hasUpperCase = password.Any(char.IsUpper);
+			bool hasDigit = password.Any(char.IsDigit);
+
+			if (!hasUpperCase)
+				return "Password must contain at least one uppercase letter.";
+
+			if (!hasDigit)
+				return "Password must contain at least one number.";
+
+			return null;
+		}
+	}
 }
