@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Shalendar.Contexts;
 using Shalendar.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -29,61 +25,32 @@ namespace Shalendar.Controllers
 			_configuration = configuration;
 		}
 
+		#region Gets
 
-		//TODO: kell auth!
-		// GET: api/Users
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+		[HttpGet("me")]
+		[Authorize]
+		public async Task<ActionResult<User>> GetCurrentUser()
 		{
-			return await _context.Users.ToListAsync();
-		}
-
-		//TODO: kell auth!
-		// GET: api/Users/5
-		[HttpGet("{id}")]
-		public async Task<ActionResult<User>> GetUser(int id)
-		{
-			var user = await _context.Users.FindAsync(id);
+			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+			var user = await _context.Users.FindAsync(userId);
 
 			if (user == null)
 			{
 				return NotFound();
 			}
 
-			return user;
+			return Ok(new
+			{
+				userId = user.Id,
+				username = user.Username,
+				email = user.Email
+			});
 		}
 
-		//TODO: kell auth!
-		// PUT: api/Users/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-		[HttpPut("{id}")]
-		public async Task<IActionResult> PutUser(int id, User user)
-		{
-			if (id != user.Id)
-			{
-				return BadRequest();
-			}
 
-			_context.Entry(user).State = EntityState.Modified;
+		#endregion
 
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!UserExists(id))
-				{
-					return NotFound();
-				}
-				else
-				{
-					throw;
-				}
-			}
-
-			return NoContent();
-		}
+		#region Posts
 
 		// POST: api/Users
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -130,8 +97,18 @@ namespace Shalendar.Controllers
 				_context.CalendarLists.Add(calendarList);
 				await _context.SaveChangesAsync();
 
+				var calendarPermission = new CalendarPermission
+				{
+					CalendarId = defaultCalendar.Id,
+					UserId = user.Id,
+					PermissionType = "owner"
+				};
+
+				_context.CalendarPermissions.Add(calendarPermission);
+				await _context.SaveChangesAsync();
+
 				await transaction.CommitAsync();
-				return CreatedAtAction("GetUser", new { id = user.Id }, user);
+				return Ok();
 			}
 			catch (Exception ex)
 			{
@@ -140,7 +117,7 @@ namespace Shalendar.Controllers
 			}
 		}
 
-
+		// POST: api/login
 		[HttpPost("login")]
 		public async Task<IActionResult> LoginUser([FromBody] LoginModel loginModel)
 		{
@@ -174,28 +151,71 @@ namespace Shalendar.Controllers
 			});
 		}
 
+		#endregion
 
-		//TODO: kell auth!
-		// DELETE: api/Users/5
-		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteUser(int id)
+		#region Puts
+
+		[HttpPut("change-password")]
+		[Authorize]
+		public async Task<IActionResult> ChangePassword([FromBody] ChangePassword model)
 		{
-			var user = await _context.Users.FindAsync(id);
+			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+			var user = await _context.Users.FindAsync(userId);
+
 			if (user == null)
 			{
 				return NotFound();
 			}
 
-			_context.Users.Remove(user);
+			var passwordHasher = new PasswordHasher<User>();
+			var passwordCheck = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.OldPassword);
+
+			if (passwordCheck == PasswordVerificationResult.Failed)
+			{
+				return BadRequest("Incorrect old password.");
+			}
+
+			var passwordValidationMessage = ValidatePassword(model.NewPassword);
+			if (passwordValidationMessage != null)
+			{
+				return BadRequest(passwordValidationMessage);
+			}
+
+			user.PasswordHash = passwordHasher.HashPassword(user, model.NewPassword);
 			await _context.SaveChangesAsync();
 
 			return NoContent();
 		}
 
-		private bool UserExists(int id)
+		#endregion
+
+		#region Deletes
+
+		[HttpDelete("delete")]
+		[Authorize]
+		public async Task<IActionResult> DeleteCurrentUser()
 		{
-			return _context.Users.Any(e => e.Id == id);
+
+			//TODO: kitörölni mindent: naptárak, listák, jegyek, napok amihez a felhasználónak köze volt
+
+			//	var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+			//	var user = await _context.Users.FindAsync(userId);
+
+			//	if (user == null)
+			//	{
+			//		return NotFound();
+			//	}
+
+			//	_context.Users.Remove(user);
+			//	await _context.SaveChangesAsync();
+
+			return NoContent();
 		}
+
+
+		#endregion
+
+		#region private methods
 
 		private string GenerateJwtToken(User user)
 		{
@@ -205,10 +225,10 @@ namespace Shalendar.Controllers
 
 			var claims = new[]
 			{
-		new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-		new Claim(JwtRegisteredClaimNames.Email, user.Email),
-		new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-	};
+				new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+				new Claim(JwtRegisteredClaimNames.Email, user.Email),
+				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+			};
 
 			var token = new JwtSecurityToken(
 				issuer: jwtSettings["Issuer"],
@@ -220,7 +240,6 @@ namespace Shalendar.Controllers
 
 			return new JwtSecurityTokenHandler().WriteToken(token);
 		}
-
 		private string? ValidatePassword(string password)
 		{
 			if (string.IsNullOrEmpty(password) || password.Length < 8)
@@ -237,5 +256,7 @@ namespace Shalendar.Controllers
 
 			return null;
 		}
+
+		#endregion
 	}
 }

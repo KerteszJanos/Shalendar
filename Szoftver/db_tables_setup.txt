@@ -1,0 +1,61 @@
+CREATE TABLE Calendars (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Users (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Username VARCHAR(255) NOT NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    DefaultCalendarId INT,
+    FOREIGN KEY (DefaultCalendarId) REFERENCES Calendars(Id)
+);
+
+CREATE TABLE CalendarPermissions (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    CalendarId INT,
+    UserId INT,
+    PermissionType VARCHAR(50),
+    FOREIGN KEY (CalendarId) REFERENCES Calendars(Id),
+    FOREIGN KEY (UserId) REFERENCES Users(Id)
+);
+
+CREATE TABLE Day (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Date DATE NOT NULL,
+    CalendarId INT,
+    FOREIGN KEY (CalendarId) REFERENCES Calendars(Id)
+);
+
+CREATE TABLE CalendarLists (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name VARCHAR(255) NOT NULL,
+    Color VARCHAR(50),
+    CalendarId INT,
+    FOREIGN KEY (CalendarId) REFERENCES Calendars(Id)
+);
+
+CREATE TABLE TodoLists (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    DayId INT,
+    FOREIGN KEY (DayId) REFERENCES Day(Id)
+);
+
+CREATE TABLE ScheduledLists (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    DayId INT,
+    FOREIGN KEY (DayId) REFERENCES Day(Id)
+);
+
+CREATE TABLE Tickets (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name VARCHAR(255) NOT NULL,
+    Description TEXT,
+    StartDate DATETIME,
+    EndDate DATETIME,
+    Priority INT,
+    CalendarListId INT,
+    CurrentListType VARCHAR(50),
+    ListId INT,
+    FOREIGN KEY (CalendarListId) REFERENCES CalendarLists(Id)
+);

@@ -21,93 +21,66 @@ namespace Shalendar.Controllers
             _context = context;
         }
 
-		//TODO: kell auth!
-		// GET: api/CalendarLists
-		[HttpGet]
-        public async Task<ActionResult<IEnumerable<CalendarList>>> GetCalendarLists()
-        {
-            return await _context.CalendarLists.ToListAsync();
-        }
 
-		//TODO: kell auth!
-		// GET: api/CalendarLists/5
-		[HttpGet("{id}")]
-        public async Task<ActionResult<CalendarList>> GetCalendarList(int id)
-        {
-            var calendarList = await _context.CalendarLists.FindAsync(id);
 
-            if (calendarList == null)
-            {
-                return NotFound();
-            }
+		#region Gets
 
-            return calendarList;
-        }
+		// GET: api/CalendarLists/calendar/{calendarId}
+		[HttpGet("calendar/{calendarId}")]
+		public async Task<ActionResult<IEnumerable<CalendarList>>> GetCalendarListsByCalendarId(int calendarId)
+		{
+			var lists = await _context.CalendarLists
+				.Where(list => list.CalendarId == calendarId)
+				.ToListAsync();
 
-		//TODO: kell auth!
-		// PUT: api/CalendarLists/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-		[HttpPut("{id}")]
-        public async Task<IActionResult> PutCalendarList(int id, CalendarList calendarList)
-        {
-            if (id != calendarList.Id)
-            {
-                return BadRequest();
-            }
+			if (!lists.Any())
+			{
+				return NotFound("Nincs ehhez a naptárhoz tartozó lista.");
+			}
 
-            _context.Entry(calendarList).State = EntityState.Modified;
+			return lists;
+		}
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CalendarListExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+		#endregion
 
-            return NoContent();
-        }
 
-		//TODO: kell auth!
+
+		#region Posts
+
 		// POST: api/CalendarLists
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
-        public async Task<ActionResult<CalendarList>> PostCalendarList(CalendarList calendarList)
-        {
-            _context.CalendarLists.Add(calendarList);
-            await _context.SaveChangesAsync();
+		public async Task<ActionResult<CalendarList>> PostCalendarList(CalendarList calendarList)
+		{
+			// Ellenőrizzük, hogy a naptár létezik-e
+			var calendarExists = await _context.Calendars.AnyAsync(c => c.Id == calendarList.CalendarId);
+			if (!calendarExists)
+			{
+				return BadRequest("The specified CalendarId does not exist.");
+			}
 
-            return CreatedAtAction("GetCalendarList", new { id = calendarList.Id }, calendarList);
-        }
+			// Új lista mentése
+			_context.CalendarLists.Add(calendarList);
+			await _context.SaveChangesAsync();
 
-		//TODO: kell auth!
-		// DELETE: api/CalendarLists/5
-		[HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCalendarList(int id)
-        {
-            var calendarList = await _context.CalendarLists.FindAsync(id);
-            if (calendarList == null)
-            {
-                return NotFound();
-            }
+			return CreatedAtAction(nameof(GetCalendarListsByCalendarId), new { calendarId = calendarList.CalendarId }, calendarList);
+		}
 
-            _context.CalendarLists.Remove(calendarList);
-            await _context.SaveChangesAsync();
+		#endregion
 
-            return NoContent();
-        }
 
-        private bool CalendarListExists(int id)
-        {
-            return _context.CalendarLists.Any(e => e.Id == id);
-        }
-    }
+
+		#region Puts
+
+
+
+		#endregion
+
+
+
+		#region Deletes
+
+
+
+		#endregion
+	}
 }

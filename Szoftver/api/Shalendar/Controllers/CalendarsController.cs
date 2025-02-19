@@ -22,93 +22,48 @@ namespace Shalendar.Controllers
             _context = context;
         }
 
-        //TODO: kell auth!
-        // GET: api/Calendars
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Calendar>>> GetCalendars()
-        {
-            return await _context.Calendars.ToListAsync();
-        }
+
+		#region Gets
 
 		// GET: api/Calendars/5
 		[Authorize]
 		[HttpGet("{id}")]
-        public async Task<ActionResult<Calendar>> GetCalendar(int id)
-        {
-            var calendar = await _context.Calendars.FindAsync(id);
+		public async Task<ActionResult<Calendar>> GetCalendar(int id)
+		{
+			var calendar = await _context.Calendars.FindAsync(id);
 
-            if (calendar == null)
-            {
-                return NotFound();
-            }
+			if (calendar == null)
+			{
+				return NotFound();
+			}
 
-            return calendar;
-        }
+			return calendar;
+		}
 
-		//TODO: kell auth!
-		// PUT: api/Calendars/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-		[HttpPut("{id}")]
-        public async Task<IActionResult> PutCalendar(int id, Calendar calendar)
-        {
-            if (id != calendar.Id)
-            {
-                return BadRequest();
-            }
+		#endregion
 
-            _context.Entry(calendar).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CalendarExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
-        }
+		#region Posts
 
-		//TODO: kell auth!
-		// POST: api/Calendars
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-		[HttpPost]
-        public async Task<ActionResult<Calendar>> PostCalendar(Calendar calendar)
-        {
-            _context.Calendars.Add(calendar);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCalendar", new { id = calendar.Id }, calendar);
-        }
 
-		//TODO: kell auth!
-		// DELETE: api/Calendars/5
-		[HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCalendar(int id)
-        {
-            var calendar = await _context.Calendars.FindAsync(id);
-            if (calendar == null)
-            {
-                return NotFound();
-            }
+		#endregion
 
-            _context.Calendars.Remove(calendar);
-            await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
 
-        private bool CalendarExists(int id)
-        {
-            return _context.Calendars.Any(e => e.Id == id);
-        }
-    }
+		#region Puts
+
+
+
+		#endregion
+
+
+
+		#region Deletes
+
+
+
+		#endregion
+	}
 }
