@@ -36,6 +36,24 @@
     </div>
     <p v-else>No scheduled lists.</p>
 
+    <!-- Új lista hozzáadás MODAL -->
+    <Modal 
+      :show="showModal" 
+      title="Új lista hozzáadása"
+      confirmText="Hozzáadás"
+      @close="showModal = false"
+      @confirm="addCalendarList"
+    >
+      <div class="modal-content">
+        <input v-model="newList.name" placeholder="Lista neve" />
+
+        <div class="color-picker">
+          <input v-model="newList.color" type="color" />
+          <div class="color-preview" :style="{ backgroundColor: newList.color }"></div>
+        </div>
+      </div>
+    </Modal>
+
     <!-- Új ticket hozzáadás MODAL -->
     <Modal 
       :show="showTicketModal" 
@@ -77,6 +95,12 @@ export default {
     const errorMessage = ref("");
     const showTicketModal = ref(false);
     const selectedListId = ref(null);
+    const showModal = ref(false);
+    const newList = ref({
+      name: "",
+      color: "#CCCCCC",
+    });
+
     const newTicket = ref({
       name: "",
       description: "",
@@ -84,6 +108,34 @@ export default {
       endDate: "",
       priority: null
     });
+
+    const openModal = () => {
+     newList.value = { name: "", color: "#CCCCCC" };
+    showModal.value = true;
+    };
+
+    const addCalendarList = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.defaultCalendarId) {
+          throw new Error("Nincs alapértelmezett naptár beállítva.");
+        }
+
+        const calendarId = user.defaultCalendarId;
+        const response = await api.post("/api/CalendarLists", {
+          name: newList.value.name,
+          color: newList.value.color,
+          calendarId
+        });
+
+        calendarLists.value.push(response.data);
+        showModal.value = false;
+        console.log("Modal state:", showModal.value);
+      } catch (error) {
+        console.error("Error adding list:", error);
+        errorMessage.value = "Nem sikerült hozzáadni a listát.";
+      }
+    };
 
     const fetchCalendarLists = async () => {
       try {
@@ -158,8 +210,12 @@ export default {
       calendarLists,
       loading,
       errorMessage,
+      showModal,
+      newList,
       showTicketModal,
       newTicket,
+      openModal,
+      addCalendarList,
       openTicketModal,
       addTicket,
       formatDate
@@ -228,6 +284,19 @@ export default {
   flex-direction: column;
   gap: 10px;
   align-items: center;
+}
+
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-preview {
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 label {
