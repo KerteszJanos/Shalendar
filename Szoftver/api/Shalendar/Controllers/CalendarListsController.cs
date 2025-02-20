@@ -27,19 +27,39 @@ namespace Shalendar.Controllers
 
 		// GET: api/CalendarLists/calendar/{calendarId}
 		[HttpGet("calendar/{calendarId}")]
-		public async Task<ActionResult<IEnumerable<CalendarList>>> GetCalendarListsByCalendarId(int calendarId)
+		public async Task<ActionResult<IEnumerable<object>>> GetCalendarListsByCalendarId(int calendarId)
 		{
 			var lists = await _context.CalendarLists
 				.Where(list => list.CalendarId == calendarId)
+				.Select(list => new
+				{
+					list.Id,
+					list.Name,
+					list.Color,
+					list.CalendarId,
+					Tickets = _context.Tickets
+						.Where(ticket => ticket.CurrentListType == "CalendarList" && ticket.ListId == list.Id)
+						.Select(ticket => new
+						{
+							ticket.Id,
+							ticket.Name,
+							ticket.Description,
+							ticket.StartDate,
+							ticket.EndDate,
+							ticket.Priority
+						})
+						.ToList()
+				})
 				.ToListAsync();
 
-			if (!lists.Any())
+			if (lists == null || lists.Count == 0)
 			{
-				return NotFound("Nincs ehhez a naptárhoz tartozó lista.");
+				return NotFound("No list found for this calendar");
 			}
 
-			return lists;
+			return Ok(lists);
 		}
+
 
 		#endregion
 
@@ -78,6 +98,14 @@ namespace Shalendar.Controllers
 
 
 		#region Deletes
+
+
+
+		#endregion
+
+
+
+		#region private methods
 
 
 

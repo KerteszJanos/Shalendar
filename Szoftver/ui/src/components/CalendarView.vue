@@ -20,6 +20,7 @@
           :key="day.date"
           class="calendar-day"
           :class="{ 'other-month': !day.isCurrentMonth }"
+          @click="goToDay(day.date)"
         >
           {{ day.number }}
         </div>
@@ -30,14 +31,15 @@
 
 <script>
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import api from "@/utils/config/axios-config";
 
 export default {
   setup() {
     const currentDate = ref(new Date());
     const calendar = ref({ id: null, name: "" });
-    const loading = ref(true);
     const errorMessage = ref("");
+    const router = useRouter();
 
     const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -59,7 +61,7 @@ export default {
       for (let i = startOffset - 1; i >= 0; i--) {
         days.push({
           number: prevMonthLastDate - i,
-          date: new Date(year, month - 1, prevMonthLastDate - i),
+          date: new Date(year, month - 1, prevMonthLastDate - i).toISOString().split('T')[0],
           isCurrentMonth: false
         });
       }
@@ -67,7 +69,7 @@ export default {
       for (let i = 1; i <= lastDateOfMonth; i++) {
         days.push({
           number: i,
-          date: new Date(year, month, i),
+          date: new Date(year, month, i).toISOString().split('T')[0],
           isCurrentMonth: true
         });
       }
@@ -75,13 +77,32 @@ export default {
       for (let i = 1; i <= endOffset; i++) {
         days.push({
           number: i,
-          date: new Date(year, month + 1, i),
+          date: new Date(year, month + 1, i).toISOString().split('T')[0],
           isCurrentMonth: false
         });
       }
 
       return days;
     });
+
+    const goToDay = (date) => {
+      router.push(`/day/${date}`);
+    };
+
+    const fetchCalendar = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.defaultCalendarId) {
+          throw new Error("Nincs alapértelmezett naptár beállítva.");
+        }
+        const calendarId = user.defaultCalendarId;
+        const response = await api.get(`/api/Calendars/${calendarId}`);
+        calendar.value = response.data;
+      } catch (error) {
+        console.error("Error loading calendar:", error);
+        errorMessage.value = "Nem sikerült betölteni a naptárat.";
+      }
+    };
 
     const prevMonth = () => {
       currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1);
@@ -91,35 +112,17 @@ export default {
       currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1);
     };
 
-    const fetchCalendar = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (!user || !user.defaultCalendarId) {
-          throw new Error("Nincs alapértelmezett naptár beállítva.");
-        }
-
-        const calendarId = user.defaultCalendarId;
-        const response = await api.get(`/api/Calendars/${calendarId}`);
-        calendar.value = response.data;
-      } catch (error) {
-        console.error("Error loading calendar:", error);
-        errorMessage.value = "Nem sikerült betölteni a naptárat.";
-      } finally {
-        loading.value = false;
-      }
-    };
-
     onMounted(fetchCalendar);
 
     return {
       formattedMonth,
       daysOfWeek,
       calendarDays,
+      calendar,
+      errorMessage,
+      goToDay,
       prevMonth,
       nextMonth,
-      calendar,
-      loading,
-      errorMessage
     };
   },
 };
@@ -157,6 +160,12 @@ export default {
   font-size: 18px;
   cursor: pointer;
   margin: 0 5px;
+  transition: all 0.2s ease-in-out;
+}
+
+.navigation button:hover {
+  transform: scale(0.9);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .calendar-grid {
@@ -175,11 +184,21 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.calendar-day:not(.header):hover {
+  background: #bdbdbd;
+  transform: scale(0.95);
 }
 
 .calendar-day.header {
   font-weight: bold;
   background: #90caf9;
+  cursor: default;
+  transform: none !important;
+  height: auto;
 }
 
 .other-month {

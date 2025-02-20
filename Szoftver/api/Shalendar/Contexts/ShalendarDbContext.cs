@@ -12,6 +12,8 @@ namespace Shalendar.Contexts
         public DbSet<Calendar> Calendars { get; set; }
 		public DbSet<CalendarPermission> CalendarPermissions { get; set; }
 		public DbSet<CalendarList> CalendarLists { get; set; }
-		
+
+		public DbSet<Ticket> Tickets { get; set; }
+
 	}
 }

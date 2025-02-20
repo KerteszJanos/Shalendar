@@ -4,7 +4,8 @@
       <h2>To be scheduled</h2>
       <button class="add-button" @click="openModal">+</button>
     </div>
-    <p v-if="loading">Betöltés...</p>
+
+    <p v-if="loading">Loading...</p>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
 
     <div class="lists-content" v-if="calendarLists.length > 0">
@@ -15,25 +16,49 @@
         :style="{ backgroundColor: list.color || '#CCCCCC' }"
       >
         <p class="list-title">{{ list.name }}</p>
+
+        <!-- Ticketek megjelenítése -->
+        <div class="ticket-list" v-if="list.tickets.length > 0">
+          <div v-for="ticket in list.tickets" :key="ticket.id" class="ticket-item">
+            <p><strong>{{ ticket.name }}</strong></p>
+            <p v-if="ticket.description">{{ ticket.description }}</p>
+            <p v-if="ticket.startDate">
+              <small>{{ formatDate(ticket.startDate) }} - {{ formatDate(ticket.endDate) }}</small>
+            </p>
+            <p v-if="ticket.priority">Priority: {{ ticket.priority }}</p>
+          </div>
+        </div>
+        <p v-else>No tickets.</p>
+
+        <!-- Ticket hozzáadás gomb -->
+        <button class="add-ticket-button" @click="openTicketModal(list.id)">+</button>
       </div>
     </div>
-    <p v-else>Nincs ütemezett lista.</p>
+    <p v-else>No scheduled lists.</p>
 
-    <!-- MODAL -->
+    <!-- Új ticket hozzáadás MODAL -->
     <Modal 
-      :show="showModal" 
-      title="Új lista hozzáadása"
-      confirmText="Hozzáadás"
-      @close="showModal = false"
-      @confirm="addCalendarList"
+      :show="showTicketModal" 
+      title="Add New Ticket"
+      confirmText="Add"
+      @close="showTicketModal = false"
+      @confirm="addTicket"
     >
       <div class="modal-content">
-        <input v-model="newList.name" placeholder="Lista neve" />
+        <label for="ticket-name">Ticket Name</label>
+        <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
 
-        <div class="color-picker">
-          <input v-model="newList.color" type="color" />
-          <div class="color-preview" :style="{ backgroundColor: newList.color }"></div>
-        </div>
+        <label for="ticket-description">Description (optional)</label>
+        <input id="ticket-description" v-model="newTicket.description" placeholder="Enter description" />
+
+        <label for="ticket-startDate">Start Date (optional)</label>
+        <input id="ticket-startDate" v-model="newTicket.startDate" type="date" />
+
+        <label for="ticket-endDate">End Date (optional)</label>
+        <input id="ticket-endDate" v-model="newTicket.endDate" type="date" />
+
+        <label for="ticket-priority">Priority (optional)</label>
+        <input id="ticket-priority" v-model="newTicket.priority" type="number" min="1" max="10" placeholder="Enter priority (1-10)" />
       </div>
     </Modal>
   </div>
@@ -50,52 +75,81 @@ export default {
     const calendarLists = ref([]);
     const loading = ref(true);
     const errorMessage = ref("");
-    const showModal = ref(false);
-    const newList = ref({ name: "", color: "#CCCCCC" });
+    const showTicketModal = ref(false);
+    const selectedListId = ref(null);
+    const newTicket = ref({
+      name: "",
+      description: "",
+      startDate: "",
+      endDate: "",
+      priority: null
+    });
 
     const fetchCalendarLists = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
         if (!user || !user.defaultCalendarId) {
-          throw new Error("Nincs alapértelmezett naptár beállítva.");
+          throw new Error("No default calendar set.");
         }
 
         const calendarId = user.defaultCalendarId;
         const response = await api.get(`/api/CalendarLists/calendar/${calendarId}`);
-        calendarLists.value = response.data;
+        calendarLists.value = response.data.map(list => ({
+          ...list,
+          tickets: list.tickets || []
+        }));
       } catch (error) {
         console.error("Error loading calendar lists:", error);
-        errorMessage.value = error.response?.data || "Nem sikerült betölteni a listákat.";
+        errorMessage.value = error.response?.data || "Failed to load lists.";
       } finally {
         loading.value = false;
       }
     };
 
-    const openModal = () => {
-      newList.value = { name: "", color: "#CCCCCC" };
-      showModal.value = true;
+    const openTicketModal = (listId) => {
+      selectedListId.value = listId;
+      newTicket.value = { name: "", description: "", startDate: "", endDate: "", priority: null };
+      showTicketModal.value = true;
     };
 
-    const addCalendarList = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (!user || !user.defaultCalendarId) {
-          throw new Error("Nincs alapértelmezett naptár beállítva.");
-        }
+    const addTicket = async () => {
+  if (!newTicket.value.name.trim()) {
+    errorMessage.value = "Ticket name is required.";
+    return;
+  }
 
-        const calendarId = user.defaultCalendarId;
-        const response = await api.post("/api/CalendarLists", {
-          name: newList.value.name,
-          color: newList.value.color,
-          calendarId
-        });
+  try {
+    // Ha a dátummezők üresek, akkor `null`-t küldünk, nem üres stringet
+    const ticketData = {
+      name: newTicket.value.name,
+      description: newTicket.value.description || null,
+      startDate: newTicket.value.startDate ? newTicket.value.startDate : null,
+      endDate: newTicket.value.endDate ? newTicket.value.endDate : null,
+      priority: newTicket.value.priority || null,
+      currentListType: "CalendarList",
+      listId: selectedListId.value
+    };
 
-        calendarLists.value.push(response.data);
-        showModal.value = false;
-      } catch (error) {
-        console.error("Error adding list:", error);
-        errorMessage.value = "Nem sikerült hozzáadni a listát.";
-      }
+    const response = await api.post("/api/Tickets", ticketData);
+
+    // Ticket hozzáadása a megfelelő listához
+    const list = calendarLists.value.find(list => list.id === selectedListId.value);
+    if (list) {
+      list.tickets.push(response.data);
+    }
+
+    showTicketModal.value = false;
+  } catch (error) {
+    console.error("Error adding ticket:", error);
+    errorMessage.value = error.response?.data || "Failed to add ticket.";
+  }
+};
+
+
+
+    const formatDate = (dateString) => {
+      if (!dateString) return "";
+      return new Date(dateString).toLocaleDateString();
     };
 
     onMounted(fetchCalendarLists);
@@ -104,10 +158,11 @@ export default {
       calendarLists,
       loading,
       errorMessage,
-      showModal,
-      newList,
-      openModal,
-      addCalendarList
+      showTicketModal,
+      newTicket,
+      openTicketModal,
+      addTicket,
+      formatDate
     };
   }
 };
@@ -159,9 +214,13 @@ export default {
   text-align: center;
 }
 
-.list-title {
-  font-weight: bold;
-  color: #ffffff;
+.ticket-item {
+  padding: 5px;
+  border: 2px solid black;
+}
+
+.ticket-item:last-child {
+  border-bottom: none;
 }
 
 .modal-content {
@@ -171,17 +230,8 @@ export default {
   align-items: center;
 }
 
-.color-picker {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.color-preview {
-  width: 30px;
-  height: 30px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+label {
+  font-weight: bold;
 }
 
 .error {
