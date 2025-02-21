@@ -1,11 +1,11 @@
 <template>
     <div class="container">
       <div class="todo-list">
-        <div class="header">{{ formattedDate }}</div>
+        <div class="header">Todo List</div>
         <p v-if="loading">Loading...</p>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div class="task-list">
-          <div v-for="ticket in tickets" :key="ticket.id" class="task">
+          <div v-for="ticket in tickets" :key="ticket.id" class="task" :style="{ backgroundColor: ticket.color || '#ffffff' }">
             <p><strong>{{ ticket.name }}</strong></p>
             <p v-if="ticket.description">{{ ticket.description }}</p>
             <p v-if="ticket.priority">Priority: {{ ticket.priority }}</p>
@@ -17,42 +17,35 @@
 </template>
 
 <script>
-import { ref, onMounted, watch, computed } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted } from "vue";
 import api from "@/utils/config/axios-config";
 
 export default {
     setup() {
-        const route = useRoute();
         const tickets = ref([]);
         const loading = ref(true);
         const errorMessage = ref("");
-        const calendarId = ref(null); // A calendarId-t a localStorage-ból töltjük be
+        const calendarId = ref(null);
 
-        // Az aktuálisan kiválasztott dátum formázása
-        const formattedDate = computed(() => {
-            const date = new Date(route.params.date);
-            return date.toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" });
-        });
-
-        // API hívás megfelelő dátum és calendarId alapján
+        // API hívás megfelelő calendarId alapján
         const fetchTickets = async () => {
             loading.value = true;
             errorMessage.value = "";
 
             try {
-                const selectedDate = route.params.date;
-                
                 // Ellenőrizzük, hogy van-e mentett calendarId a localStorage-ban
                 const storedCalendarId = localStorage.getItem("calendarId");
                 if (!storedCalendarId) {
                     throw new Error("Nincs mentett calendarId a localStorage-ban.");
                 }
-                
+
                 calendarId.value = storedCalendarId;
 
-                const response = await api.get(`/api/Tickets/todolist/${selectedDate}/${calendarId.value}`);
-                tickets.value = response.data;
+                const response = await api.get(`/api/Tickets/todolist/${calendarId.value}`);
+                tickets.value = response.data.map(ticket => ({
+                    ...ticket,
+                    color: ticket.color || "#ffffff" // Ha nincs szín, alapértelmezett fehér
+                }));
             } catch (error) {
                 console.error("Error loading tickets:", error);
                 errorMessage.value = "Failed to load tickets.";
@@ -72,18 +65,15 @@ export default {
             }
         };
 
-        watch(() => route.params.date, fetchTickets);
-
         onMounted(fetchTickets);
 
         return {
             tickets,
             loading,
             errorMessage,
-            formattedDate,
             deleteTicket,
             fetchTickets,
-            calendarId, // Most már a frontend is tartalmazza ezt
+            calendarId,
         };
     }
 };
@@ -122,9 +112,9 @@ export default {
 
 .task {
     padding: 10px;
-    background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease-in-out;
 }
 
 .delete-btn {

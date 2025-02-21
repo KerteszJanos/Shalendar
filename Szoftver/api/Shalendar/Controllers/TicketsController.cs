@@ -23,30 +23,30 @@ namespace Shalendar.Controllers
 		}
 
 		#region Gets
-		[HttpGet("todolist/{date}/{calendarId}")]
-		public async Task<ActionResult<IEnumerable<Ticket>>> GetTodoListTicketsByDateAndCalendar(string date, int calendarId)
+		[HttpGet("todolist/{calendarId}")]
+		public async Task<ActionResult<IEnumerable<object>>> GetTodoListTicketsByCalendar(int calendarId)
 		{
-			if (!DateTime.TryParse(date, out DateTime parsedDate))
-			{
-				return BadRequest("Invalid date format.");
-			}
-
-			DateTime selectedDate = parsedDate.Date;
-
 			var tickets = await _context.Tickets
 				.Where(t => t.CurrentParentType == "TodoList"
 							&& t.StartTime == null
 							&& _context.Days
-								.Any(d => d.Id == t.ParentId
-										  && d.CalendarId == calendarId
-										  && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0))
+								.Any(d => d.Id == t.ParentId && d.CalendarId == calendarId))
+				.Select(t => new
+				{
+					t.Id,
+					t.Name,
+					t.Description,
+					t.Priority,
+					t.CalendarListId, // Azonosítjuk a CalendarListet
+					Color = _context.CalendarLists
+						.Where(c => c.Id == t.CalendarListId)
+						.Select(c => c.Color)
+						.FirstOrDefault() // Kiválasztjuk a megfelelő CalendarList színét
+				})
 				.ToListAsync();
 
 			return Ok(tickets);
 		}
-
-
-
 
 		#endregion
 
