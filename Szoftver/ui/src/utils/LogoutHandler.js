@@ -7,6 +7,7 @@ export function useLogout() {
     const logout = () => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
+        localStorage.removeItem("calendarId");
 
         delete axios.defaults.headers.common["Authorization"];
 

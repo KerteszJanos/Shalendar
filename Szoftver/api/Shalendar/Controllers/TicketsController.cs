@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
@@ -12,6 +12,7 @@ namespace Shalendar.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
+	[Authorize]
 	public class TicketsController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
@@ -22,12 +23,35 @@ namespace Shalendar.Controllers
 		}
 
 		#region Gets
+		[HttpGet("todolist/{date}/{calendarId}")]
+		public async Task<ActionResult<IEnumerable<Ticket>>> GetTodoListTicketsByDateAndCalendar(string date, int calendarId)
+		{
+			if (!DateTime.TryParse(date, out DateTime parsedDate))
+			{
+				return BadRequest("Invalid date format.");
+			}
+
+			DateTime selectedDate = parsedDate.Date;
+
+			var tickets = await _context.Tickets
+				.Where(t => t.CurrentParentType == "TodoList"
+							&& t.StartTime == null
+							&& _context.Days
+								.Any(d => d.Id == t.ParentId
+										  && d.CalendarId == calendarId
+										  && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0))
+				.ToListAsync();
+
+			return Ok(tickets);
+		}
+
+
+
 
 		#endregion
 
 		#region Posts
 
-		// POST: api/Tickets
 		[HttpPost]
 		public async Task<ActionResult<Ticket>> CreateTicket([FromBody] Ticket ticket)
 		{
@@ -44,13 +68,8 @@ namespace Shalendar.Controllers
 
 		#endregion
 
-		#region Puts
-
-		#endregion
-
 		#region Deletes
 
-		// DELETE: api/Tickets/{id}
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteTicket(int id)
 		{
@@ -65,10 +84,6 @@ namespace Shalendar.Controllers
 
 			return NoContent();
 		}
-
-		#endregion
-
-		#region private methods
 
 		#endregion
 	}

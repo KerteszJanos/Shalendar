@@ -90,19 +90,24 @@ export default {
     };
 
     const fetchCalendar = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (!user || !user.defaultCalendarId) {
-          throw new Error("Nincs alapértelmezett naptár beállítva.");
-        }
-        const calendarId = user.defaultCalendarId;
-        const response = await api.get(`/api/Calendars/${calendarId}`);
-        calendar.value = response.data;
-      } catch (error) {
-        console.error("Error loading calendar:", error);
-        errorMessage.value = "Nem sikerült betölteni a naptárat.";
-      }
-    };
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.defaultCalendarId) {
+      throw new Error("Nincs alapértelmezett naptár beállítva.");
+    }
+
+    const calendarId = user.defaultCalendarId;
+
+    localStorage.setItem("calendarId", calendarId);
+
+    const response = await api.get(`/api/Calendars/${calendarId}`);
+    calendar.value = response.data;
+  } catch (error) {
+    console.error("Error loading calendar:", error);
+    errorMessage.value = "Nem sikerült betölteni a naptárat.";
+  }
+};
+
 
     const prevMonth = () => {
       currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1);

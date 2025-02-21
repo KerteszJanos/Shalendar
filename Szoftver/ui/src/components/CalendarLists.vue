@@ -167,6 +167,7 @@ export default {
                     startTime: null,
                     endTime: null,
                     priority: newTicket.value.priority || null,
+                    calendarListId: selectedListId.value,
                     currentParentType: "CalendarList",
                     parentId: selectedListId.value
                 };

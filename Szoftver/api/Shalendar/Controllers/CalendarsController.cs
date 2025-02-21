@@ -13,7 +13,8 @@ namespace Shalendar.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CalendarsController : ControllerBase
+	[Authorize]
+	public class CalendarsController : ControllerBase
     {
         private readonly ShalendarDbContext _context;
 
@@ -26,7 +27,6 @@ namespace Shalendar.Controllers
 		#region Gets
 
 		// GET: api/Calendars/5
-		[Authorize]
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Calendar>> GetCalendar(int id)
 		{
