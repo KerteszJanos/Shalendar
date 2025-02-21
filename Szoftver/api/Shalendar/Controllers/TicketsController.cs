@@ -50,6 +50,22 @@ namespace Shalendar.Controllers
 
 		#region Deletes
 
+		// DELETE: api/Tickets/{id}
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteTicket(int id)
+		{
+			var ticket = await _context.Tickets.FindAsync(id);
+			if (ticket == null)
+			{
+				return NotFound();
+			}
+
+			_context.Tickets.Remove(ticket);
+			await _context.SaveChangesAsync();
+
+			return NoContent();
+		}
+
 		#endregion
 
 		#region private methods

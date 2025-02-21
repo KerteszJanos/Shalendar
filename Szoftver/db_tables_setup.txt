@@ -1,3 +1,5 @@
+-- TÁBLÁK LÉTREHOZÁSA
+
 CREATE TABLE Calendars (
     Id INT PRIMARY KEY IDENTITY(1,1),
     Name VARCHAR(255) NOT NULL
@@ -7,7 +9,9 @@ CREATE TABLE Users (
     Id INT PRIMARY KEY IDENTITY(1,1),
     Username VARCHAR(255) NOT NULL,
     PasswordHash VARCHAR(255) NOT NULL,
+    Email NVARCHAR(255) NOT NULL,  -- Email mező hozzáadása
     DefaultCalendarId INT,
+    CONSTRAINT UQ_Email UNIQUE (Email), -- Egyedi megszorítás az Email oszlopra
     FOREIGN KEY (DefaultCalendarId) REFERENCES Calendars(Id)
 );
 
@@ -35,27 +39,15 @@ CREATE TABLE CalendarLists (
     FOREIGN KEY (CalendarId) REFERENCES Calendars(Id)
 );
 
-CREATE TABLE TodoLists (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    DayId INT,
-    FOREIGN KEY (DayId) REFERENCES Day(Id)
-);
-
-CREATE TABLE ScheduledLists (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    DayId INT,
-    FOREIGN KEY (DayId) REFERENCES Day(Id)
-);
-
 CREATE TABLE Tickets (
     Id INT PRIMARY KEY IDENTITY(1,1),
     Name VARCHAR(255) NOT NULL,
     Description TEXT,
-    StartDate DATETIME,
-    EndDate DATETIME,
+    StartTime TIME,
+    EndTime TIME,
     Priority INT,
     CalendarListId INT,
-    CurrentListType VARCHAR(50),
-    ListId INT,
+    CurrentParentType VARCHAR(50),
+    ParentId INT,
     FOREIGN KEY (CalendarListId) REFERENCES CalendarLists(Id)
 );

@@ -69,7 +69,7 @@ export default {
       for (let i = 1; i <= lastDateOfMonth; i++) {
         days.push({
           number: i,
-          date: new Date(year, month, i).toISOString().split('T')[0],
+          date: new Date(year, month, i+1).toISOString().split('T')[0],
           isCurrentMonth: true
         });
       }

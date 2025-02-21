@@ -15,19 +15,19 @@
 
 		public string? Description { get; set; }
 
-		public DateTime? StartDate { get; set; }
+		public TimeSpan? StartTime { get; set; }
 
-		public DateTime? EndDate { get; set; }
+		public TimeSpan? EndTime { get; set; }
 
 		public int? Priority { get; set; }
 
 		public int? CalendarListId { get; set; }
 
 		[StringLength(50)]
-		public string CurrentListType { get; set; }
+		public string CurrentParentType { get; set; }
 
 		[Required]
-		public int ListId { get; set; }
+		public int ParentId { get; set; }
 	}
 
 }

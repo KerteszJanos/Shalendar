@@ -38,14 +38,14 @@ namespace Shalendar.Controllers
 					list.Color,
 					list.CalendarId,
 					Tickets = _context.Tickets
-						.Where(ticket => ticket.CurrentListType == "CalendarList" && ticket.ListId == list.Id)
+						.Where(ticket => ticket.CurrentParentType == "CalendarList" && ticket.ParentId == list.Id)
 						.Select(ticket => new
 						{
 							ticket.Id,
 							ticket.Name,
 							ticket.Description,
-							ticket.StartDate,
-							ticket.EndDate,
+							ticket.StartTime,
+							ticket.EndTime,
 							ticket.Priority
 						})
 						.ToList()
