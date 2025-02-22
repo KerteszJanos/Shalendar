@@ -22,13 +22,12 @@ import { useLogout } from "@/utils/LogoutHandler";
 export default {
   setup() {
     const { logout } = useLogout();
-    const isLoggedIn = ref(!!localStorage.getItem("token")); // 🔥 Reaktív változó
+    const isLoggedIn = ref(!!localStorage.getItem("token"));
 
     const checkLoginStatus = () => {
-      isLoggedIn.value = !!localStorage.getItem("token"); // 🔥 Ha a token törlődik, azonnal frissít
+      isLoggedIn.value = !!localStorage.getItem("token");
     };
 
-    // 🔥 FIGYELJÜK a token változásait ÉS kényszerítjük a fejléc frissítését
     watchEffect(() => {
       checkLoginStatus();
     });

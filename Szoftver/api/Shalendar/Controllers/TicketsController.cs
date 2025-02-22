@@ -57,6 +57,42 @@ namespace Shalendar.Controllers
 			return Ok(tickets);
 		}
 
+		[HttpGet("scheduled/{date}/{calendarId}")]
+		public async Task<ActionResult<IEnumerable<object>>> GetScheduledListTicketsByDateAndCalendar(string date, int calendarId)
+		{
+			if (!DateTime.TryParse(date, out DateTime parsedDate))
+			{
+				return BadRequest("Invalid date format.");
+			}
+
+			DateTime selectedDate = parsedDate.Date;
+
+			var tickets = await _context.Tickets
+				.Where(t => t.CurrentParentType == "ScheduledList"
+							&& t.StartTime != null
+							&& _context.Days
+								.Any(d => d.Id == t.ParentId
+										  && d.CalendarId == calendarId
+										  && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0))
+				.Select(t => new
+				{
+					t.Id,
+					t.Name,
+					t.Description,
+					t.Priority,
+					t.CalendarListId,
+					t.StartTime,
+					t.EndTime,
+					Color = _context.CalendarLists
+								.Where(c => c.Id == t.CalendarListId)
+								.Select(c => c.Color)
+								.FirstOrDefault()
+				})
+				.ToListAsync();
+
+			return Ok(tickets);
+		}
+
 		#endregion
 
 		#region Posts

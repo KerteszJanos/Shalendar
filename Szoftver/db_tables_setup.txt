@@ -43,6 +43,7 @@ CREATE TABLE Tickets (
     Id INT PRIMARY KEY IDENTITY(1,1),
     Name VARCHAR(255) NOT NULL,
     Description TEXT,
+    CurrentPosition INT,
     StartTime TIME,
     EndTime TIME,
     Priority INT,
