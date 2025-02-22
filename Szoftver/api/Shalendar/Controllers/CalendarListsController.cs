@@ -48,6 +48,7 @@ namespace Shalendar.Controllers
 							ticket.Description,
 							ticket.StartTime,
 							ticket.EndTime,
+							ticket.CurrentPosition,
 							ticket.Priority
 						})
 						.ToList()

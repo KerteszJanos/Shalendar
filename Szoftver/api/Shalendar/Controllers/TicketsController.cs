@@ -47,6 +47,7 @@ namespace Shalendar.Controllers
 					t.Description,
 					t.Priority,
 					t.CalendarListId,
+					t.CurrentPosition,
 					Color = _context.CalendarLists
 								.Where(c => c.Id == t.CalendarListId)
 								.Select(c => c.Color)
@@ -83,6 +84,7 @@ namespace Shalendar.Controllers
 					t.CalendarListId,
 					t.StartTime,
 					t.EndTime,
+					t.CurrentPosition,
 					Color = _context.CalendarLists
 								.Where(c => c.Id == t.CalendarListId)
 								.Select(c => c.Color)
@@ -92,11 +94,9 @@ namespace Shalendar.Controllers
 
 			return Ok(tickets);
 		}
-
 		#endregion
 
 		#region Posts
-
 		[HttpPost]
 		public async Task<ActionResult<Ticket>> CreateTicket([FromBody] Ticket ticket)
 		{
@@ -110,11 +110,9 @@ namespace Shalendar.Controllers
 
 			return CreatedAtAction(nameof(CreateTicket), new { id = ticket.Id }, ticket);
 		}
-
 		#endregion
 
 		#region Deletes
-
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteTicket(int id)
 		{
@@ -129,7 +127,28 @@ namespace Shalendar.Controllers
 
 			return NoContent();
 		}
+		#endregion
 
+		#region Updates
+		[HttpPut("reorder")]
+		public async Task<IActionResult> ReorderTickets([FromBody] List<TicketOrderUpdate> orderUpdates)
+		{
+			if (orderUpdates == null || !orderUpdates.Any())
+			{
+				return BadRequest("Invalid order update data.");
+			}
+
+			foreach (var update in orderUpdates)
+			{
+				var ticket = await _context.Tickets.FindAsync(update.TicketId);
+				if (ticket != null)
+				{
+					ticket.CurrentPosition = update.NewPosition;
+				}
+			}
+			await _context.SaveChangesAsync();
+			return NoContent();
+		}
 		#endregion
 	}
 }
