@@ -110,6 +110,67 @@ namespace Shalendar.Controllers
 
 			return CreatedAtAction(nameof(CreateTicket), new { id = ticket.Id }, ticket);
 		}
+
+
+		[HttpPost("ScheduleTicket")]
+		public async Task<IActionResult> ScheduleTicket([FromBody] ScheduleTicketDto dto)
+		{
+			if (dto == null || dto.Ticket == null || dto.Ticket.Id <= 0)
+			{
+				return BadRequest("Invalid data.");
+			}
+
+			using (var transaction = await _context.Database.BeginTransactionAsync())
+			{
+				try
+				{
+					var dayRecord = await _context.Days
+						.FirstOrDefaultAsync(d => d.CalendarId == dto.CalendarId && d.Date.Date == dto.Date.Date);
+
+					if (dayRecord == null)
+					{
+						dayRecord = new Day
+						{
+							CalendarId = dto.CalendarId,
+							Date = dto.Date.Date
+						};
+						_context.Days.Add(dayRecord);
+						await _context.SaveChangesAsync();
+					}
+
+					var ticket = await _context.Tickets.FindAsync(dto.Ticket.Id);
+					if (ticket == null)
+					{
+						return NotFound("Ticket not found.");
+					}
+
+					ticket.ParentId = dayRecord.Id;
+
+					if (dto.Ticket.StartTime.HasValue && dto.Ticket.EndTime.HasValue)
+					{
+						ticket.CurrentParentType = "ScheduledList";
+					}
+					else
+					{
+						ticket.CurrentParentType = "TodoList";
+					}
+
+					ticket.StartTime = dto.Ticket.StartTime;
+					ticket.EndTime = dto.Ticket.EndTime;
+
+					await _context.SaveChangesAsync();
+					await transaction.CommitAsync();
+
+					return Ok(ticket);
+				}
+				catch (Exception ex)
+				{
+					await transaction.RollbackAsync();
+					return StatusCode(500, "An error occurred: " + ex.Message);
+				}
+			}
+		}
+
 		#endregion
 
 		#region Deletes
