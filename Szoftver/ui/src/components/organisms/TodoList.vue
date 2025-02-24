@@ -11,7 +11,7 @@
                     <p><strong>{{ element.name }}</strong></p>
                     <p v-if="element.description">{{ element.description }}</p>
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
-                    <button @click="deleteTicket(element.id)" class="delete-btn">Delete</button>
+                    <button @click="handleDelete(element.id)" class="delete-btn">Delete</button>
                 </div>
             </template>
         </draggable>
@@ -19,7 +19,6 @@
 </div>
 </template>
 
-  
 <script>
 import {
     ref,
@@ -32,6 +31,10 @@ import {
 } from "vue-router";
 import api from "@/utils/config/axios-config";
 import draggable from "vuedraggable";
+import {
+    updateTicketOrder
+} from "@/components/atoms/updateTicketOrder";
+import { deleteTicket } from "@/components/atoms/deleteTicket";
 
 export default {
     components: {
@@ -83,47 +86,16 @@ export default {
         };
 
         // Ticket törlése, majd újrasorrendeli a ticketeket
-        const deleteTicket = async (ticketId) => {
-            try {
-                await api.delete(`/api/tickets/${ticketId}`);
-                // After deletion, update the tickets array
-                tickets.value = tickets.value.filter(ticket => ticket.id !== ticketId);
 
-                // Only update positions and call reorder if the tickets array is not empty
-                if (tickets.value.length > 0) {
-                    // Recalculate positions: position = index + 1
-                    tickets.value.forEach((ticket, index) => {
-                        ticket.currentPosition = index + 1;
-                    });
-                    // Prepare orderUpdates array and update the backend
-                    const orderUpdates = tickets.value.map((ticket, index) => ({
-                        ticketId: ticket.id,
-                        newPosition: index + 1,
-                    }));
-                    await api.put('/api/Tickets/reorder', orderUpdates);
-                }
-            } catch (error) {
-                console.error("Error deleting ticket:", error);
-                errorMessage.value = "Failed to delete ticket.";
-            }
-        };
+        const handleDelete = async (ticketId) => {
+            await deleteTicket(ticketId, tickets.value, errorMessage);
+            await fetchTickets();
+        }
 
         // Drag and drop művelet befejezése után frissítjük a pozíciókat
         const onDragEnd = async () => {
-            // Újraszámoljuk a pozíciókat: pozíció = index + 1
-            const orderUpdates = tickets.value.map((ticket, index) => {
-                ticket.currentPosition = index + 1;
-                return {
-                    ticketId: ticket.id,
-                    newPosition: index + 1
-                };
-            });
-            try {
-                await api.put('/api/Tickets/reorder', orderUpdates);
-            } catch (error) {
-                console.error("Error updating ticket positions:", error);
-                errorMessage.value = "Failed to update ticket positions.";
-            }
+            await updateTicketOrder(tickets.value);
+            await fetchTickets();
         };
 
         watch(() => route.params.date, fetchTickets);
@@ -134,7 +106,7 @@ export default {
             loading,
             errorMessage,
             formattedDate,
-            deleteTicket,
+            handleDelete,
             fetchTickets,
             calendarId,
             onDragEnd,
@@ -143,7 +115,6 @@ export default {
 };
 </script>
 
-  
 <style scoped>
 .container {
     display: flex;

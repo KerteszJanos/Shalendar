@@ -35,7 +35,7 @@
                 {{ formatTime(ticket.startTime) }} - {{ formatTime(ticket.endTime) }}
               </p>
             </div>
-            <button class="delete-btn" @click="deleteTicket(ticket.id)">
+            <button class="delete-btn" @click="handleDelete(ticket.id)">
               Delete
             </button>
           </div>
@@ -49,6 +49,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import api from "@/utils/config/axios-config";
+import { deleteTicket } from "@/components/atoms/deleteTicket";
 
 export default {
   setup() {
@@ -139,15 +140,10 @@ export default {
     };
 
     // Delete a ticket by its id
-    const deleteTicket = async (ticketId) => {
-      try {
-        await api.delete(`/api/tickets/${ticketId}`);
-        tickets.value = tickets.value.filter((ticket) => ticket.id !== ticketId);
-      } catch (error) {
-        console.error("Error deleting ticket:", error);
-        errorMessage.value = "Failed to delete ticket.";
-      }
-    };
+    const handleDelete = async (ticketId) => {
+            await deleteTicket(ticketId, tickets.value, errorMessage);
+            await fetchTickets();
+        }
 
     // Compute CSS style for a ticket based on its startTime and endTime by combining the selected date and time
     const getTicketStyle = (ticket) => {
@@ -189,7 +185,7 @@ export default {
       tickets,
       loading,
       errorMessage,
-      deleteTicket,
+      handleDelete,
       currentTime,
       timeIndicatorStyle,
       isToday,

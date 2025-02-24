@@ -20,7 +20,7 @@
                             <p><strong>{{ element.name }}</strong></p>
                             <p v-if="element.description">{{ element.description }}</p>
                             <p v-if="element.priority">Priority: {{ element.priority }}</p>
-                            <button @click="deleteTicket(element.id, list)" class="delete-btn">
+                            <button @click="handleDelete(element.id, list)" class="delete-btn">
                                 Delete
                             </button>
                         </div>
@@ -73,6 +73,8 @@ import draggable from "vuedraggable";
 import {
     emitter
 } from "@/utils/eventBus";
+import { updateTicketOrder } from "@/components/atoms/updateTicketOrder";
+import { deleteTicket } from "@/components/atoms/deleteTicket";
 
 export default {
     components: {
@@ -194,46 +196,13 @@ export default {
             }
         };
 
-        const updateTicketOrder = async (list) => {
-            // Recalculate ticket positions starting from 1
-            const orderUpdates = list.tickets.map((ticket, index) => {
-                ticket.currentPosition = index + 1;
-                return {
-                    ticketId: ticket.id,
-                    newPosition: index + 1
-                };
-            });
-            try {
-                await api.put("/api/Tickets/reorder", orderUpdates);
-                // Reassign sorted array to maintain Vue reactivity
-                list.tickets = [...list.tickets].sort(
-                    (a, b) => Number(a.currentPosition) - Number(b.currentPosition)
-                );
-            } catch (error) {
-                console.error("Error updating ticket order:", error);
-                errorMessage.value = "Failed to update ticket positions.";
-            }
-        };
-
         // Drag and drop event: reordering tickets within a list
         const onTicketDragEnd = async (list) => {
             await updateTicketOrder(list);
         };
 
-        const deleteTicket = async (ticketId, list) => {
-            try {
-                await api.delete(`/api/tickets/${ticketId}`);
-
-                list.tickets = list.tickets.filter(ticket => ticket.id !== ticketId);
-                if (list.tickets.length > 0) {
-                    await updateTicketOrder(list);
-
-                }
-            } catch (error) {
-                console.error("Error deleting ticket:", error);
-                errorMessage.value = "Failed to delete ticket.";
-            }
-        };
+        const handleDelete = async (ticketId, list) => {
+            await deleteTicket(ticketId, list, errorMessage);}
 
         const formatDate = (dateString) => {
             if (!dateString) return "";
@@ -272,7 +241,7 @@ export default {
             addCalendarList,
             openTicketModal,
             addTicket,
-            deleteTicket,
+            handleDelete,
             formatDate,
             onTicketDragEnd,
             onTicketDragStart,
