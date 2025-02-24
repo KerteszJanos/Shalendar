@@ -115,7 +115,8 @@ namespace Shalendar.Controllers
 		[HttpPost("ScheduleTicket")]
 		public async Task<IActionResult> ScheduleTicket([FromBody] ScheduleTicketDto dto)
 		{
-			if (dto == null || dto.Ticket == null || dto.Ticket.Id <= 0)
+			// Validate input parameters
+			if (dto == null || dto.TicketId <= 0)
 			{
 				return BadRequest("Invalid data.");
 			}
@@ -124,6 +125,7 @@ namespace Shalendar.Controllers
 			{
 				try
 				{
+					// Retrieve or create day record based on CalendarId and Date
 					var dayRecord = await _context.Days
 						.FirstOrDefaultAsync(d => d.CalendarId == dto.CalendarId && d.Date.Date == dto.Date.Date);
 
@@ -138,15 +140,19 @@ namespace Shalendar.Controllers
 						await _context.SaveChangesAsync();
 					}
 
-					var ticket = await _context.Tickets.FindAsync(dto.Ticket.Id);
+					// Retrieve the ticket by its Id
+					var ticket = await _context.Tickets.FindAsync(dto.TicketId);
 					if (ticket == null)
 					{
 						return NotFound("Ticket not found.");
 					}
 
+					// Update ticket properties using values from the DTO
 					ticket.ParentId = dayRecord.Id;
+					ticket.StartTime = dto.StartTime;
+					ticket.EndTime = dto.EndTime;
 
-					if (dto.Ticket.StartTime.HasValue && dto.Ticket.EndTime.HasValue)
+					if (dto.StartTime.HasValue && dto.EndTime.HasValue)
 					{
 						ticket.CurrentParentType = "ScheduledList";
 					}
@@ -154,9 +160,6 @@ namespace Shalendar.Controllers
 					{
 						ticket.CurrentParentType = "TodoList";
 					}
-
-					ticket.StartTime = dto.Ticket.StartTime;
-					ticket.EndTime = dto.Ticket.EndTime;
 
 					await _context.SaveChangesAsync();
 					await transaction.CommitAsync();
@@ -170,6 +173,8 @@ namespace Shalendar.Controllers
 				}
 			}
 		}
+
+
 
 		#endregion
 

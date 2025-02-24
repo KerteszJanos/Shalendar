@@ -4,6 +4,8 @@
 	{
 		public int CalendarId { get; set; }
 		public DateTime Date { get; set; }
-		public Ticket Ticket { get; set; }
+		public int TicketId { get; set; }
+		public TimeSpan? StartTime { get; set; }
+		public TimeSpan? EndTime { get; set; }
 	}
 }
