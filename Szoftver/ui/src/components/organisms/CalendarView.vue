@@ -47,7 +47,9 @@ import {
 } from "vue-router";
 import api from "@/utils/config/axios-config";
 import Modal from "@/components/molecules/Modal.vue";
-import { emitter } from "@/utils/eventBus";
+import {
+    emitter
+} from "@/utils/eventBus";
 
 export default {
     components: {
@@ -191,7 +193,9 @@ export default {
 
                 try {
                     await api.post("/api/Tickets/ScheduleTicket", scheduleTicketPayload);
-                    emitter.emit("ticketScheduled", { ticketId: ticketData.id });
+                    emitter.emit("ticketScheduled", {
+                        ticketId: ticketData.id
+                    });
                 } catch (error) {
                     console.error("DEBUG: Right drop - error scheduling ticket:", error);
                 }
@@ -208,30 +212,41 @@ export default {
         };
 
         const confirmTimeModal = async () => {
-            // Validate that if both times are provided, startTime is less than endTime.
-            if (modalStartTime.value && modalEndTime.value && modalStartTime.value >= modalEndTime.value) {
+            // Ellenőrizzük, hogy mindkét időpont ki van-e töltve
+            if (!modalStartTime.value || !modalEndTime.value) {
+                modalErrorMessage.value = "Both start and end times must be provided.";
+                return;
+            }
+
+            // Ellenőrizzük, hogy a kezdési idő kisebb-e, mint a befejezési idő
+            if (modalStartTime.value >= modalEndTime.value) {
                 modalErrorMessage.value = "Start time must be less than end time.";
                 return;
             }
 
-            const startTime = modalStartTime.value ? modalStartTime.value : null;
-            const endTime = modalEndTime.value ? modalEndTime.value : null;
-
             const calendarId = localStorage.getItem("calendarId");
+            if (!calendarId) {
+                modalErrorMessage.value = "Calendar ID is missing.";
+                return;
+            }
+
             const scheduleTicketPayload = {
                 CalendarId: parseInt(calendarId),
                 Date: dropDate.value,
                 TicketId: dropTicketData.value.id,
-                StartTime: startTime,
-                EndTime: endTime
+                StartTime: modalStartTime.value,
+                EndTime: modalEndTime.value
             };
 
             try {
                 await api.post("/api/Tickets/ScheduleTicket", scheduleTicketPayload);
-                emitter.emit("ticketScheduled", { ticketId: dropTicketData.value.id });
+                emitter.emit("ticketScheduled", {
+                    ticketId: dropTicketData.value.id
+                });
             } catch (error) {
                 console.error("DEBUG: Left drop - error scheduling ticket:", error);
             }
+
             localStorage.removeItem("draggedTicket");
             closeTimeModal();
         };
@@ -253,6 +268,10 @@ export default {
         onUnmounted(() => {
             window.removeEventListener("dragstart", onGlobalDragStart);
             window.removeEventListener("dragend", onGlobalDragEnd);
+        });
+
+        window.addEventListener("dragend", () => {
+            isDraggingTicket.value = false;
         });
 
         return {

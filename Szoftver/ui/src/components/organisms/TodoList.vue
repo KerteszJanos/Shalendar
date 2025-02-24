@@ -12,6 +12,7 @@
                     <p v-if="element.description">{{ element.description }}</p>
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
                     <button @click="handleDelete(element.id)" class="delete-btn">Delete</button>
+                    <button @click="handleSendBack(element.id)" class="send-back-btn">Send Back</button>
                 </div>
             </template>
         </draggable>
@@ -34,7 +35,13 @@ import draggable from "vuedraggable";
 import {
     updateTicketOrder
 } from "@/components/atoms/updateTicketOrder";
-import { deleteTicket } from "@/components/atoms/deleteTicket";
+import {
+    deleteTicket
+} from "@/components/atoms/deleteTicket";
+import {
+    sendBackToCalendarList
+} from "@/components/atoms/SendBackToCalenderList";
+import { tryDeleteDay } from "@/components/atoms/TryDeleteDay";
 
 export default {
     components: {
@@ -90,7 +97,15 @@ export default {
         const handleDelete = async (ticketId) => {
             await deleteTicket(ticketId, tickets.value, errorMessage);
             await fetchTickets();
+            await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
         }
+
+        const handleSendBack = async (ticketId) => {
+            await sendBackToCalendarList(ticketId);
+            await updateTicketOrder(tickets.value);
+            await fetchTickets();
+            await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+        };
 
         // Drag and drop művelet befejezése után frissítjük a pozíciókat
         const onDragEnd = async () => {
@@ -110,6 +125,7 @@ export default {
             fetchTickets,
             calendarId,
             onDragEnd,
+            handleSendBack,
         };
     },
 };

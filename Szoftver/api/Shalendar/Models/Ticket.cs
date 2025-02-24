@@ -23,7 +23,7 @@
 
 		public int? Priority { get; set; }
 
-		public int? CalendarListId { get; set; }
+		public int CalendarListId { get; set; }
 
 		[StringLength(50)]
 		public string CurrentParentType { get; set; }

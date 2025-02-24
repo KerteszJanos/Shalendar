@@ -215,6 +215,33 @@ namespace Shalendar.Controllers
 			await _context.SaveChangesAsync();
 			return NoContent();
 		}
+
+		[HttpPut("move-to-calendar/{ticketId}")]
+		public async Task<IActionResult> MoveTicketToCalendar(int ticketId)
+		{
+			var ticket = await _context.Tickets.FindAsync(ticketId);
+			if (ticket == null)
+			{
+				return NotFound("Ticket not found.");
+			}
+
+			ticket.CurrentParentType = "CalendarList";
+			ticket.ParentId = ticket.CalendarListId;
+			ticket.StartTime = null;
+			ticket.EndTime = null;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+				return Ok(ticket);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, $"An error occurred: {ex.Message}");
+			}
+		}
+
+
 		#endregion
 	}
 }
