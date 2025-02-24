@@ -6,8 +6,8 @@
   </template>
   
   <script>
-  import CalendarView from "@/components/CalendarView.vue";
-  import CalendarLists from "@/components/CalendarLists.vue";
+  import CalendarView from "@/components/organisms/CalendarView.vue";
+  import CalendarLists from "@/components/organisms/CalendarLists.vue";
   
   export default {
     components: {

@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import DayPanel from "@/components/ScheduledPanel.vue";
-import TodoList from "@/components/TodoList.vue";
+import DayPanel from "@/components/organisms/ScheduledPanel.vue";
+import TodoList from "@/components/organisms/TodoList.vue";
 
 export default {
   components: {

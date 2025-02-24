@@ -68,7 +68,7 @@ import {
     onMounted
 } from "vue";
 import api from "@/utils/config/axios-config";
-import Modal from "@/components/Modal.vue";
+import Modal from "@/components/molecules/Modal.vue";
 import draggable from "vuedraggable";
 import {
     emitter

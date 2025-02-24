@@ -46,7 +46,7 @@ import {
     useRouter
 } from "vue-router";
 import api from "@/utils/config/axios-config";
-import Modal from "@/components/Modal.vue";
+import Modal from "@/components/molecules/Modal.vue";
 import { emitter } from "@/utils/eventBus";
 
 export default {

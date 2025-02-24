@@ -3,7 +3,7 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Dashboard from '../views/Dashboard.vue';
 import Profile from '../views/Profile.vue';
-import CalendarView from '../components/CalendarView.vue';
+import CalendarView from '../components/organisms/CalendarView.vue';
 import DayView from '../views/DayView.vue';
 import { jwtDecode } from "jwt-decode";
 
