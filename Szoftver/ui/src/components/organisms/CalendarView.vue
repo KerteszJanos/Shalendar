@@ -18,7 +18,19 @@
             <div v-for="day in calendarDays" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth }" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
                 <!-- Separator line, visible during dragging -->
                 <div v-if="isDraggingTicket" class="drop-divider"></div>
-                {{ day.number }}
+                <div class="day-number">{{ day.number }}</div>
+                <div class="ticket-lists-container">
+                    <div class="ticket-list">
+                        <div v-for="ticket in day.scheduleTickets" :key="ticket.name" class="ticket" :style="{ backgroundColor: ticket.color }">
+                            {{ ticket.name }}
+                        </div>
+                    </div>
+                    <div class="ticket-list">
+                        <div v-for="ticket in day.todoTickets" :key="ticket.name" class="ticket" :style="{ backgroundColor: ticket.color }">
+                            {{ ticket.name }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -40,7 +52,8 @@ import {
     ref,
     computed,
     onMounted,
-    onUnmounted
+    onUnmounted,
+    watchEffect
 } from "vue";
 import {
     useRouter
@@ -72,6 +85,7 @@ export default {
         const modalErrorMessage = ref("");
         const dropTicketData = ref(null);
         const dropDate = ref("");
+        const calendarDays = ref([]);
 
         const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -82,7 +96,41 @@ export default {
             });
         });
 
-        const calendarDays = computed(() => {
+        const fetchTicketsForDate = async (date) => {
+            try {
+                const response = await api.get(`/api/Tickets/AllDailyTickets/${date}/${calendar.value.id}`);
+                const tickets = response.data.map(ticket => ({
+                    name: ticket.name,
+                    startTime: ticket.startTime, // Hozzáadjuk a StartTime mezőt
+                    currentPosition: ticket.currentPosition, // Hozzáadjuk a CurrentPosition mezőt
+                    color: ticket.color
+                }));
+
+                // Két külön lista létrehozása és rendezése
+                const todoTickets = tickets
+                    .filter(ticket => ticket.startTime === null)
+                    .sort((a, b) => a.currentPosition - b.currentPosition); // CurrentPosition szerint növekvő sorrendben
+
+                const scheduleTickets = tickets
+                    .filter(ticket => ticket.startTime !== null)
+                    .sort((a, b) => a.startTime.localeCompare(b.startTime)); // StartTime szerint növekvő sorrendben
+
+                return {
+                    todoTickets,
+                    scheduleTickets
+                };
+            } catch (error) {
+                console.error("Error fetching tickets:", error);
+                return {
+                    todoTickets: [],
+                    scheduleTickets: []
+                };
+            }
+        };
+
+        const fetchCalendarDays = async () => {
+            if (!calendar.value.id) return;
+
             const year = currentDate.value.getFullYear();
             const month = currentDate.value.getMonth();
             const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -93,38 +141,60 @@ export default {
             let endOffset = (7 - ((startOffset + lastDateOfMonth) % 7)) % 7;
 
             const prevMonthLastDate = new Date(year, month, 0).getDate();
+
+            // Előző hónap napjai
             for (let i = startOffset - 1; i >= 0; i--) {
+                let date = new Date(year, month - 1, prevMonthLastDate - i).toISOString().split("T")[0];
+                let {
+                    todoTickets,
+                    scheduleTickets
+                } = await fetchTicketsForDate(date);
+
                 days.push({
                     number: prevMonthLastDate - i,
-                    date: new Date(year, month - 1, prevMonthLastDate - i)
-                        .toISOString()
-                        .split("T")[0],
+                    date: date,
                     isCurrentMonth: false,
+                    todoTickets: todoTickets,
+                    scheduleTickets: scheduleTickets
                 });
             }
 
+            // Aktuális hónap napjai
             for (let i = 1; i <= lastDateOfMonth; i++) {
+                let date = new Date(year, month, i).toISOString().split("T")[0];
+                let {
+                    todoTickets,
+                    scheduleTickets
+                } = await fetchTicketsForDate(date);
+
                 days.push({
                     number: i,
-                    date: new Date(year, month, i + 1)
-                        .toISOString()
-                        .split("T")[0],
+                    date: date,
                     isCurrentMonth: true,
+                    todoTickets: todoTickets,
+                    scheduleTickets: scheduleTickets
                 });
             }
 
+            // Következő hónap napjai
             for (let i = 1; i <= endOffset; i++) {
+                let date = new Date(year, month + 1, i).toISOString().split("T")[0];
+                let {
+                    todoTickets,
+                    scheduleTickets
+                } = await fetchTicketsForDate(date);
+
                 days.push({
                     number: i,
-                    date: new Date(year, month + 1, i)
-                        .toISOString()
-                        .split("T")[0],
+                    date: date,
                     isCurrentMonth: false,
+                    todoTickets: todoTickets,
+                    scheduleTickets: scheduleTickets
                 });
             }
 
-            return days;
-        });
+            calendarDays.value = days;
+        };
 
         const goToDay = (date) => {
             router.push(`/day/${date}`);
@@ -175,6 +245,8 @@ export default {
             const x = event.clientX - rect.left; // X coordinate within the cell
             const side = x < rect.width / 2 ? "left" : "right";
 
+            const calendarId = localStorage.getItem("calendarId");
+
             if (side === "left") {
                 // Left drop: open modal to input times.
                 dropTicketData.value = ticketData;
@@ -182,7 +254,6 @@ export default {
                 showTimeModal.value = true;
             } else {
                 // Right drop: normal processing via API call without time details.
-                const calendarId = localStorage.getItem("calendarId");
                 const scheduleTicketPayload = {
                     CalendarId: parseInt(calendarId),
                     Date: date,
@@ -193,13 +264,36 @@ export default {
 
                 try {
                     await api.post("/api/Tickets/ScheduleTicket", scheduleTicketPayload);
+
+                    // Emitter esemény kibocsátása, ha más komponenseknek is kell
                     emitter.emit("ticketScheduled", {
                         ticketId: ticketData.id
                     });
+
+                    // **Frissítsük az adott nap ticketjeit az API-ból**
+                    await updateDayTickets(date);
                 } catch (error) {
                     console.error("DEBUG: Right drop - error scheduling ticket:", error);
                 }
                 localStorage.removeItem("draggedTicket");
+            }
+        };
+
+        const updateDayTickets = async (date) => {
+            try {
+                const {
+                    todoTickets,
+                    scheduleTickets
+                } = await fetchTicketsForDate(date);
+
+                // Keresd meg az adott napot a calendarDays tömbben, és frissítsd az értékeket
+                const dayIndex = calendarDays.value.findIndex(day => day.date === date);
+                if (dayIndex !== -1) {
+                    calendarDays.value[dayIndex].todoTickets = todoTickets;
+                    calendarDays.value[dayIndex].scheduleTickets = scheduleTickets;
+                }
+            } catch (error) {
+                console.error("Error updating day tickets:", error);
             }
         };
 
@@ -243,6 +337,9 @@ export default {
                 emitter.emit("ticketScheduled", {
                     ticketId: dropTicketData.value.id
                 });
+
+                // **Frissítsük az adott nap ticketjeit az API-ból**
+                await updateDayTickets(dropDate.value);
             } catch (error) {
                 console.error("DEBUG: Left drop - error scheduling ticket:", error);
             }
@@ -259,8 +356,15 @@ export default {
             isDraggingTicket.value = false;
         };
 
+        watchEffect(() => {
+            if (calendar.value.id) {
+                fetchCalendarDays();
+            }
+        });
+
         onMounted(() => {
             fetchCalendar();
+            fetchCalendarDays()
             window.addEventListener("dragstart", onGlobalDragStart);
             window.addEventListener("dragend", onGlobalDragEnd);
         });
@@ -297,6 +401,53 @@ export default {
 </script>
 
 <style scoped>
+/* A két ticket lista konténere */
+.ticket-lists-container {
+    display: flex;
+    justify-content: space-between; /* Egyenletes elrendezés */
+    align-items: stretch;
+    width: 100%;
+    gap: 5px; /* Kis térköz a két lista között */
+}
+
+/* Egyéni ticket lista beállítások */
+.ticket-list {
+    display: flex;
+    flex-direction: column; /* Ticketek egymás alatt */
+    align-items: center; /* Középre igazítás vízszintesen */
+    justify-content: flex-start; /* Ticketek felülre igazítása */
+    padding: 5px;
+    max-height: 60px;
+    min-height: 60px; /* Megakadályozza az összenyomódást */
+    overflow-y: auto; /* Csak függőleges görgetés engedélyezett */
+    overflow-x: hidden; /* Vízszintes görgetés tiltása */
+    width: 50%; /* Mindkét lista egyforma szélességet kap */
+}
+
+/* A scheduleTickets (bal oldali) lista */
+.ticket-list:first-child {
+    border-right: 2px solid #ccc; /* Szeparáló vonal a két lista között */
+}
+
+/* A todoTickets (jobb oldali) lista */
+.ticket-list:last-child {
+    align-items: flex-end; /* Ticketek jobbra zárása */
+}
+
+/* Egyéni ticket beállítások */
+.ticket {
+    width: 90%; /* A ticketek szélessége igazodik a listához */
+    font-size: 10px; /* Kisebb, de olvasható betűméret */
+    padding: 2px 4px; /* Kis padding a jobb elrendezésért */
+    border-radius: 4px; /* Lekerekített sarkak */
+    text-align: center; /* Szöveg középre igazítása */
+    white-space: nowrap; /* Ne törjön több sorba */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Ha túl hosszú a szöveg, "..."-al rövidül */
+    flex-shrink: 0; /* Ne nyomódjon össze, ha sok elem van */
+}
+
+
 .calendar-layout {
     display: flex;
     justify-content: flex-start;
@@ -352,8 +503,14 @@ export default {
     overflow: hidden;
     transition: all 0.2s ease-in-out;
     text-align: center;
-    line-height: 80px;
     font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    /* A tartalom vertikálisan rendezi az elemeket */
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
+    /* Hogy ne legyen teljesen szétnyomva */
 }
 
 .calendar-day:hover:not(.header) {

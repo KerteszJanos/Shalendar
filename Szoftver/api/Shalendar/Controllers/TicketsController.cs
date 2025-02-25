@@ -33,6 +33,14 @@ namespace Shalendar.Controllers
 
 			DateTime selectedDate = parsedDate.Date;
 
+			bool dayExists = await _context.Days
+				.AnyAsync(d => d.CalendarId == calendarId && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0);
+
+			if (!dayExists)
+			{
+				return Ok(new List<object>());
+			}
+
 			var tickets = await _context.Tickets
 				.Where(t => t.CurrentParentType == "TodoList"
 							&& t.StartTime == null
@@ -68,6 +76,14 @@ namespace Shalendar.Controllers
 
 			DateTime selectedDate = parsedDate.Date;
 
+			bool dayExists = await _context.Days
+				.AnyAsync(d => d.CalendarId == calendarId && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0);
+
+			if (!dayExists)
+			{
+				return Ok(new List<object>());
+			}
+
 			var tickets = await _context.Tickets
 				.Where(t => t.CurrentParentType == "ScheduledList"
 							&& t.StartTime != null
@@ -84,6 +100,45 @@ namespace Shalendar.Controllers
 					t.CalendarListId,
 					t.StartTime,
 					t.EndTime,
+					t.CurrentPosition,
+					Color = _context.CalendarLists
+								.Where(c => c.Id == t.CalendarListId)
+								.Select(c => c.Color)
+								.FirstOrDefault()
+				})
+				.ToListAsync();
+
+			return Ok(tickets);
+		}
+
+		[HttpGet("AllDailyTickets/{date}/{calendarId}")]
+		public async Task<ActionResult<IEnumerable<object>>> GetAllDailyTicketsByDateAndCalendar(string date, int calendarId)
+		{
+			if (!DateTime.TryParse(date, out DateTime parsedDate))
+			{
+				return BadRequest("Invalid date format.");
+			}
+
+			DateTime selectedDate = parsedDate.Date;
+
+			bool dayExists = await _context.Days
+				.AnyAsync(d => d.CalendarId == calendarId && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0);
+
+			if (!dayExists)
+			{
+				return Ok(new List<object>());
+			}
+
+			var tickets = await _context.Tickets
+				.Where(t => _context.Days
+								.Any(d => d.Id == t.ParentId
+										  && d.CalendarId == calendarId
+										  && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0))
+				.Select(t => new
+				{
+					t.Id,
+					t.Name,
+					t.StartTime,
 					t.CurrentPosition,
 					Color = _context.CalendarLists
 								.Where(c => c.Id == t.CalendarListId)
