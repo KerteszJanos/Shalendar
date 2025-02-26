@@ -16,7 +16,6 @@
                 {{ day }}
             </div>
             <div v-for="day in calendarDays" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth }" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
-                <!-- Separator line, visible during dragging -->
                 <div v-if="isDraggingTicket" class="drop-divider"></div>
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
@@ -34,7 +33,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal for entering ticket time (only shown for left drop) -->
+    
     <Modal :show="showTimeModal" title="Ticket Time" confirmText="Mentés" @close="closeTimeModal" @confirm="confirmTimeModal">
         <div class="modal-content">
             <label for="start-time">Kezdés:</label>
@@ -78,7 +77,6 @@ export default {
         const router = useRouter();
         const isDraggingTicket = ref(false);
 
-        // Modal state and temporary storage for drop adatai
         const showTimeModal = ref(false);
         const modalStartTime = ref("");
         const modalEndTime = ref("");
@@ -101,19 +99,18 @@ export default {
                 const response = await api.get(`/api/Tickets/AllDailyTickets/${date}/${calendar.value.id}`);
                 const tickets = response.data.map(ticket => ({
                     name: ticket.name,
-                    startTime: ticket.startTime, // Hozzáadjuk a StartTime mezőt
-                    currentPosition: ticket.currentPosition, // Hozzáadjuk a CurrentPosition mezőt
+                    startTime: ticket.startTime,
+                    currentPosition: ticket.currentPosition,
                     color: ticket.color
                 }));
 
-                // Két külön lista létrehozása és rendezése
                 const todoTickets = tickets
                     .filter(ticket => ticket.startTime === null)
-                    .sort((a, b) => a.currentPosition - b.currentPosition); // CurrentPosition szerint növekvő sorrendben
+                    .sort((a, b) => a.currentPosition - b.currentPosition);
 
                 const scheduleTickets = tickets
                     .filter(ticket => ticket.startTime !== null)
-                    .sort((a, b) => a.startTime.localeCompare(b.startTime)); // StartTime szerint növekvő sorrendben
+                    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
                 return {
                     todoTickets,
@@ -142,7 +139,6 @@ export default {
 
             const prevMonthLastDate = new Date(year, month, 0).getDate();
 
-            // Előző hónap napjai
             for (let i = startOffset - 1; i >= 0; i--) {
                 let date = new Date(year, month - 1, prevMonthLastDate - i).toISOString().split("T")[0];
                 let {
@@ -159,7 +155,6 @@ export default {
                 });
             }
 
-            // Aktuális hónap napjai
             for (let i = 1; i <= lastDateOfMonth; i++) {
                 let date = new Date(year, month, i).toISOString().split("T")[0];
                 let {
@@ -176,7 +171,6 @@ export default {
                 });
             }
 
-            // Következő hónap napjai
             for (let i = 1; i <= endOffset; i++) {
                 let date = new Date(year, month + 1, i).toISOString().split("T")[0];
                 let {
@@ -232,28 +226,23 @@ export default {
             );
         };
 
-        // Single drop event for the whole day cell.
-        // Determines left/right drop based on drop event coordinates.
         const onTicketDrop = async (event, date) => {
-            // Retrieve ticket data from localStorage
             const ticketDataStr = localStorage.getItem("draggedTicket");
             if (!ticketDataStr) return;
             const ticketData = JSON.parse(ticketDataStr);
 
             const dropZone = event.currentTarget;
             const rect = dropZone.getBoundingClientRect();
-            const x = event.clientX - rect.left; // X coordinate within the cell
+            const x = event.clientX - rect.left;
             const side = x < rect.width / 2 ? "left" : "right";
 
             const calendarId = localStorage.getItem("calendarId");
 
             if (side === "left") {
-                // Left drop: open modal to input times.
                 dropTicketData.value = ticketData;
                 dropDate.value = date;
                 showTimeModal.value = true;
             } else {
-                // Right drop: normal processing via API call without time details.
                 const scheduleTicketPayload = {
                     CalendarId: parseInt(calendarId),
                     Date: date,
@@ -265,12 +254,10 @@ export default {
                 try {
                     await api.post("/api/Tickets/ScheduleTicket", scheduleTicketPayload);
 
-                    // Emitter esemény kibocsátása, ha más komponenseknek is kell
                     emitter.emit("ticketScheduled", {
                         ticketId: ticketData.id
                     });
 
-                    // **Frissítsük az adott nap ticketjeit az API-ból**
                     await updateDayTickets(date);
                 } catch (error) {
                     console.error("DEBUG: Right drop - error scheduling ticket:", error);
@@ -286,7 +273,6 @@ export default {
                     scheduleTickets
                 } = await fetchTicketsForDate(date);
 
-                // Keresd meg az adott napot a calendarDays tömbben, és frissítsd az értékeket
                 const dayIndex = calendarDays.value.findIndex(day => day.date === date);
                 if (dayIndex !== -1) {
                     calendarDays.value[dayIndex].todoTickets = todoTickets;
@@ -306,13 +292,11 @@ export default {
         };
 
         const confirmTimeModal = async () => {
-            // Ellenőrizzük, hogy mindkét időpont ki van-e töltve
             if (!modalStartTime.value || !modalEndTime.value) {
                 modalErrorMessage.value = "Both start and end times must be provided.";
                 return;
             }
 
-            // Ellenőrizzük, hogy a kezdési idő kisebb-e, mint a befejezési idő
             if (modalStartTime.value >= modalEndTime.value) {
                 modalErrorMessage.value = "Start time must be less than end time.";
                 return;
@@ -338,7 +322,6 @@ export default {
                     ticketId: dropTicketData.value.id
                 });
 
-                // **Frissítsük az adott nap ticketjeit az API-ból**
                 await updateDayTickets(dropDate.value);
             } catch (error) {
                 console.error("DEBUG: Left drop - error scheduling ticket:", error);
@@ -401,52 +384,46 @@ export default {
 </script>
 
 <style scoped>
-/* A két ticket lista konténere */
 .ticket-lists-container {
     display: flex;
-    justify-content: space-between; /* Egyenletes elrendezés */
+    justify-content: space-between;
     align-items: stretch;
     width: 100%;
-    gap: 5px; /* Kis térköz a két lista között */
+    gap: 5px;
 }
 
-/* Egyéni ticket lista beállítások */
 .ticket-list {
     display: flex;
-    flex-direction: column; /* Ticketek egymás alatt */
-    align-items: center; /* Középre igazítás vízszintesen */
-    justify-content: flex-start; /* Ticketek felülre igazítása */
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     padding: 5px;
     max-height: 60px;
-    min-height: 60px; /* Megakadályozza az összenyomódást */
-    overflow-y: auto; /* Csak függőleges görgetés engedélyezett */
-    overflow-x: hidden; /* Vízszintes görgetés tiltása */
-    width: 50%; /* Mindkét lista egyforma szélességet kap */
+    min-height: 60px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 50%;
 }
 
-/* A scheduleTickets (bal oldali) lista */
 .ticket-list:first-child {
-    border-right: 2px solid #ccc; /* Szeparáló vonal a két lista között */
+    border-right: 2px solid #ccc;
 }
 
-/* A todoTickets (jobb oldali) lista */
 .ticket-list:last-child {
-    align-items: flex-end; /* Ticketek jobbra zárása */
+    align-items: flex-end;
 }
 
-/* Egyéni ticket beállítások */
 .ticket {
-    width: 90%; /* A ticketek szélessége igazodik a listához */
-    font-size: 10px; /* Kisebb, de olvasható betűméret */
-    padding: 2px 4px; /* Kis padding a jobb elrendezésért */
-    border-radius: 4px; /* Lekerekített sarkak */
-    text-align: center; /* Szöveg középre igazítása */
-    white-space: nowrap; /* Ne törjön több sorba */
+    width: 90%;
+    font-size: 10px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    text-align: center;
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Ha túl hosszú a szöveg, "..."-al rövidül */
-    flex-shrink: 0; /* Ne nyomódjon össze, ha sok elem van */
+    text-overflow: ellipsis;
+    flex-shrink: 0;
 }
-
 
 .calendar-layout {
     display: flex;
@@ -506,11 +483,9 @@ export default {
     font-weight: bold;
     display: flex;
     flex-direction: column;
-    /* A tartalom vertikálisan rendezi az elemeket */
     align-items: center;
     justify-content: space-between;
     padding: 5px;
-    /* Hogy ne legyen teljesen szétnyomva */
 }
 
 .calendar-day:hover:not(.header) {
@@ -537,7 +512,6 @@ export default {
     text-align: center;
 }
 
-/* Drop divider styling – only visible during dragging */
 .drop-divider {
     position: absolute;
     top: 0;
@@ -549,5 +523,4 @@ export default {
     pointer-events: none;
 }
 
-/* Modal stílusok a Modal komponensben vannak definiálva */
 </style>

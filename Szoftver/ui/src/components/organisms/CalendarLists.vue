@@ -2,7 +2,7 @@
 <div class="lists-container">
     <div class="header">
         <h2>To be scheduled</h2>
-        <button class="add-button" @click="openModal">+</button>
+        <button class="add-button" @click="openAddNewCalendarListModal">+</button>
     </div>
 
     <p v-if="loading">Loading...</p>
@@ -11,8 +11,6 @@
     <div class="lists-content" v-if="calendarLists.length > 0">
         <div v-for="list in calendarLists" :key="list.id" class="list-item" :style="{ backgroundColor: list.color || '#CCCCCC' }">
             <p class="list-title">{{ list.name }}</p>
-
-            <!-- Display tickets using draggable component -->
             <div class="ticket-list" v-if="list.tickets && list.tickets.length > 0">
                 <draggable v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
                     <template #item="{ element }">
@@ -28,15 +26,12 @@
                 </draggable>
             </div>
             <p v-else>No tickets.</p>
-
-            <!-- Button to add ticket -->
-            <button class="add-ticket-button" @click="openTicketModal(list.id)">+</button>
+            <button class="add-ticket-button" @click="openAddNewTicketModal(list.id)">+</button>
         </div>
     </div>
     <p v-else>No scheduled lists.</p>
 
-    <!-- Modal for adding new list -->
-    <Modal :show="showListModal" title="Add New List" confirmText="Add" @close="showListModal = false" @confirm="addCalendarList">
+    <Modal :show="showAddNewCalendarListModal" title="Add New List" confirmText="Add" @close="showAddNewCalendarListModal = false" @confirm="addNewCalendarList">
         <div class="modal-content">
             <input v-model="newList.name" placeholder="List name" />
             <div class="color-picker">
@@ -46,8 +41,7 @@
         </div>
     </Modal>
 
-    <!-- Modal for adding new ticket -->
-    <Modal :show="showTicketModal" title="Add New Ticket" confirmText="Add" @close="showTicketModal = false" @confirm="addTicket">
+    <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="addNewTicket">
         <div class="modal-content">
             <label for="ticket-name">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
@@ -73,8 +67,12 @@ import draggable from "vuedraggable";
 import {
     emitter
 } from "@/utils/eventBus";
-import { updateTicketOrder } from "@/components/atoms/updateTicketOrder";
-import { deleteTicket } from "@/components/atoms/deleteTicket";
+import {
+    updateTicketOrder
+} from "@/components/atoms/updateTicketOrder";
+import {
+    deleteTicket
+} from "@/components/atoms/deleteTicket";
 
 export default {
     components: {
@@ -85,9 +83,9 @@ export default {
         const calendarLists = ref([]);
         const loading = ref(true);
         const errorMessage = ref("");
-        const showTicketModal = ref(false);
+        const showAddNewTicketModal = ref(false);
         const selectedListId = ref(null);
-        const showListModal = ref(false);
+        const showAddNewCalendarListModal = ref(false);
         const newList = ref({
             name: "",
             color: "#CCCCCC",
@@ -99,39 +97,6 @@ export default {
             endTime: "",
             priority: null,
         });
-
-        const openModal = () => {
-            newList.value = {
-                name: "",
-                color: "#CCCCCC"
-            };
-            showListModal.value = true;
-        };
-
-        const addCalendarList = async () => {
-            try {
-                const user = JSON.parse(localStorage.getItem("user"));
-                if (!user || !user.defaultCalendarId) {
-                    throw new Error("No default calendar set.");
-                }
-                const calendarId = user.defaultCalendarId;
-                const response = await api.post("/api/CalendarLists", {
-                    name: newList.value.name,
-                    color: newList.value.color,
-                    calendarId,
-                });
-                // New list with an empty tickets array
-                const newListData = {
-                    ...response.data,
-                    tickets: []
-                };
-                calendarLists.value.push(newListData);
-                showListModal.value = false;
-            } catch (error) {
-                console.error("Error adding list:", error);
-                errorMessage.value = "Failed to add list.";
-            }
-        };
 
         const fetchCalendarLists = async () => {
             try {
@@ -155,7 +120,39 @@ export default {
             }
         };
 
-        const openTicketModal = (listId) => {
+        const openAddNewCalendarListModal = () => {
+            newList.value = {
+                name: "",
+                color: "#CCCCCC"
+            };
+            showAddNewCalendarListModal.value = true;
+        };
+
+        const addNewCalendarList = async () => {
+            try {
+                const user = JSON.parse(localStorage.getItem("user"));
+                if (!user || !user.defaultCalendarId) {
+                    throw new Error("No default calendar set.");
+                }
+                const calendarId = user.defaultCalendarId;
+                const response = await api.post("/api/CalendarLists", {
+                    name: newList.value.name,
+                    color: newList.value.color,
+                    calendarId,
+                });
+                const newListData = {
+                    ...response.data,
+                    tickets: []
+                };
+                calendarLists.value.push(newListData);
+                showAddNewCalendarListModal.value = false;
+            } catch (error) {
+                console.error("Error adding list:", error);
+                errorMessage.value = "Failed to add list.";
+            }
+        };
+
+        const openAddNewTicketModal = (listId) => {
             selectedListId.value = listId;
             newTicket.value = {
                 name: "",
@@ -164,10 +161,10 @@ export default {
                 endTime: "",
                 priority: null,
             };
-            showTicketModal.value = true;
+            showAddNewTicketModal.value = true;
         };
 
-        const addTicket = async () => {
+        const addNewTicket = async () => {
             if (!newTicket.value.name.trim()) {
                 errorMessage.value = "Ticket name is required.";
                 return;
@@ -189,29 +186,28 @@ export default {
                     list.tickets.push(response.data);
                     await updateTicketOrder(list);
                 }
-                showTicketModal.value = false;
+                showAddNewTicketModal.value = false;
             } catch (error) {
                 console.error("Error adding ticket:", error);
                 errorMessage.value = error.response?.data || "Failed to add ticket.";
             }
         };
 
-        // Drag and drop event: reordering tickets within a list
+        const onTicketDragStart = (ticket) => {
+            localStorage.setItem("draggedTicket", JSON.stringify(ticket));
+        };
+
         const onTicketDragEnd = async (list) => {
             await updateTicketOrder(list);
         };
 
         const handleDelete = async (ticketId, list) => {
-            await deleteTicket(ticketId, list, errorMessage);}
+            await deleteTicket(ticketId, list, errorMessage);
+        }
 
         const formatDate = (dateString) => {
             if (!dateString) return "";
             return new Date(dateString).toLocaleDateString();
-        };
-
-        // Handle ticket drag start event: store ticket data for drop
-        const onTicketDragStart = (ticket) => {
-            localStorage.setItem("draggedTicket", JSON.stringify(ticket));
         };
 
         onMounted(async () => {
@@ -233,14 +229,14 @@ export default {
             calendarLists,
             loading,
             errorMessage,
-            showListModal,
+            showAddNewCalendarListModal,
             newList,
-            showTicketModal,
+            showAddNewTicketModal,
             newTicket,
-            openModal,
-            addCalendarList,
-            openTicketModal,
-            addTicket,
+            openAddNewCalendarListModal,
+            addNewCalendarList,
+            openAddNewTicketModal,
+            addNewTicket,
             handleDelete,
             formatDate,
             onTicketDragEnd,
