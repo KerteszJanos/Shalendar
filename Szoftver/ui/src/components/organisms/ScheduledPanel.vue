@@ -15,7 +15,7 @@
                     <span class="time-label">{{ currentTime }}</span>
                 </div>
                 <!-- Render scheduled tickets positioned based on their start time -->
-                <div v-for="ticket in tickets" :key="ticket.id" class="ticket" :style="getTicketStyle(ticket)">
+                <div v-for="ticket in tickets" :key="ticket.id" class="ticket" :style="getTicketStyle(ticket)" @click="openEditTicketModalFromDayView(ticket)">
                     <div class="ticket-content">
                         <strong>{{ ticket.name }}</strong>
                         <p v-if="ticket.description">{{ ticket.description }}</p>
@@ -33,6 +33,7 @@
             </div>
         </div>
     </div>
+    <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" /> <!-- Gpt generated -->
 </div>
 </template>
 
@@ -55,14 +56,27 @@ import {
     sendBackToCalendarList
 } from "@/components/atoms/SendBackToCalenderList";
 import { tryDeleteDay } from "@/components/atoms/TryDeleteDay";
+import { emitter } from "@/utils/eventBus";
+import EditTicketModalFromDayView from "@/components/molecules/EditTicketModalFromDayView.vue";
 
 export default {
+    components: {
+        EditTicketModalFromDayView // Gpt generated
+    },
     setup() {
         const route = useRoute();
         const tickets = ref([]);
         const loading = ref(true);
         const errorMessage = ref("");
         const calendarId = ref(null);
+        const showEditTicketModalFromDayView = ref(false); // Gpt generated
+        const editedTicket = ref({ id: null, name: "", description: "", priority: null }); // Gpt generated
+
+        const openEditTicketModalFromDayView = (ticket) => { // Gpt generated
+            editedTicket.value = { ...ticket };
+            showEditTicketModalFromDayView.value = true;
+        };
+
 
         // Format the selected date for display
         const formattedDate = computed(() => {
@@ -113,10 +127,12 @@ export default {
                 }, 60000);
             }
             fetchTickets();
+            emitter.on("ticketTimeSet", fetchTickets);
         });
 
         onUnmounted(() => {
             if (intervalId) clearInterval(intervalId);
+            emitter.off("ticketTimeSet", fetchTickets);
         });
 
         // Fetch scheduled tickets from the API endpoint using the selected date and calendarId
@@ -208,12 +224,20 @@ export default {
             getTicketStyle,
             formatTime,
             handleSendBack,
+            showEditTicketModalFromDayView, // Gpt generated
+            editedTicket, // Gpt generated
+            openEditTicketModalFromDayView, // Gpt generated
+            fetchTickets,
         };
     },
 };
 </script>
 
 <style scoped>
+.ticket {
+    cursor: pointer; /* Gpt generated */
+}
+
 .container {
     display: flex;
     height: 100vh;

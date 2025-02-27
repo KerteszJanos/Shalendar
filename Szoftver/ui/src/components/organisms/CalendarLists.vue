@@ -13,7 +13,7 @@
             <p class="list-title">{{ list.name }}</p>
             <button class="edit-list-button" @click="openEditListModal(list)">Edit</button>
             <div class="ticket-list" v-if="list.tickets && list.tickets.length > 0">
-                <draggable v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
+                <draggable class="ticket" v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
                     <template #item="{ element }">
                         <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)">
                             <p><strong>{{ element.name }}</strong></p>
@@ -373,6 +373,10 @@ export default {
 </script>
 
 <style scoped>
+.ticket {
+    cursor: pointer; /* Gpt generated */
+}
+
 .lists-container {
     width: 30vw;
     height: 90vh;

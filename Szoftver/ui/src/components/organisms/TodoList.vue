@@ -7,7 +7,7 @@
         <!-- Using Vue 3 slot syntax for draggable -->
         <draggable v-model="tickets" @end="onDragEnd" group="tickets" itemKey="id">
             <template #item="{ element }">
-                <div class="task" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)"> <!-- Gpt generated -->
+                <div class="ticket" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)"> <!-- Gpt generated -->
                     <p><strong>{{ element.name }}</strong></p>
                     <p v-if="element.description">{{ element.description }}</p>
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
@@ -26,6 +26,7 @@
 import {
     ref,
     onMounted,
+    onUnmounted,
     watch,
     computed
 } from "vue";
@@ -45,6 +46,7 @@ import {
 } from "@/components/atoms/SendBackToCalenderList";
 import { tryDeleteDay } from "@/components/atoms/TryDeleteDay";
 import EditTicketModalFromDayView from "@/components/molecules/EditTicketModalFromDayView.vue";
+import { emitter } from "@/utils/eventBus";
 
 export default {
     components: {
@@ -124,8 +126,16 @@ export default {
             await fetchTickets();
         };
 
+        onMounted(() => {
+            fetchTickets();
+            emitter.on("ticketTimeUnSet", fetchTickets);
+        });
+
+        onUnmounted(() => {
+            emitter.off("ticketTimeUnSet", fetchTickets);
+        });
+
         watch(() => route.params.date, fetchTickets);
-        onMounted(fetchTickets);
 
         return {
             tickets,
@@ -140,6 +150,7 @@ export default {
             showEditTicketModalFromDayView, // Gpt generated
             editedTicket, // Gpt generated
             openEditTicketModalFromDayView, // Gpt generated
+            fetchTickets,
         };
     },
 };
@@ -166,15 +177,16 @@ export default {
     text-align: center;
     margin-bottom: 10px;
     padding: 10px;
-    background: linear-gradient(to right, #9dc1b7, #b1dbd3);
+    background: linear-gradient(to right, #9dc1b7, #717877);
     border-radius: 8px;
 }
 
-.task {
+.ticket {
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease-in-out;
+    cursor: pointer;
 }
 
 .delete-btn {
