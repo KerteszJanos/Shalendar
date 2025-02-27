@@ -348,11 +348,13 @@ export default {
         onMounted(() => {
             fetchCalendar();
             fetchCalendarDays()
+            emitter.on("calendarUpdated", fetchCalendarDays);
             window.addEventListener("dragstart", onGlobalDragStart);
             window.addEventListener("dragend", onGlobalDragEnd);
         });
 
         onUnmounted(() => {
+            emitter.off("calendarUpdated", fetchCalendarDays);
             window.removeEventListener("dragstart", onGlobalDragStart);
             window.removeEventListener("dragend", onGlobalDragEnd);
         });

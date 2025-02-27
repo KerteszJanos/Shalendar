@@ -55,11 +55,6 @@ namespace Shalendar.Controllers
 				})
 				.ToListAsync();
 
-			if (lists == null || lists.Count == 0)
-			{
-				return NotFound("No list found for this calendar");
-			}
-
 			return Ok(lists);
 		}
 
@@ -134,17 +129,43 @@ namespace Shalendar.Controllers
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteCalendarList(int id)
 		{
-			var list = await _context.CalendarLists.FindAsync(id);
-			if (list == null)
+			using var transaction = await _context.Database.BeginTransactionAsync(); // Tranzakció biztosításához
+
+			try
 			{
-				return NotFound("Calendar list not found.");
+				var list = await _context.CalendarLists.FindAsync(id);
+				if (list == null)
+				{
+					return NotFound("Calendar list not found.");
+				}
+
+				// 1. Lekérjük és töröljük az összes kapcsolódó ticketet (ha van) (Gpt generated)
+				var relatedTickets = await _context.Tickets
+					.Where(t => t.CalendarListId == id)
+					.ToListAsync();
+
+				if (relatedTickets.Any())
+				{
+					_context.Tickets.RemoveRange(relatedTickets);
+					await _context.SaveChangesAsync(); // Itt mentjük el először a ticket törléseket
+				}
+
+				// 2. Töröljük a listát, ha már nincs rá hivatkozás
+				_context.CalendarLists.Remove(list);
+				await _context.SaveChangesAsync();
+
+				await transaction.CommitAsync(); // Tranzakció lezárása
+				return NoContent();
 			}
-
-			_context.CalendarLists.Remove(list);
-			await _context.SaveChangesAsync();
-
-			return NoContent();
+			catch (DbUpdateException ex)
+			{
+				await transaction.RollbackAsync(); // Ha hiba van, visszavonjuk a módosításokat
+				return StatusCode(500, $"Error deleting list and related tickets: {ex.Message}");
+			}
 		}
+
+
+
 
 		#endregion
 

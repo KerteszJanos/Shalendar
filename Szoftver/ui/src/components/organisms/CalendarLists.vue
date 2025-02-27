@@ -30,7 +30,7 @@
             <button class="add-ticket-button" @click="openAddNewTicketModal(list.id)">+</button>
         </div>
     </div>
-    <p v-else>No scheduled lists.</p>
+    <p v-else>Add a list to start scheduling your stuff :)</p>
 
     <Modal :show="showAddNewCalendarListModal" title="Add New List" confirmText="Add" @close="showAddNewCalendarListModal = false" @confirm="addNewCalendarList">
         <div class="modal-content">
@@ -62,7 +62,7 @@
                 <input v-model="editedList.color" type="color" />
                 <div class="color-preview" :style="{ backgroundColor: editedList.color }"></div>
             </div>
-            <button class="delete-list-button" @click="deleteCalendarList">Delete List</button>
+            <button class="delete-list-button" @click="confirmDeleteCalendarList">Delete List</button> <!-- Gpt generated -->
         </div>
     </Modal>
 </div>
@@ -116,6 +116,12 @@ export default {
             color: "#CCCCCC"
         }); // Gpt generated
 
+        const confirmDeleteCalendarList = () => { // Gpt generated
+            if (confirm("Are you sure you want to delete this list? All associated tickets will also be deleted.")) {
+                deleteCalendarList();
+            }
+        };
+
         const openEditListModal = (list) => { // Gpt generated
             editedList.value = {
                 ...list
@@ -123,22 +129,26 @@ export default {
             showEditListModal.value = true;
         };
 
-        const updateCalendarList = async () => { // Gpt generated
+        const updateCalendarList = async () => {
             try {
+                const existingList = calendarLists.value.find(l => l.id === editedList.value.id);
+                const colorChanged = existingList && existingList.color !== editedList.value.color;
+
                 await api.put(`/api/CalendarLists/${editedList.value.id}`, {
                     id: editedList.value.id,
                     name: editedList.value.name,
                     color: editedList.value.color,
                 });
-                const list = calendarLists.value.find(l => l.id === editedList.value.id);
-                if (list) {
-                    list.name = editedList.value.name;
-                    list.color = editedList.value.color;
+
+                await fetchCalendarLists(); // Gpt generated - Frissítés módosítás után
+
+                if (colorChanged) {
+                    await emitter.emit("calendarUpdated"); // Gpt generated - Naptár frissítése, ha a szín változott
                 }
+
                 showEditListModal.value = false;
             } catch (error) {
                 console.error("Error updating list:", error);
-                errorMessage.value = "Failed to update list.";
             }
         };
 
@@ -147,6 +157,7 @@ export default {
                 await api.delete(`/api/CalendarLists/${editedList.value.id}`);
                 calendarLists.value = calendarLists.value.filter(l => l.id !== editedList.value.id);
                 showEditListModal.value = false;
+                await emitter.emit("calendarUpdated");
             } catch (error) {
                 console.error("Error deleting list:", error);
                 errorMessage.value = "Failed to delete list.";
@@ -169,7 +180,6 @@ export default {
                 }));
             } catch (error) {
                 console.error("Error loading calendar lists:", error);
-                errorMessage.value = error.response?.data || "Failed to load lists.";
             } finally {
                 loading.value = false;
             }
@@ -300,6 +310,7 @@ export default {
             editedList,
             openEditListModal,
             updateCalendarList,
+            confirmDeleteCalendarList,
             deleteCalendarList,
         };
     },
