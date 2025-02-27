@@ -8,11 +8,17 @@ export const addNewTicket = async (ticketData, selectedListId, calendarLists, sh
     }
     try {
         const response = await api.post("/api/Tickets", ticketData);
+
+        if (!Array.isArray(calendarLists.value) || calendarLists.value.length === 0) {
+            showAddNewTicketModal.value = false;
+            return;
+        }
         const list = calendarLists.value.find(list => list.id === selectedListId.value);
         if (list) {
             list.tickets.push(response.data);
             await updateTicketOrder(list);
         }
+
         showAddNewTicketModal.value = false;
     } catch (error) {
         console.error("Error adding ticket:", error);

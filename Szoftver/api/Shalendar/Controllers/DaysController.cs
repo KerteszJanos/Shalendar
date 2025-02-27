@@ -35,17 +35,43 @@ namespace Shalendar.Controllers
 			var day = await _context.Days
 				.FirstOrDefaultAsync(d => d.CalendarId == calendarId && d.Date.Date == parsedDate.Date);
 
-			if (day == null)
-			{
-				return NotFound("Day not found.");
-			}
-
-			return Ok(new { id = day.Id });
+			// Ha nincs találat, akkor 200 OK választ küldünk, de az ID null lesz
+			return Ok(new { id = day?.Id });
 		}
+
 		#endregion
 
 		#region Posts
-		// POST methods will go here in the future
+		[HttpPost("create")]
+		public async Task<IActionResult> CreateDay([FromBody] CreateDayRequest request)
+		{
+			if (!DateTime.TryParse(request.Date, out DateTime parsedDate))
+			{
+				return BadRequest("Invalid date format.");
+			}
+
+			// Ellenőrizzük, hogy létezik-e már a nap
+			var existingDay = await _context.Days
+				.FirstOrDefaultAsync(d => d.CalendarId == request.CalendarId && d.Date.Date == parsedDate.Date);
+
+			if (existingDay != null)
+			{
+				return Ok(new { id = existingDay.Id });
+			}
+
+			// Ha nem létezik, létrehozunk egy új napot
+			var newDay = new Day
+			{
+				CalendarId = request.CalendarId,
+				Date = parsedDate
+			};
+
+			_context.Days.Add(newDay);
+			await _context.SaveChangesAsync();
+
+			return Ok(new { id = newDay.Id });
+		}
+
 		#endregion
 
 		#region Deletes
