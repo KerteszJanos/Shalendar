@@ -11,6 +11,7 @@
     <div class="lists-content" v-if="calendarLists.length > 0">
         <div v-for="list in calendarLists" :key="list.id" class="list-item" :style="{ backgroundColor: list.color || '#CCCCCC' }">
             <p class="list-title">{{ list.name }}</p>
+            <button class="edit-list-button" @click="openEditListModal(list)">Edit</button> <!-- Gpt generated -->
             <div class="ticket-list" v-if="list.tickets && list.tickets.length > 0">
                 <draggable v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
                     <template #item="{ element }">
@@ -51,6 +52,17 @@
 
             <label for="ticket-priority">Priority (optional)</label>
             <input id="ticket-priority" v-model="newTicket.priority" type="number" min="1" max="10" placeholder="Enter priority (1-10)" />
+        </div>
+    </Modal>
+
+    <Modal :show="showEditListModal" title="Edit List" confirmText="Save" @close="showEditListModal = false" @confirm="updateCalendarList">
+        <div class="modal-content">
+            <input v-model="editedList.name" placeholder="List name" />
+            <div class="color-picker">
+                <input v-model="editedList.color" type="color" />
+                <div class="color-preview" :style="{ backgroundColor: editedList.color }"></div>
+            </div>
+            <button class="delete-list-button" @click="deleteCalendarList">Delete List</button>
         </div>
     </Modal>
 </div>
@@ -97,6 +109,49 @@ export default {
             endTime: "",
             priority: null,
         });
+        const showEditListModal = ref(false); // Gpt generated
+        const editedList = ref({
+            id: null,
+            name: "",
+            color: "#CCCCCC"
+        }); // Gpt generated
+
+        const openEditListModal = (list) => { // Gpt generated
+            editedList.value = {
+                ...list
+            };
+            showEditListModal.value = true;
+        };
+
+        const updateCalendarList = async () => { // Gpt generated
+            try {
+                await api.put(`/api/CalendarLists/${editedList.value.id}`, {
+                    id: editedList.value.id,
+                    name: editedList.value.name,
+                    color: editedList.value.color,
+                });
+                const list = calendarLists.value.find(l => l.id === editedList.value.id);
+                if (list) {
+                    list.name = editedList.value.name;
+                    list.color = editedList.value.color;
+                }
+                showEditListModal.value = false;
+            } catch (error) {
+                console.error("Error updating list:", error);
+                errorMessage.value = "Failed to update list.";
+            }
+        };
+
+        const deleteCalendarList = async () => { // Gpt generated
+            try {
+                await api.delete(`/api/CalendarLists/${editedList.value.id}`);
+                calendarLists.value = calendarLists.value.filter(l => l.id !== editedList.value.id);
+                showEditListModal.value = false;
+            } catch (error) {
+                console.error("Error deleting list:", error);
+                errorMessage.value = "Failed to delete list.";
+            }
+        };
 
         const fetchCalendarLists = async () => {
             try {
@@ -241,6 +296,11 @@ export default {
             formatDate,
             onTicketDragEnd,
             onTicketDragStart,
+            showEditListModal,
+            editedList,
+            openEditListModal,
+            updateCalendarList,
+            deleteCalendarList,
         };
     },
 };
@@ -342,5 +402,27 @@ label {
 
 .error {
     color: red;
+}
+
+.edit-list-button {
+    /* Gpt generated */
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 5px;
+    margin-top: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-list-button {
+    /* Gpt generated */
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 5px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
 }
 </style>

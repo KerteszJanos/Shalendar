@@ -94,7 +94,35 @@ namespace Shalendar.Controllers
 
 		#region Puts
 
+		// PUT: api/CalendarLists/{id}
+		[HttpPut("{id}")]
+		public async Task<IActionResult> UpdateCalendarList(int id, [FromBody] CalendarList updatedList)
+		{
+			if (id != updatedList.Id)
+			{
+				return BadRequest("ID mismatch.");
+			}
 
+			var existingList = await _context.CalendarLists.FindAsync(id);
+			if (existingList == null)
+			{
+				return NotFound("Calendar list not found.");
+			}
+
+			existingList.Name = updatedList.Name;
+			existingList.Color = updatedList.Color;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				return StatusCode(500, "Error updating the list.");
+			}
+
+			return NoContent();
+		}
 
 		#endregion
 
@@ -102,7 +130,21 @@ namespace Shalendar.Controllers
 
 		#region Deletes
 
+		// DELETE: api/CalendarLists/{id}
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteCalendarList(int id)
+		{
+			var list = await _context.CalendarLists.FindAsync(id);
+			if (list == null)
+			{
+				return NotFound("Calendar list not found.");
+			}
 
+			_context.CalendarLists.Remove(list);
+			await _context.SaveChangesAsync();
+
+			return NoContent();
+		}
 
 		#endregion
 
