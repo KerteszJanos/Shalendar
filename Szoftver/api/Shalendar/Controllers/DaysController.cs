@@ -24,7 +24,24 @@ namespace Shalendar.Controllers
 		}
 
 		#region Gets
-		// GET methods will go here in the future
+		[HttpGet("{date}/{calendarId}")]
+		public async Task<IActionResult> GetDayId(string date, int calendarId)
+		{
+			if (!DateTime.TryParse(date, out DateTime parsedDate))
+			{
+				return BadRequest("Invalid date format.");
+			}
+
+			var day = await _context.Days
+				.FirstOrDefaultAsync(d => d.CalendarId == calendarId && d.Date.Date == parsedDate.Date);
+
+			if (day == null)
+			{
+				return NotFound("Day not found.");
+			}
+
+			return Ok(new { id = day.Id });
+		}
 		#endregion
 
 		#region Posts

@@ -42,7 +42,7 @@
         </div>
     </Modal>
 
-    <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="addNewTicket">
+    <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="handleAddNewTicket">
         <div class="modal-content">
             <label for="ticket-name">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
@@ -99,6 +99,8 @@ import {
 import {
     deleteTicket
 } from "@/components/atoms/deleteTicket";
+import { addNewTicket } from "@/components/atoms/AddNewTicket";
+
 
 export default {
     components: {
@@ -280,13 +282,8 @@ export default {
             showAddNewTicketModal.value = true;
         };
 
-        const addNewTicket = async () => {
-            if (!newTicket.value.name.trim()) {
-                errorMessage.value = "Ticket name is required.";
-                return;
-            }
-            try {
-                const ticketData = {
+        const handleAddNewTicket = async () => {
+            addNewTicket({
                     name: newTicket.value.name,
                     description: newTicket.value.description || null,
                     startTime: null,
@@ -295,18 +292,12 @@ export default {
                     calendarListId: selectedListId.value,
                     currentParentType: "CalendarList",
                     parentId: selectedListId.value,
-                };
-                const response = await api.post("/api/Tickets", ticketData);
-                const list = calendarLists.value.find(list => list.id === selectedListId.value);
-                if (list) {
-                    list.tickets.push(response.data);
-                    await updateTicketOrder(list);
-                }
-                showAddNewTicketModal.value = false;
-            } catch (error) {
-                console.error("Error adding ticket:", error);
-                errorMessage.value = error.response.data || "Failed to add ticket.";
-            }
+                },
+                selectedListId,
+                calendarLists,
+                showAddNewTicketModal,
+                errorMessage
+            );
         };
 
         const onTicketDragStart = (ticket) => {
@@ -352,7 +343,7 @@ export default {
             openAddNewCalendarListModal,
             addNewCalendarList,
             openAddNewTicketModal,
-            addNewTicket,
+            handleAddNewTicket,
             handleDelete,
             formatDate,
             onTicketDragEnd,
@@ -374,7 +365,8 @@ export default {
 
 <style scoped>
 .ticket {
-    cursor: pointer; /* Gpt generated */
+    cursor: pointer;
+    /* Gpt generated */
 }
 
 .lists-container {
