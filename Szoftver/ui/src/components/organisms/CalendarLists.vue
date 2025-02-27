@@ -11,11 +11,11 @@
     <div class="lists-content" v-if="calendarLists.length > 0">
         <div v-for="list in calendarLists" :key="list.id" class="list-item" :style="{ backgroundColor: list.color || '#CCCCCC' }">
             <p class="list-title">{{ list.name }}</p>
-            <button class="edit-list-button" @click="openEditListModal(list)">Edit</button> <!-- Gpt generated -->
+            <button class="edit-list-button" @click="openEditListModal(list)">Edit</button>
             <div class="ticket-list" v-if="list.tickets && list.tickets.length > 0">
                 <draggable v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
                     <template #item="{ element }">
-                        <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)">
+                        <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)">
                             <p><strong>{{ element.name }}</strong></p>
                             <p v-if="element.description">{{ element.description }}</p>
                             <p v-if="element.priority">Priority: {{ element.priority }}</p>
@@ -55,14 +55,27 @@
         </div>
     </Modal>
 
-    <Modal :show="showEditListModal" title="Edit List" confirmText="Save" @close="showEditListModal = false" @confirm="updateCalendarList">
+    <Modal :show="showEditCalendarListModal" title="Edit List" confirmText="Save" @close="showEditCalendarListModal = false" @confirm="updateCalendarList">
         <div class="modal-content">
             <input v-model="editedList.name" placeholder="List name" />
             <div class="color-picker">
                 <input v-model="editedList.color" type="color" />
                 <div class="color-preview" :style="{ backgroundColor: editedList.color }"></div>
             </div>
-            <button class="delete-list-button" @click="confirmDeleteCalendarList">Delete List</button> <!-- Gpt generated -->
+            <button class="delete-list-button" @click="confirmDeleteCalendarList">Delete List</button>
+        </div>
+    </Modal>
+
+    <Modal :show="showEditTicketModal" title="Edit Ticket" confirmText="Save" @close="showEditTicketModal = false" @confirm="updateTicket">
+        <div class="modal-content">
+            <label for="edit-ticket-name">Ticket Name</label>
+            <input id="edit-ticket-name" v-model="editedTicket.name" placeholder="Enter ticket name" required />
+
+            <label for="edit-ticket-description">Description</label>
+            <textarea id="edit-ticket-description" v-model="editedTicket.description" placeholder="Enter description"></textarea>
+
+            <label for="edit-ticket-priority">Priority</label>
+            <input id="edit-ticket-priority" v-model="editedTicket.priority" type="number" min="1" max="10" placeholder="Enter priority (1-10)" />
         </div>
     </Modal>
 </div>
@@ -98,6 +111,13 @@ export default {
         const showAddNewTicketModal = ref(false);
         const selectedListId = ref(null);
         const showAddNewCalendarListModal = ref(false);
+        const showEditTicketModal = ref(false);
+        const editedTicket = ref({
+            id: null,
+            name: "",
+            description: "",
+            priority: null
+        });
         const newList = ref({
             name: "",
             color: "#CCCCCC",
@@ -109,24 +129,52 @@ export default {
             endTime: "",
             priority: null,
         });
-        const showEditListModal = ref(false); // Gpt generated
+        const showEditCalendarListModal = ref(false);
         const editedList = ref({
             id: null,
             name: "",
             color: "#CCCCCC"
-        }); // Gpt generated
+        });
 
-        const confirmDeleteCalendarList = () => { // Gpt generated
+        const openEditTicketModal = (ticket) => {
+            editedTicket.value = {
+                ...ticket
+            };
+            showEditTicketModal.value = true;
+        };
+
+        const updateTicket = async () => {
+            if (!editedTicket.value.id) {
+                console.error("Ticket ID is missing.");
+                return;
+            }
+
+            try {
+                await api.put(`/api/Tickets/${editedTicket.value.id}`, {
+                    id: editedTicket.value.id,
+                    name: editedTicket.value.name,
+                    description: editedTicket.value.description,
+                    priority: editedTicket.value.priority,
+                });
+
+                await fetchCalendarLists();
+                showEditTicketModal.value = false;
+            } catch (error) {
+                console.error("Error updating ticket:", error);
+            }
+        };
+
+        const confirmDeleteCalendarList = () => {
             if (confirm("Are you sure you want to delete this list? All associated tickets will also be deleted.")) {
                 deleteCalendarList();
             }
         };
 
-        const openEditListModal = (list) => { // Gpt generated
+        const openEditListModal = (list) => {
             editedList.value = {
                 ...list
             };
-            showEditListModal.value = true;
+            showEditCalendarListModal.value = true;
         };
 
         const updateCalendarList = async () => {
@@ -140,23 +188,23 @@ export default {
                     color: editedList.value.color,
                 });
 
-                await fetchCalendarLists(); // Gpt generated - Frissítés módosítás után
+                await fetchCalendarLists();
 
                 if (colorChanged) {
-                    await emitter.emit("calendarUpdated"); // Gpt generated - Naptár frissítése, ha a szín változott
+                    await emitter.emit("calendarUpdated");
                 }
 
-                showEditListModal.value = false;
+                showEditCalendarListModal.value = false;
             } catch (error) {
                 console.error("Error updating list:", error);
             }
         };
 
-        const deleteCalendarList = async () => { // Gpt generated
+        const deleteCalendarList = async () => {
             try {
                 await api.delete(`/api/CalendarLists/${editedList.value.id}`);
                 calendarLists.value = calendarLists.value.filter(l => l.id !== editedList.value.id);
-                showEditListModal.value = false;
+                showEditCalendarListModal.value = false;
                 await emitter.emit("calendarUpdated");
             } catch (error) {
                 console.error("Error deleting list:", error);
@@ -254,7 +302,7 @@ export default {
                 showAddNewTicketModal.value = false;
             } catch (error) {
                 console.error("Error adding ticket:", error);
-                errorMessage.value = error.response?.data || "Failed to add ticket.";
+                errorMessage.value = error.response.data || "Failed to add ticket.";
             }
         };
 
@@ -306,12 +354,16 @@ export default {
             formatDate,
             onTicketDragEnd,
             onTicketDragStart,
-            showEditListModal,
+            showEditCalendarListModal,
             editedList,
             openEditListModal,
             updateCalendarList,
             confirmDeleteCalendarList,
             deleteCalendarList,
+            showEditTicketModal,
+            editedTicket,
+            openEditTicketModal,
+            updateTicket,
         };
     },
 };
@@ -416,7 +468,6 @@ label {
 }
 
 .edit-list-button {
-    /* Gpt generated */
     background: #ff9800;
     color: white;
     border: none;
@@ -427,7 +478,6 @@ label {
 }
 
 .delete-list-button {
-    /* Gpt generated */
     background: #f44336;
     color: white;
     border: none;

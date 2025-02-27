@@ -296,7 +296,36 @@ namespace Shalendar.Controllers
 			}
 		}
 
+		// PUT: api/Tickets/{id}
+		[HttpPut("{id}")]
+		public async Task<IActionResult> UpdateTicket(int id, [FromBody] UpdateTicketDto updatedTicketDto)
+		{
+			if (id != updatedTicketDto.Id)
+			{
+				return BadRequest("Ticket ID mismatch.");
+			}
 
+			var ticket = await _context.Tickets.FindAsync(id);
+			if (ticket == null)
+			{
+				return NotFound("Ticket not found.");
+			}
+
+			// Csak azokat a mezőket módosítjuk, amelyeket a DTO tartalmaz
+			ticket.Name = updatedTicketDto.Name;
+			ticket.Description = updatedTicketDto.Description;
+			ticket.Priority = updatedTicketDto.Priority;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+				return Ok(ticket);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, $"An error occurred while updating the ticket: {ex.Message}");
+			}
+		}
 		#endregion
 	}
 }
