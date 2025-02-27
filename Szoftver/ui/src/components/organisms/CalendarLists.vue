@@ -68,6 +68,7 @@
 
     <Modal :show="showEditTicketModal" title="Edit Ticket" confirmText="Save" @close="showEditTicketModal = false" @confirm="updateTicket">
         <div class="modal-content">
+            <!-- Gpt generated -->
             <label for="edit-ticket-name">Ticket Name</label>
             <input id="edit-ticket-name" v-model="editedTicket.name" placeholder="Enter ticket name" required />
 
@@ -136,14 +137,14 @@ export default {
             color: "#CCCCCC"
         });
 
-        const openEditTicketModal = (ticket) => {
+        const openEditTicketModal = (ticket) => { // Gpt generated
             editedTicket.value = {
                 ...ticket
             };
             showEditTicketModal.value = true;
         };
 
-        const updateTicket = async () => {
+        const updateTicket = async () => { // Gpt generated
             if (!editedTicket.value.id) {
                 console.error("Ticket ID is missing.");
                 return;
@@ -151,13 +152,15 @@ export default {
 
             try {
                 await api.put(`/api/Tickets/${editedTicket.value.id}`, {
-                    id: editedTicket.value.id,
+                    id: editedTicket.value.id, // Az ID mindig kell
                     name: editedTicket.value.name,
                     description: editedTicket.value.description,
                     priority: editedTicket.value.priority,
+                    startTime: null, // Gpt generated
+                    endTime: null, // Gpt generated
                 });
 
-                await fetchCalendarLists();
+                await fetchCalendarLists(); // Frissítés a módosítás után
                 showEditTicketModal.value = false;
             } catch (error) {
                 console.error("Error updating ticket:", error);

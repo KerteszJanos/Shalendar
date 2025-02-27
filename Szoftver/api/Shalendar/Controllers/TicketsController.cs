@@ -311,10 +311,18 @@ namespace Shalendar.Controllers
 				return NotFound("Ticket not found.");
 			}
 
-			// Csak azokat a mezőket módosítjuk, amelyeket a DTO tartalmaz
+			// Mezők frissítése az új adatokkal
 			ticket.Name = updatedTicketDto.Name;
 			ticket.Description = updatedTicketDto.Description;
 			ticket.Priority = updatedTicketDto.Priority;
+			ticket.StartTime = updatedTicketDto.StartTime;
+			ticket.EndTime = updatedTicketDto.EndTime;
+
+			// Ha StartTime vagy EndTime nem null és a ParentType nem "ScheduleList", akkor módosítjuk
+			if ((ticket.StartTime.HasValue) && ticket.CurrentParentType != "ScheduledList")
+			{
+				ticket.CurrentParentType = "ScheduledList"; // Gpt generated
+			}
 
 			try
 			{
@@ -326,6 +334,7 @@ namespace Shalendar.Controllers
 				return StatusCode(500, $"An error occurred while updating the ticket: {ex.Message}");
 			}
 		}
+
 		#endregion
 	}
 }

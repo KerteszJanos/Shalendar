@@ -7,7 +7,7 @@
         <!-- Using Vue 3 slot syntax for draggable -->
         <draggable v-model="tickets" @end="onDragEnd" group="tickets" itemKey="id">
             <template #item="{ element }">
-                <div class="task" :style="{ backgroundColor: element.backgroundColor }">
+                <div class="task" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)"> <!-- Gpt generated -->
                     <p><strong>{{ element.name }}</strong></p>
                     <p v-if="element.description">{{ element.description }}</p>
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
@@ -17,6 +17,8 @@
             </template>
         </draggable>
     </div>
+
+    <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" /> <!-- Gpt generated -->
 </div>
 </template>
 
@@ -42,10 +44,12 @@ import {
     sendBackToCalendarList
 } from "@/components/atoms/SendBackToCalenderList";
 import { tryDeleteDay } from "@/components/atoms/TryDeleteDay";
+import EditTicketModalFromDayView from "@/components/molecules/EditTicketModalFromDayView.vue";
 
 export default {
     components: {
         draggable,
+        EditTicketModalFromDayView
     },
     setup() {
         const route = useRoute();
@@ -53,6 +57,13 @@ export default {
         const loading = ref(true);
         const errorMessage = ref("");
         const calendarId = ref(null);
+        const showEditTicketModalFromDayView = ref(false); // Gpt generated
+        const editedTicket = ref({ id: null, name: "", description: "", priority: null }); // Gpt generated
+
+        const openEditTicketModalFromDayView = (ticket) => { // Gpt generated
+            editedTicket.value = { ...ticket };
+            showEditTicketModalFromDayView.value = true;
+        };
 
         // Formázza a kiválasztott dátumot
         const formattedDate = computed(() => {
@@ -126,6 +137,9 @@ export default {
             calendarId,
             onDragEnd,
             handleSendBack,
+            showEditTicketModalFromDayView, // Gpt generated
+            editedTicket, // Gpt generated
+            openEditTicketModalFromDayView, // Gpt generated
         };
     },
 };
