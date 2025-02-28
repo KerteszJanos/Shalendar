@@ -81,7 +81,7 @@ export default {
         // Format the selected date for display
         const formattedDate = computed(() => {
             const date = new Date(route.params.date);
-            date.setDate(date.getDate() + 1); // Hozzáadunk egy napot
+            date.setDate(date.getDate()); // Hozzáadunk egy napot
             return date.toLocaleDateString("hu-HU", {
                 year: "numeric",
                 month: "long",

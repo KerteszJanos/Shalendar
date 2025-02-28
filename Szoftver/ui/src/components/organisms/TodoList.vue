@@ -82,7 +82,7 @@ export default {
         // Formázza a kiválasztott dátumot
         const formattedDate = computed(() => {
             const date = new Date(route.params.date);
-            date.setDate(date.getDate() + 1); // Hozzáadunk egy napot
+            date.setDate(date.getDate()); // Hozzáadunk egy napot
             return date.toLocaleDateString("hu-HU", {
                 year: "numeric",
                 month: "long",

@@ -33,7 +33,7 @@
             </div>
         </div>
     </div>
-    
+
     <Modal :show="showTimeModal" title="Ticket Time" confirmText="Mentés" @close="closeTimeModal" @confirm="confirmTimeModal">
         <div class="modal-content">
             <label for="start-time">Kezdés:</label>
@@ -139,8 +139,13 @@ export default {
 
             const prevMonthLastDate = new Date(year, month, 0).getDate();
 
+            const formatDate = (dateObj) => {
+                return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+            };
+
             for (let i = startOffset - 1; i >= 0; i--) {
-                let date = new Date(year, month - 1, prevMonthLastDate - i).toISOString().split("T")[0];
+                let dateObj = new Date(year, month - 1, prevMonthLastDate - i);
+                let date = formatDate(dateObj);
                 let {
                     todoTickets,
                     scheduleTickets
@@ -156,7 +161,8 @@ export default {
             }
 
             for (let i = 1; i <= lastDateOfMonth; i++) {
-                let date = new Date(year, month, i).toISOString().split("T")[0];
+                let dateObj = new Date(year, month, i);
+                let date = formatDate(dateObj);
                 let {
                     todoTickets,
                     scheduleTickets
@@ -172,7 +178,8 @@ export default {
             }
 
             for (let i = 1; i <= endOffset; i++) {
-                let date = new Date(year, month + 1, i).toISOString().split("T")[0];
+                let dateObj = new Date(year, month + 1, i);
+                let date = formatDate(dateObj);
                 let {
                     todoTickets,
                     scheduleTickets
@@ -524,5 +531,4 @@ export default {
     z-index: 1;
     pointer-events: none;
 }
-
 </style>
