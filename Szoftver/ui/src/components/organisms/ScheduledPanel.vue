@@ -128,11 +128,13 @@ export default {
             }
             fetchTickets();
             emitter.on("ticketTimeSet", fetchTickets);
+            emitter.on("newTicketCreatedWithTime", fetchTickets);
         });
 
         onUnmounted(() => {
             if (intervalId) clearInterval(intervalId);
             emitter.off("ticketTimeSet", fetchTickets);
+            emitter.off("newTicketCreatedWithTime", fetchTickets);
         });
 
         // Fetch scheduled tickets from the API endpoint using the selected date and calendarId

@@ -129,10 +129,12 @@ export default {
         onMounted(() => {
             fetchTickets();
             emitter.on("ticketTimeUnSet", fetchTickets);
+            emitter.on("newTicketCreatedWithoutTime", fetchTickets);
         });
 
         onUnmounted(() => {
             emitter.off("ticketTimeUnSet", fetchTickets);
+            emitter.off("newTicketCreatedWithoutTime", fetchTickets);
         });
 
         watch(() => route.params.date, fetchTickets);

@@ -34,7 +34,8 @@
 <script>
 import {
     ref,
-    computed
+    onMounted, // GPT generated
+    onUnmounted // GPT generated
 } from "vue";
 import {
     useRoute
@@ -46,6 +47,9 @@ import {
     addNewTicket
 } from "@/components/atoms/AddNewTicket";
 import api from "@/utils/config/axios-config";
+import {
+    emitter
+} from "@/utils/eventBus"; // GPT generated
 
 export default {
     components: {
@@ -107,12 +111,10 @@ export default {
                 return;
             }
 
-            // Ha currentDayId null, akkor létrehozunk egy új napot
             if (!currentDayId.value) {
                 currentDayId.value = await createDay(route.params.date, calendarId.value);
             }
 
-            // Most már biztos van egy dayId-nk
             await addNewTicket({
                     name: newTicket.value.name,
                     description: newTicket.value.description || null,
@@ -130,7 +132,38 @@ export default {
             );
 
             showAddNewTicketModal.value = false;
+
+            // Emit the correct event based on the presence of startTime - GPT generated
+            if (newTicket.value.startTime) {
+                emitter.emit("newTicketCreatedWithTime"); // GPT generated - Ticket has a startTime
+            } else {
+                emitter.emit("newTicketCreatedWithoutTime"); // GPT generated - Ticket has no startTime
+            }
+
+            // Reset newTicket values to default after adding the ticket - GPT generated
+            newTicket.value = {
+                name: "",
+                description: "",
+                priority: null,
+                startTime: "",
+                endTime: "",
+                calendarListId: null,
+            };
         };
+
+        // Function to reset currentDayId when a day is successfully deleted - GPT generated
+        const handleDayDeletion = () => {
+            currentDayId.value = null;
+        };
+
+        // Subscribe and unsubscribe from the event - GPT generated
+        onMounted(() => {
+            emitter.on("successfulDayDelete", handleDayDeletion);
+        });
+
+        onUnmounted(() => {
+            emitter.off("successfulDayDelete", handleDayDeletion);
+        });
 
         return {
             showAddNewTicketModal,

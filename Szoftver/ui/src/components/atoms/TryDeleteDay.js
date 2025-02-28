@@ -1,8 +1,9 @@
 import api from "@/utils/config/axios-config";
+import { emitter } from "@/utils/eventBus"; // GPT generated - Import eventBus
 
 export const tryDeleteDay = async (calendarId, date, ticketCount) => {
     if (!calendarId || !date) {
-        console.error("Hibás calendarId vagy dátum:", calendarId, date);
+        console.error("Invalid calendarId or date:", calendarId, date);
         return;
     }
     
@@ -12,7 +13,8 @@ export const tryDeleteDay = async (calendarId, date, ticketCount) => {
 
     try {
         await api.delete(`/api/Days/${calendarId}/${date}`);
+        emitter.emit("successfulDayDelete");
     } catch (error) {
-        console.error("Hiba a nap törlése során:", error);
+        console.error("Error deleting the day:", error);
     }
 };
