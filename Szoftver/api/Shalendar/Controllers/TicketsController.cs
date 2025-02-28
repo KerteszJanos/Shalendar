@@ -319,18 +319,21 @@ namespace Shalendar.Controllers
 			ticket.EndTime = updatedTicketDto.EndTime;
 
 			// Ha StartTime vagy EndTime nem null és a ParentType nem "ScheduleList", akkor módosítjuk
-			if (ticket.StartTime.HasValue)
+			if (ticket.CurrentParentType != "CalendarList")
 			{
-				if (ticket.CurrentParentType != "ScheduledList")
+				if (ticket.StartTime.HasValue)
 				{
-					ticket.CurrentParentType = "ScheduledList"; // Gpt generated
+					if (ticket.CurrentParentType != "ScheduledList")
+					{
+						ticket.CurrentParentType = "ScheduledList"; // Gpt generated
+					}
 				}
-			}
-			else
-			{
-				if (ticket.CurrentParentType != "TodoList")
+				else
 				{
-					ticket.CurrentParentType = "TodoList"; // Gpt generated
+					if (ticket.CurrentParentType != "TodoList")
+					{
+						ticket.CurrentParentType = "TodoList"; // Gpt generated
+					}
 				}
 			}
 

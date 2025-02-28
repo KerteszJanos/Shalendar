@@ -32,9 +32,12 @@
     </div>
     <p v-else>Add a list to start scheduling your stuff :)</p>
 
-    <Modal :show="showAddNewCalendarListModal" title="Add New List" confirmText="Add" @close="showAddNewCalendarListModal = false" @confirm="addNewCalendarList">
+    <Modal :show="showAddNewCalendarListModal" title="Add New List" confirmText="Add" @close="showAddNewCalendarListModal = false" @confirm="handleAddNewCalendarList">
         <div class="modal-content">
-            <input v-model="newList.name" placeholder="List name" />
+            <label for="list-name">List Name</label>
+            <input id="list-name" v-model="newList.name" placeholder="Enter list name" required />
+            <p v-if="newListError" class="error">{{ newListError }}</p> <!-- Hibaüzenet megjelenítése -->
+
             <div class="color-picker">
                 <input v-model="newList.color" type="color" />
                 <div class="color-preview" :style="{ backgroundColor: newList.color }"></div>
@@ -46,6 +49,7 @@
         <div class="modal-content">
             <label for="ticket-name">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
+            <p v-if="newTicketError" class="error">{{ newTicketError }}</p> <!-- Hibaüzenet megjelenítése -->
 
             <label for="ticket-description">Description (optional)</label>
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
@@ -55,22 +59,26 @@
         </div>
     </Modal>
 
-    <Modal :show="showEditCalendarListModal" title="Edit List" confirmText="Save" @close="showEditCalendarListModal = false" @confirm="updateCalendarList">
+    <Modal :show="showEditCalendarListModal" title="Edit List" confirmText="Save" @close="showEditCalendarListModal = false" @confirm="handleUpdateCalendarList">
         <div class="modal-content">
-            <input v-model="editedList.name" placeholder="List name" />
+            <label for="edit-list-name">List Name</label>
+            <input id="edit-list-name" v-model="editedList.name" placeholder="Enter list name" required />
+            <p v-if="editListError" class="error">{{ editListError }}</p> <!-- Hibaüzenet megjelenítése -->
+
             <div class="color-picker">
                 <input v-model="editedList.color" type="color" />
                 <div class="color-preview" :style="{ backgroundColor: editedList.color }"></div>
             </div>
+
             <button class="delete-list-button" @click="confirmDeleteCalendarList">Delete List</button>
         </div>
     </Modal>
 
-    <Modal :show="showEditTicketModal" title="Edit Ticket" confirmText="Save" @close="showEditTicketModal = false" @confirm="updateTicket">
+    <Modal :show="showEditTicketModal" title="Edit Ticket" confirmText="Save" @close="showEditTicketModal = false" @confirm="handleUpdateTicket">
         <div class="modal-content">
-            <!-- Gpt generated -->
             <label for="edit-ticket-name">Ticket Name</label>
             <input id="edit-ticket-name" v-model="editedTicket.name" placeholder="Enter ticket name" required />
+            <p v-if="editTicketError" class="error">{{ editTicketError }}</p> <!-- Hibaüzenet megjelenítése -->
 
             <label for="edit-ticket-description">Description</label>
             <textarea id="edit-ticket-description" v-model="editedTicket.description" placeholder="Enter description"></textarea>
@@ -79,13 +87,15 @@
             <input id="edit-ticket-priority" v-model="editedTicket.priority" type="number" min="1" max="10" placeholder="Enter priority (1-10)" />
         </div>
     </Modal>
+
 </div>
 </template>
 
 <script>
 import {
     ref,
-    onMounted
+    onMounted,
+    watch
 } from "vue";
 import api from "@/utils/config/axios-config";
 import Modal from "@/components/molecules/Modal.vue";
@@ -102,6 +112,9 @@ import {
 import {
     addNewTicket
 } from "@/components/atoms/AddNewTicket";
+import {
+    validateNameField
+} from "@/components/atoms/ValidateModalInputFields";
 
 export default {
     components: {
@@ -116,6 +129,10 @@ export default {
         const selectedListId = ref(null);
         const showAddNewCalendarListModal = ref(false);
         const showEditTicketModal = ref(false);
+        const newTicketError = ref("");
+        const newListError = ref("");
+        const editListError = ref("");
+        const editTicketError = ref("");
         const editedTicket = ref({
             id: null,
             name: "",
@@ -147,13 +164,21 @@ export default {
             showEditTicketModal.value = true;
         };
 
-        const updateTicket = async () => {
-            if (!editedTicket.value.id) {
-                console.error("Ticket ID is missing.");
+        const handleUpdateTicket = async () => {
+            editTicketError.value = ""; // Korábbi hibaüzenet törlése
+
+            const validationError = validateNameField(editedTicket.value.name);
+            if (validationError) {
+                editTicketError.value = validationError;
                 return;
             }
 
             try {
+                if (!editedTicket.value.id) {
+                    console.error("Ticket ID is missing.");
+                    return;
+                }
+
                 await api.put(`/api/Tickets/${editedTicket.value.id}`, {
                     id: editedTicket.value.id,
                     name: editedTicket.value.name,
@@ -167,6 +192,7 @@ export default {
                 showEditTicketModal.value = false;
             } catch (error) {
                 console.error("Error updating ticket:", error);
+                editTicketError.value = "Failed to update ticket.";
             }
         };
 
@@ -183,7 +209,15 @@ export default {
             showEditCalendarListModal.value = true;
         };
 
-        const updateCalendarList = async () => {
+        const handleUpdateCalendarList = async () => {
+            editListError.value = ""; // Korábbi hibaüzenet törlése
+
+            const validationError = validateNameField(editedList.value.name);
+            if (validationError) {
+                editListError.value = validationError;
+                return;
+            }
+
             try {
                 const existingList = calendarLists.value.find(l => l.id === editedList.value.id);
                 const colorChanged = existingList && existingList.color !== editedList.value.color;
@@ -203,6 +237,7 @@ export default {
                 showEditCalendarListModal.value = false;
             } catch (error) {
                 console.error("Error updating list:", error);
+                editListError.value = "Failed to update list.";
             }
         };
 
@@ -247,18 +282,28 @@ export default {
             showAddNewCalendarListModal.value = true;
         };
 
-        const addNewCalendarList = async () => {
+        const handleAddNewCalendarList = async () => {
+            newListError.value = ""; // Korábbi hibaüzenet törlése
+
+            const validationError = validateNameField(newList.value.name);
+            if (validationError) {
+                newListError.value = validationError;
+                return;
+            }
+
             try {
                 const user = JSON.parse(localStorage.getItem("user"));
                 if (!user || !user.defaultCalendarId) {
                     throw new Error("No default calendar set.");
                 }
+
                 const calendarId = user.defaultCalendarId;
                 const response = await api.post("/api/CalendarLists", {
                     name: newList.value.name,
                     color: newList.value.color,
                     calendarId,
                 });
+
                 const newListData = {
                     ...response.data,
                     tickets: []
@@ -267,7 +312,7 @@ export default {
                 showAddNewCalendarListModal.value = false;
             } catch (error) {
                 console.error("Error adding list:", error);
-                errorMessage.value = "Failed to add list.";
+                newListError.value = "Failed to add list.";
             }
         };
 
@@ -284,7 +329,9 @@ export default {
         };
 
         const handleAddNewTicket = async () => {
-            addNewTicket({
+            newTicketError.value = ""; // Clear previous error message
+
+            await addNewTicket({
                     name: newTicket.value.name,
                     description: newTicket.value.description || null,
                     startTime: null,
@@ -297,7 +344,7 @@ export default {
                 selectedListId,
                 calendarLists,
                 showAddNewTicketModal,
-                errorMessage
+                newTicketError
             );
         };
 
@@ -333,6 +380,22 @@ export default {
 
         });
 
+        watch(showAddNewCalendarListModal, (newValue) => {
+            if (!newValue) newListError.value = "";
+        });
+
+        watch(showAddNewTicketModal, (newValue) => {
+            if (!newValue) newTicketError.value = "";
+        });
+
+        watch(showEditCalendarListModal, (newValue) => {
+            if (!newValue) editListError.value = "";
+        });
+
+        watch(showEditTicketModal, (newValue) => {
+            if (!newValue) editTicketError.value = "";
+        });
+
         return {
             calendarLists,
             loading,
@@ -342,7 +405,7 @@ export default {
             showAddNewTicketModal,
             newTicket,
             openAddNewCalendarListModal,
-            addNewCalendarList,
+            handleAddNewCalendarList,
             openAddNewTicketModal,
             handleAddNewTicket,
             handleDelete,
@@ -352,13 +415,17 @@ export default {
             showEditCalendarListModal,
             editedList,
             openEditListModal,
-            updateCalendarList,
+            handleUpdateCalendarList,
             confirmDeleteCalendarList,
             deleteCalendarList,
             showEditTicketModal,
             editedTicket,
             openEditTicketModal,
-            updateTicket,
+            handleUpdateTicket,
+            newTicketError,
+            newListError,
+            editListError,
+            editTicketError,
         };
     },
 };

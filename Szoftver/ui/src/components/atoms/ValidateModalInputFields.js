@@ -1,9 +1,9 @@
 export function validateNameField(name) {
     if (!name || name.trim() === "") {
-        return "The ticket name cannot be empty.";
+        return "The name cannot be empty.";
     }
     if (name.length > 255) {
-        return "The ticket name cannot exceed 255 characters.";
+        return "The name cannot exceed 255 characters.";
     }
     return null; // No errors
 }
