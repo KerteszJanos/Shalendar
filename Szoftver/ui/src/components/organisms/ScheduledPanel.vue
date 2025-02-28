@@ -11,7 +11,7 @@
                     {{ hour }}:00
                 </div>
                 <!-- Current time indicator (only shown if the selected date is today) -->
-                <div v-if="isToday" class="time-indicator" :style="timeIndicatorStyle">
+                <div class="time-indicator" :style="timeIndicatorStyle">
                     <span class="time-label">{{ currentTime }}</span>
                 </div>
                 <!-- Render scheduled tickets positioned based on their start time -->
@@ -110,22 +110,15 @@ export default {
             };
         }
 
-        // Check if the selected date is today
-        const isToday = computed(() => {
-            const now = new Date();
-            const selectedDate = new Date(route.params.date);
-            return now.toDateString() === selectedDate.toDateString();
-        });
-
         let intervalId;
         onMounted(() => {
             // Update the current time indicator every minute if viewing today
-            if (isToday.value) {
+
                 intervalId = setInterval(() => {
                     currentTime.value = getCurrentTime();
                     timeIndicatorStyle.value = getTimeIndicatorStyle();
                 }, 60000);
-            }
+
             fetchTickets();
             emitter.on("ticketTimeSet", fetchTickets);
             emitter.on("newTicketCreatedWithTime", fetchTickets);
@@ -222,7 +215,6 @@ export default {
             handleDelete,
             currentTime,
             timeIndicatorStyle,
-            isToday,
             getTicketStyle,
             formatTime,
             handleSendBack,
