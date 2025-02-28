@@ -7,7 +7,8 @@
         <!-- Using Vue 3 slot syntax for draggable -->
         <draggable v-model="tickets" @end="onDragEnd" group="tickets" itemKey="id">
             <template #item="{ element }">
-                <div class="ticket" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)"> <!-- Gpt generated -->
+                <div class="ticket" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)">
+                    <!-- Gpt generated -->
                     <p><strong>{{ element.name }}</strong></p>
                     <p v-if="element.description">{{ element.description }}</p>
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
@@ -44,9 +45,13 @@ import {
 import {
     sendBackToCalendarList
 } from "@/components/atoms/SendBackToCalenderList";
-import { tryDeleteDay } from "@/components/atoms/TryDeleteDay";
+import {
+    tryDeleteDay
+} from "@/components/atoms/TryDeleteDay";
 import EditTicketModalFromDayView from "@/components/molecules/EditTicketModalFromDayView.vue";
-import { emitter } from "@/utils/eventBus";
+import {
+    emitter
+} from "@/utils/eventBus";
 
 export default {
     components: {
@@ -60,16 +65,24 @@ export default {
         const errorMessage = ref("");
         const calendarId = ref(null);
         const showEditTicketModalFromDayView = ref(false); // Gpt generated
-        const editedTicket = ref({ id: null, name: "", description: "", priority: null }); // Gpt generated
+        const editedTicket = ref({
+            id: null,
+            name: "",
+            description: "",
+            priority: null
+        }); // Gpt generated
 
         const openEditTicketModalFromDayView = (ticket) => { // Gpt generated
-            editedTicket.value = { ...ticket };
+            editedTicket.value = {
+                ...ticket
+            };
             showEditTicketModalFromDayView.value = true;
         };
 
         // Formázza a kiválasztott dátumot
         const formattedDate = computed(() => {
             const date = new Date(route.params.date);
+            date.setDate(date.getDate() + 1); // Hozzáadunk egy napot
             return date.toLocaleDateString("hu-HU", {
                 year: "numeric",
                 month: "long",
