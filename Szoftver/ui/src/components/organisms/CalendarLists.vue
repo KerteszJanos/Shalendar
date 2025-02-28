@@ -99,8 +99,9 @@ import {
 import {
     deleteTicket
 } from "@/components/atoms/deleteTicket";
-import { addNewTicket } from "@/components/atoms/AddNewTicket";
-
+import {
+    addNewTicket
+} from "@/components/atoms/AddNewTicket";
 
 export default {
     components: {
@@ -139,14 +140,14 @@ export default {
             color: "#CCCCCC"
         });
 
-        const openEditTicketModal = (ticket) => { // Gpt generated
+        const openEditTicketModal = (ticket) => {
             editedTicket.value = {
                 ...ticket
             };
             showEditTicketModal.value = true;
         };
 
-        const updateTicket = async () => { // Gpt generated
+        const updateTicket = async () => {
             if (!editedTicket.value.id) {
                 console.error("Ticket ID is missing.");
                 return;
@@ -154,15 +155,15 @@ export default {
 
             try {
                 await api.put(`/api/Tickets/${editedTicket.value.id}`, {
-                    id: editedTicket.value.id, // Az ID mindig kell
+                    id: editedTicket.value.id,
                     name: editedTicket.value.name,
                     description: editedTicket.value.description,
                     priority: editedTicket.value.priority,
-                    startTime: null, // Gpt generated
-                    endTime: null, // Gpt generated
+                    startTime: null,
+                    endTime: null,
                 });
 
-                await fetchCalendarLists(); // Frissítés a módosítás után
+                await fetchCalendarLists();
                 showEditTicketModal.value = false;
             } catch (error) {
                 console.error("Error updating ticket:", error);

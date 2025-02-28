@@ -233,6 +233,33 @@ export default {
             );
         };
 
+        const validateTimeFields = (startTime, endTime) => {
+            if (!startTime || !endTime) {
+                return "Both start and end times are required.";
+            }
+
+            // A type="time" input értéke 'HH:mm' formátumú, így közvetlenül feldolgozhatjuk
+            const [startHours, startMinutes] = startTime.split(":").map(Number);
+            const [endHours, endMinutes] = endTime.split(":").map(Number);
+
+            if (
+                isNaN(startHours) || isNaN(startMinutes) ||
+                isNaN(endHours) || isNaN(endMinutes)
+            ) {
+                return "Invalid time format.";
+            }
+
+            // Start és End percekre átalakítva az egyszerűbb összehasonlítás érdekében
+            const startTotalMinutes = startHours * 60 + startMinutes;
+            const endTotalMinutes = endHours * 60 + endMinutes;
+
+            if (startTotalMinutes >= endTotalMinutes - 9) {
+                return "The start time must be at least 10 minutes earlier than the end time.";
+            }
+
+            return null; // No errors
+        };
+
         const onTicketDrop = async (event, date) => {
             const ticketDataStr = localStorage.getItem("draggedTicket");
             if (!ticketDataStr) return;
@@ -299,13 +326,9 @@ export default {
         };
 
         const confirmTimeModal = async () => {
-            if (!modalStartTime.value || !modalEndTime.value) {
-                modalErrorMessage.value = "Both start and end times must be provided.";
-                return;
-            }
-
-            if (modalStartTime.value >= modalEndTime.value) {
-                modalErrorMessage.value = "Start time must be less than end time.";
+            const validationError = validateTimeFields(modalStartTime.value, modalEndTime.value);
+            if (validationError) {
+                modalErrorMessage.value = validationError;
                 return;
             }
 

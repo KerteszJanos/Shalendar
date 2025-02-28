@@ -1,11 +1,14 @@
 import api from "@/utils/config/axios-config";
 import { updateTicketOrder } from "@/components/atoms/updateTicketOrder";
+import { validateNameField } from "@/components/atoms/ValidateModalInputFields";
 
 export const addNewTicket = async (ticketData, selectedListId, calendarLists, showAddNewTicketModal, errorMessage) => {
-    if (!ticketData.name.trim()) {
-        errorMessage.value = "Ticket name is required.";
+    const nameValidationError = validateNameField(ticketData.name);
+    if (nameValidationError) {
+        errorMessage.value = nameValidationError;
         return;
     }
+    
     try {
         const response = await api.post("/api/Tickets", ticketData);
 
