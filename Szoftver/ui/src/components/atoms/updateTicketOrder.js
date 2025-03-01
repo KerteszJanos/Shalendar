@@ -5,6 +5,7 @@ export const updateTicketOrder = async (input) => {
 
     if (!ticketsArray || ticketsArray.length === 0) return;
 
+    // The index starts from 0, but newPosition is set to index + 1 to use 1-based indexing.
     const orderUpdates = ticketsArray.map((ticket, index) => ({
         ticketId: ticket.id,
         newPosition: index + 1
@@ -19,6 +20,8 @@ export const updateTicketOrder = async (input) => {
 
         const sortedTickets = [...ticketsArray].sort((a, b) => a.currentPosition - b.currentPosition);
 
+        // If `input` is an object with a `tickets` array, replace it with `sortedTickets`.
+        // Otherwise, replace the entire array content without changing its reference.
         if (input.tickets) {
             input.tickets = sortedTickets;
         } else {

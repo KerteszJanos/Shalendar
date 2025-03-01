@@ -8,7 +8,7 @@ export function validateNameField(name) {
     return null;
 }
 
-export function validateTimeFieldsBothRequired(startTime, endTime) {
+export function validateTimeFieldsBothRequiredOrEmpty(startTime, endTime) {
     if (!startTime && !endTime) {
         return null;
     }

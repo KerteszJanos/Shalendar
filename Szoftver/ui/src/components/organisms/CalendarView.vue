@@ -464,11 +464,13 @@ export default {
 }
 
 .calendar-container {
-    width: 66vw;
-    height: 90vh;
+    width: 100%;
+    max-width: 80vw;
+    height: auto;
     background: #e3f2fd;
     padding: 20px;
     border-radius: 10px;
+    overflow: hidden;
 }
 
 .calendar-header {
@@ -499,12 +501,15 @@ export default {
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
     margin-top: 10px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .calendar-day {
     background: #fff;
     border-radius: 5px;
-    height: 80px;
+    height: 100px;
     position: relative;
     cursor: pointer;
     overflow: hidden;
@@ -516,6 +521,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 5px;
+    min-width: 50px;
 }
 
 .calendar-day:hover:not(.header) {
@@ -535,6 +541,9 @@ export default {
 .other-month {
     color: gray;
     opacity: 0.5;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .error {

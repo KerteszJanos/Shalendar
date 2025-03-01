@@ -32,7 +32,8 @@ import {
     emitter
 } from "@/utils/eventBus";
 import {
-    validateNameField
+    validateNameField,
+    validateTimeFieldsBothRequiredOrEmpty
 } from "@/components/atoms/ValidateModalInputFields";
 
 export default {
@@ -84,38 +85,9 @@ export default {
             }
         };
 
-        const validateTimeFields = (startTime, endTime) => {
-            if (!startTime && !endTime) {
-                return null; // No errors, valid case
-            }
-
-            if (!startTime || !endTime) {
-                return "Both start and end times are required or both should be empty.";
-            }
-
-            const [startHours, startMinutes] = startTime.split(":").map(Number);
-            const [endHours, endMinutes] = endTime.split(":").map(Number);
-
-            if (
-                isNaN(startHours) || isNaN(startMinutes) ||
-                isNaN(endHours) || isNaN(endMinutes)
-            ) {
-                return "Invalid time format.";
-            }
-
-            const startTotalMinutes = startHours * 60 + startMinutes;
-            const endTotalMinutes = endHours * 60 + endMinutes;
-
-            if (startTotalMinutes >= endTotalMinutes - 10) {
-                return "The start time must be at least 10 minutes earlier than the end time.";
-            }
-
-            return null; // No errors
-        };
-
         const saveChanges = async () => {
             errors.value.name = validateNameField(ticket.value.name);
-            errors.value.time = validateTimeFields(ticket.value.startTime, ticket.value.endTime);
+            errors.value.time = validateTimeFieldsBothRequiredOrEmpty(ticket.value.startTime, ticket.value.endTime);
 
             if (errors.value.name || errors.value.time) {
                 return;

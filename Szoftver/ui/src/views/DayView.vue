@@ -54,7 +54,7 @@ import {
 } from "@/utils/eventBus";
 import {
     validateNameField,
-    validateTimeFieldsBothRequired
+    validateTimeFieldsBothRequiredOrEmpty
 } from "@/components/atoms/ValidateModalInputFields";
 
 export default {
@@ -97,7 +97,7 @@ export default {
                 return;
             }
 
-            const timeValidationError = validateTimeFieldsBothRequired(newTicket.value.startTime, newTicket.value.endTime);
+            const timeValidationError = validateTimeFieldsBothRequiredOrEmpty(newTicket.value.startTime, newTicket.value.endTime);
             if (timeValidationError) {
                 timeError.value = timeValidationError;
                 return;
