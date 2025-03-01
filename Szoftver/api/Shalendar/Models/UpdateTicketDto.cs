@@ -15,8 +15,8 @@ namespace Shalendar.Models
 
 		public int? Priority { get; set; }
 
-		public TimeSpan? StartTime { get; set; } // Gpt generated
+		public TimeSpan? StartTime { get; set; }
 
-		public TimeSpan? EndTime { get; set; } // Gpt generated
+		public TimeSpan? EndTime { get; set; }
 	}
 }

@@ -69,14 +69,12 @@ namespace Shalendar.Controllers
 		[HttpPost]
 		public async Task<ActionResult<CalendarList>> PostCalendarList(CalendarList calendarList)
 		{
-			// Ellenőrizzük, hogy a naptár létezik-e
 			var calendarExists = await _context.Calendars.AnyAsync(c => c.Id == calendarList.CalendarId);
 			if (!calendarExists)
 			{
 				return BadRequest("The specified CalendarId does not exist.");
 			}
 
-			// Új lista mentése
 			_context.CalendarLists.Add(calendarList);
 			await _context.SaveChangesAsync();
 
@@ -129,7 +127,7 @@ namespace Shalendar.Controllers
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteCalendarList(int id)
 		{
-			using var transaction = await _context.Database.BeginTransactionAsync(); // Tranzakció biztosításához
+			using var transaction = await _context.Database.BeginTransactionAsync();
 
 			try
 			{
@@ -139,7 +137,6 @@ namespace Shalendar.Controllers
 					return NotFound("Calendar list not found.");
 				}
 
-				// 1. Lekérjük és töröljük az összes kapcsolódó ticketet (ha van) (Gpt generated)
 				var relatedTickets = await _context.Tickets
 					.Where(t => t.CalendarListId == id)
 					.ToListAsync();
@@ -147,31 +144,22 @@ namespace Shalendar.Controllers
 				if (relatedTickets.Any())
 				{
 					_context.Tickets.RemoveRange(relatedTickets);
-					await _context.SaveChangesAsync(); // Itt mentjük el először a ticket törléseket
+					await _context.SaveChangesAsync();
 				}
 
-				// 2. Töröljük a listát, ha már nincs rá hivatkozás
 				_context.CalendarLists.Remove(list);
 				await _context.SaveChangesAsync();
 
-				await transaction.CommitAsync(); // Tranzakció lezárása
+				await transaction.CommitAsync();
 				return NoContent();
 			}
 			catch (DbUpdateException ex)
 			{
-				await transaction.RollbackAsync(); // Ha hiba van, visszavonjuk a módosításokat
+				await transaction.RollbackAsync();
 				return StatusCode(500, $"Error deleting list and related tickets: {ex.Message}");
 			}
 		}
 
-
-
-
-		#endregion
-
-
-
-		#region private methods
 
 
 

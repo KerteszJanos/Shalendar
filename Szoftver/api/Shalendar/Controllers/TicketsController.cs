@@ -23,6 +23,7 @@ namespace Shalendar.Controllers
 		}
 
 		#region Gets
+
 		[HttpGet("todolist/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetTodoListTicketsByDateAndCalendar(string date, int calendarId)
 		{
@@ -151,6 +152,8 @@ namespace Shalendar.Controllers
 		}
 		#endregion
 
+
+
 		#region Posts
 		[HttpPost]
 		public async Task<ActionResult<Ticket>> CreateTicket([FromBody] Ticket ticket)
@@ -170,7 +173,6 @@ namespace Shalendar.Controllers
 		[HttpPost("ScheduleTicket")]
 		public async Task<IActionResult> ScheduleTicket([FromBody] ScheduleTicketDto dto)
 		{
-			// Validate input parameters
 			if (dto == null || dto.TicketId <= 0)
 			{
 				return BadRequest("Invalid data.");
@@ -180,7 +182,6 @@ namespace Shalendar.Controllers
 			{
 				try
 				{
-					// Retrieve or create day record based on CalendarId and Date
 					var dayRecord = await _context.Days
 						.FirstOrDefaultAsync(d => d.CalendarId == dto.CalendarId && d.Date.Date == dto.Date.Date);
 
@@ -195,14 +196,12 @@ namespace Shalendar.Controllers
 						await _context.SaveChangesAsync();
 					}
 
-					// Retrieve the ticket by its Id
 					var ticket = await _context.Tickets.FindAsync(dto.TicketId);
 					if (ticket == null)
 					{
 						return NotFound("Ticket not found.");
 					}
 
-					// Update ticket properties using values from the DTO
 					ticket.ParentId = dayRecord.Id;
 					ticket.StartTime = dto.StartTime;
 					ticket.EndTime = dto.EndTime;
@@ -233,24 +232,9 @@ namespace Shalendar.Controllers
 
 		#endregion
 
-		#region Deletes
-		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteTicket(int id)
-		{
-			var ticket = await _context.Tickets.FindAsync(id);
-			if (ticket == null)
-			{
-				return NotFound();
-			}
 
-			_context.Tickets.Remove(ticket);
-			await _context.SaveChangesAsync();
 
-			return NoContent();
-		}
-		#endregion
-
-		#region Updates
+		#region Puts
 		[HttpPut("reorder")]
 		public async Task<IActionResult> ReorderTickets([FromBody] List<TicketOrderUpdate> orderUpdates)
 		{
@@ -311,28 +295,26 @@ namespace Shalendar.Controllers
 				return NotFound("Ticket not found.");
 			}
 
-			// Mezők frissítése az új adatokkal
 			ticket.Name = updatedTicketDto.Name;
 			ticket.Description = updatedTicketDto.Description;
 			ticket.Priority = updatedTicketDto.Priority;
 			ticket.StartTime = updatedTicketDto.StartTime;
 			ticket.EndTime = updatedTicketDto.EndTime;
 
-			// Ha StartTime vagy EndTime nem null és a ParentType nem "ScheduleList", akkor módosítjuk
 			if (ticket.CurrentParentType != "CalendarList")
 			{
 				if (ticket.StartTime.HasValue)
 				{
 					if (ticket.CurrentParentType != "ScheduledList")
 					{
-						ticket.CurrentParentType = "ScheduledList"; // Gpt generated
+						ticket.CurrentParentType = "ScheduledList";
 					}
 				}
 				else
 				{
 					if (ticket.CurrentParentType != "TodoList")
 					{
-						ticket.CurrentParentType = "TodoList"; // Gpt generated
+						ticket.CurrentParentType = "TodoList";
 					}
 				}
 			}
@@ -348,6 +330,25 @@ namespace Shalendar.Controllers
 			}
 		}
 
+		#endregion
+
+
+
+		#region Deletes
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteTicket(int id)
+		{
+			var ticket = await _context.Tickets.FindAsync(id);
+			if (ticket == null)
+			{
+				return NotFound();
+			}
+
+			_context.Tickets.Remove(ticket);
+			await _context.SaveChangesAsync();
+
+			return NoContent();
+		}
 		#endregion
 	}
 }

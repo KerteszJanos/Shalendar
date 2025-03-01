@@ -24,6 +24,7 @@ namespace Shalendar.Controllers
 		}
 
 		#region Gets
+
 		[HttpGet("{date}/{calendarId}")]
 		public async Task<IActionResult> GetDayId(string date, int calendarId)
 		{
@@ -35,11 +36,12 @@ namespace Shalendar.Controllers
 			var day = await _context.Days
 				.FirstOrDefaultAsync(d => d.CalendarId == calendarId && d.Date.Date == parsedDate.Date);
 
-			// Ha nincs találat, akkor 200 OK választ küldünk, de az ID null lesz
 			return Ok(new { id = day?.Id });
 		}
 
 		#endregion
+
+
 
 		#region Posts
 		[HttpPost("create")]
@@ -50,7 +52,6 @@ namespace Shalendar.Controllers
 				return BadRequest("Invalid date format.");
 			}
 
-			// Ellenőrizzük, hogy létezik-e már a nap
 			var existingDay = await _context.Days
 				.FirstOrDefaultAsync(d => d.CalendarId == request.CalendarId && d.Date.Date == parsedDate.Date);
 
@@ -59,7 +60,6 @@ namespace Shalendar.Controllers
 				return Ok(new { id = existingDay.Id });
 			}
 
-			// Ha nem létezik, létrehozunk egy új napot
 			var newDay = new Day
 			{
 				CalendarId = request.CalendarId,
@@ -73,6 +73,14 @@ namespace Shalendar.Controllers
 		}
 
 		#endregion
+
+
+
+		#region Puts
+
+		#endregion
+
+
 
 		#region Deletes
 		[HttpDelete("{calendarId}/{date}")]
@@ -104,10 +112,6 @@ namespace Shalendar.Controllers
 
 			return Ok("Day was not deleted as it still has tickets.");
 		}
-		#endregion
-
-		#region Updates
-		// PUT methods will go here in the future
 		#endregion
 	}
 }

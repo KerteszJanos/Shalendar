@@ -50,6 +50,8 @@ namespace Shalendar.Controllers
 
 		#endregion
 
+		
+		
 		#region Posts
 
 		// POST: api/Users
@@ -153,6 +155,8 @@ namespace Shalendar.Controllers
 
 		#endregion
 
+
+
 		#region Puts
 
 		[HttpPut("change-password")]
@@ -189,6 +193,8 @@ namespace Shalendar.Controllers
 
 		#endregion
 
+
+
 		#region Deletes
 
 		[HttpDelete("delete")]
@@ -214,6 +220,8 @@ namespace Shalendar.Controllers
 
 
 		#endregion
+
+
 
 		#region private methods
 
