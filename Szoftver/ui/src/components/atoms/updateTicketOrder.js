@@ -13,12 +13,10 @@ export const updateTicketOrder = async (input) => {
     try {
         await api.put("/api/Tickets/reorder", orderUpdates);
 
-        // Az aktuális pozíciók frissítése
         ticketsArray.forEach((ticket, index) => {
             ticket.currentPosition = index + 1;
         });
 
-        // Vue reaktivitás biztosítása érdekében új tömböt hozunk létre
         const sortedTickets = [...ticketsArray].sort((a, b) => a.currentPosition - b.currentPosition);
 
         if (input.tickets) {

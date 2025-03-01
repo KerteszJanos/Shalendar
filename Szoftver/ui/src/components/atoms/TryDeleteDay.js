@@ -1,5 +1,5 @@
 import api from "@/utils/config/axios-config";
-import { emitter } from "@/utils/eventBus"; // GPT generated - Import eventBus
+import { emitter } from "@/utils/eventBus";
 
 export const tryDeleteDay = async (calendarId, date, ticketCount) => {
     if (!calendarId || !date) {

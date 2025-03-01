@@ -2,7 +2,7 @@
   <div v-if="show" class="modal-overlay">
     <div class="modal">
       <h2>{{ title }}</h2>
-      <slot></slot> <!-- Itt jelenik meg a tartalom -->
+      <slot></slot>
       <div class="modal-actions">
         <button @click="closeModal">Mégse</button>
         <button @click="confirmAction">{{ confirmText }}</button>
@@ -45,21 +45,21 @@ export default defineComponent({
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7); /* Gpt generated - sötétebb háttér a jobb láthatóság érdekében */
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* Gpt generated - biztosítja, hogy a modal minden felett legyen */
+  z-index: 9999;
 }
 
 .modal {
   background: white;
   padding: 20px;
   border-radius: 10px;
-  width: 400px; /* Gpt generated - kicsit nagyobb méret a jobb megjelenéshez */
+  width: 400px;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Gpt generated - árnyék hozzáadása a kiemeléshez */
-  z-index: 10000; /* Gpt generated - modal maga is kiemelt */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
 }
 
 .modal-actions {

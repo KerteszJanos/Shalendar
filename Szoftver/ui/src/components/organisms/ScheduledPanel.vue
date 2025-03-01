@@ -6,21 +6,17 @@
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div class="time-container">
             <div class="time-scrollable">
-                <!-- Hour markers for each hour of the day -->
                 <div class="hour-marker" v-for="hour in 24" :key="hour" :style="{ top: `${hour * 100}px` }">
                     {{ hour }}:00
                 </div>
-                <!-- Current time indicator (only shown if the selected date is today) -->
                 <div class="time-indicator" :style="timeIndicatorStyle">
                     <span class="time-label">{{ currentTime }}</span>
                 </div>
-                <!-- Render scheduled tickets positioned based on their start time -->
                 <div v-for="ticket in tickets" :key="ticket.id" class="ticket" :style="getTicketStyle(ticket)" @click="openEditTicketModalFromDayView(ticket)">
                     <div class="ticket-content">
                         <strong>{{ ticket.name }}</strong>
                         <p v-if="ticket.description">{{ ticket.description }}</p>
                         <p v-if="ticket.priority">Priority: {{ ticket.priority }}</p>
-                        <!-- Display ticket time range if both startTime and endTime exist -->
                         <p v-if="ticket.startTime && ticket.endTime">
                             {{ formatTime(ticket.startTime) }} - {{ formatTime(ticket.endTime) }}
                         </p>
@@ -33,7 +29,7 @@
             </div>
         </div>
     </div>
-    <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" /> <!-- Gpt generated -->
+    <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" />
 </div>
 </template>
 
@@ -55,13 +51,17 @@ import {
 import {
     sendBackToCalendarList
 } from "@/components/atoms/SendBackToCalenderList";
-import { tryDeleteDay } from "@/components/atoms/TryDeleteDay";
-import { emitter } from "@/utils/eventBus";
+import {
+    tryDeleteDay
+} from "@/components/atoms/TryDeleteDay";
+import {
+    emitter
+} from "@/utils/eventBus";
 import EditTicketModalFromDayView from "@/components/molecules/EditTicketModalFromDayView.vue";
 
 export default {
     components: {
-        EditTicketModalFromDayView // Gpt generated
+        EditTicketModalFromDayView
     },
     setup() {
         const route = useRoute();
@@ -69,19 +69,25 @@ export default {
         const loading = ref(true);
         const errorMessage = ref("");
         const calendarId = ref(null);
-        const showEditTicketModalFromDayView = ref(false); // Gpt generated
-        const editedTicket = ref({ id: null, name: "", description: "", priority: null }); // Gpt generated
+        const showEditTicketModalFromDayView = ref(false);
+        const editedTicket = ref({
+            id: null,
+            name: "",
+            description: "",
+            priority: null
+        });
 
-        const openEditTicketModalFromDayView = (ticket) => { // Gpt generated
-            editedTicket.value = { ...ticket };
+        const openEditTicketModalFromDayView = (ticket) => {
+            editedTicket.value = {
+                ...ticket
+            };
             showEditTicketModalFromDayView.value = true;
         };
-
 
         // Format the selected date for display
         const formattedDate = computed(() => {
             const date = new Date(route.params.date);
-            date.setDate(date.getDate()); // Hozzáadunk egy napot
+            date.setDate(date.getDate());
             return date.toLocaleDateString("hu-HU", {
                 year: "numeric",
                 month: "long",
@@ -115,10 +121,10 @@ export default {
         onMounted(() => {
             // Update the current time indicator every minute if viewing today
 
-                intervalId = setInterval(() => {
-                    currentTime.value = getCurrentTime();
-                    timeIndicatorStyle.value = getTimeIndicatorStyle();
-                }, 60000);
+            intervalId = setInterval(() => {
+                currentTime.value = getCurrentTime();
+                timeIndicatorStyle.value = getTimeIndicatorStyle();
+            }, 60000);
 
             fetchTickets();
             emitter.on("ticketTimeSet", fetchTickets);
@@ -143,7 +149,6 @@ export default {
                 }
                 calendarId.value = storedCalendarId;
 
-                // Call the API endpoint: /api/Tickets/scheduled/{date}/{calendarId}
                 const response = await api.get(
                     `/api/Tickets/scheduled/${selectedDate}/${calendarId.value}`
                 );
@@ -219,9 +224,9 @@ export default {
             getTicketStyle,
             formatTime,
             handleSendBack,
-            showEditTicketModalFromDayView, // Gpt generated
-            editedTicket, // Gpt generated
-            openEditTicketModalFromDayView, // Gpt generated
+            showEditTicketModalFromDayView,
+            editedTicket,
+            openEditTicketModalFromDayView,
             fetchTickets,
         };
     },
@@ -230,7 +235,7 @@ export default {
 
 <style scoped>
 .ticket {
-    cursor: pointer; /* Gpt generated */
+    cursor: pointer;
 }
 
 .container {

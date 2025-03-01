@@ -36,7 +36,7 @@
         <div class="modal-content">
             <label for="list-name">List Name</label>
             <input id="list-name" v-model="newList.name" placeholder="Enter list name" required />
-            <p v-if="newListError" class="error">{{ newListError }}</p> <!-- Hibaüzenet megjelenítése -->
+            <p v-if="newListError" class="error">{{ newListError }}</p>
 
             <div class="color-picker">
                 <input v-model="newList.color" type="color" />
@@ -49,7 +49,7 @@
         <div class="modal-content">
             <label for="ticket-name">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
-            <p v-if="newTicketError" class="error">{{ newTicketError }}</p> <!-- Hibaüzenet megjelenítése -->
+            <p v-if="newTicketError" class="error">{{ newTicketError }}</p>
 
             <label for="ticket-description">Description (optional)</label>
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
@@ -63,7 +63,7 @@
         <div class="modal-content">
             <label for="edit-list-name">List Name</label>
             <input id="edit-list-name" v-model="editedList.name" placeholder="Enter list name" required />
-            <p v-if="editListError" class="error">{{ editListError }}</p> <!-- Hibaüzenet megjelenítése -->
+            <p v-if="editListError" class="error">{{ editListError }}</p>
 
             <div class="color-picker">
                 <input v-model="editedList.color" type="color" />
@@ -78,7 +78,7 @@
         <div class="modal-content">
             <label for="edit-ticket-name">Ticket Name</label>
             <input id="edit-ticket-name" v-model="editedTicket.name" placeholder="Enter ticket name" required />
-            <p v-if="editTicketError" class="error">{{ editTicketError }}</p> <!-- Hibaüzenet megjelenítése -->
+            <p v-if="editTicketError" class="error">{{ editTicketError }}</p>
 
             <label for="edit-ticket-description">Description</label>
             <textarea id="edit-ticket-description" v-model="editedTicket.description" placeholder="Enter description"></textarea>
@@ -165,7 +165,7 @@ export default {
         };
 
         const handleUpdateTicket = async () => {
-            editTicketError.value = ""; // Korábbi hibaüzenet törlése
+            editTicketError.value = "";
 
             const validationError = validateNameField(editedTicket.value.name);
             if (validationError) {
@@ -210,7 +210,7 @@ export default {
         };
 
         const handleUpdateCalendarList = async () => {
-            editListError.value = ""; // Korábbi hibaüzenet törlése
+            editListError.value = "";
 
             const validationError = validateNameField(editedList.value.name);
             if (validationError) {
@@ -434,7 +434,6 @@ export default {
 <style scoped>
 .ticket {
     cursor: pointer;
-    /* Gpt generated */
 }
 
 .lists-container {

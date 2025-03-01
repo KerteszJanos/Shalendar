@@ -7,7 +7,7 @@
         <div class="modal-content">
             <label for="ticket-name">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
-            <p v-if="errorMessage" class="error">{{ errorMessage }}</p> <!-- GPT generated -->
+            <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
 
             <label for="ticket-description">Description (optional)</label>
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
@@ -17,7 +17,7 @@
 
             <label for="ticket-start-time">Start Time (optional)</label>
             <input id="ticket-start-time" v-model="newTicket.startTime" type="time" />
-            <p v-if="timeError" class="error">{{ timeError }}</p> <!-- GPT generated -->
+            <p v-if="timeError" class="error">{{ timeError }}</p>
 
             <label for="ticket-end-time">End Time (optional)</label>
             <input id="ticket-end-time" v-model="newTicket.endTime" type="time" />
@@ -26,7 +26,7 @@
             <select id="ticket-calendar-list" v-model="newTicket.calendarListId">
                 <option v-for="list in calendarLists" :key="list.id" :value="list.id">{{ list.name }}</option>
             </select>
-            <p v-if="calendarListError" class="error">{{ calendarListError }}</p> <!-- GPT generated -->
+            <p v-if="calendarListError" class="error">{{ calendarListError }}</p>
         </div>
     </Modal>
 
@@ -36,8 +36,8 @@
 <script>
 import {
     ref,
-    onMounted, // GPT generated
-    onUnmounted // GPT generated
+    onMounted,
+    onUnmounted
 } from "vue";
 import {
     useRoute
@@ -51,7 +51,7 @@ import {
 import api from "@/utils/config/axios-config";
 import {
     emitter
-} from "@/utils/eventBus"; // GPT generated
+} from "@/utils/eventBus";
 import {
     validateNameField,
     validateTimeFieldsBothRequired
@@ -77,14 +77,14 @@ export default {
         const currentDayId = ref(null);
         const calendarId = ref(localStorage.getItem("calendarId"));
         const calendarLists = ref([]);
-        const errorMessage = ref(""); // Hibaüzenet tárolására
-        const calendarListError = ref(""); // GPT generated - Lista kiválasztásának hibája
+        const errorMessage = ref("");
+        const calendarListError = ref("");
         const timeError = ref("");
 
-        const handleAddNewTicket = async () => { // GPT generated - handleAddNewTicket módosítva
+        const handleAddNewTicket = async () => {
             errorMessage.value = "";
             calendarListError.value = "";
-            timeError.value = ""; // GPT generated - Idő validáció hibájának tárolására
+            timeError.value = "";
 
             if (!newTicket.value.calendarListId) {
                 calendarListError.value = "Please select a calendar list before adding a ticket.";
@@ -97,9 +97,9 @@ export default {
                 return;
             }
 
-            const timeValidationError = validateTimeFieldsBothRequired(newTicket.value.startTime, newTicket.value.endTime); // GPT generated - Idő validáció hozzáadva
+            const timeValidationError = validateTimeFieldsBothRequired(newTicket.value.startTime, newTicket.value.endTime);
             if (timeValidationError) {
-                timeError.value = timeValidationError; // GPT generated - Idő hibaüzenet tárolása
+                timeError.value = timeValidationError;
                 return;
             }
 
@@ -123,7 +123,7 @@ export default {
                 (msg) => (errorMessage.value = msg)
             );
 
-            if (!errorMessage.value && !calendarListError.value && !timeError.value) { // GPT generated - Csak ha nincs hiba folytatjuk
+            if (!errorMessage.value && !calendarListError.value && !timeError.value) {
                 showAddNewTicketModal.value = false;
 
                 if (newTicket.value.startTime) {
@@ -177,12 +177,10 @@ export default {
             }
         };
 
-        // Function to reset currentDayId when a day is successfully deleted - GPT generated
         const handleDayDeletion = () => {
             currentDayId.value = null;
         };
 
-        // Subscribe and unsubscribe from the event - GPT generated
         onMounted(() => {
             emitter.on("successfulDayDelete", handleDayDeletion);
         });

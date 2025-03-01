@@ -4,11 +4,9 @@
         <div class="header">{{ formattedDate }}</div>
         <p v-if="loading">Loading...</p>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-        <!-- Using Vue 3 slot syntax for draggable -->
         <draggable v-model="tickets" @end="onDragEnd" group="tickets" itemKey="id">
             <template #item="{ element }">
                 <div class="ticket" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)">
-                    <!-- Gpt generated -->
                     <p><strong>{{ element.name }}</strong></p>
                     <p v-if="element.description">{{ element.description }}</p>
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
@@ -19,7 +17,7 @@
         </draggable>
     </div>
 
-    <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" /> <!-- Gpt generated -->
+    <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" />
 </div>
 </template>
 
@@ -64,25 +62,24 @@ export default {
         const loading = ref(true);
         const errorMessage = ref("");
         const calendarId = ref(null);
-        const showEditTicketModalFromDayView = ref(false); // Gpt generated
+        const showEditTicketModalFromDayView = ref(false);
         const editedTicket = ref({
             id: null,
             name: "",
             description: "",
             priority: null
-        }); // Gpt generated
+        });
 
-        const openEditTicketModalFromDayView = (ticket) => { // Gpt generated
+        const openEditTicketModalFromDayView = (ticket) => {
             editedTicket.value = {
                 ...ticket
             };
             showEditTicketModalFromDayView.value = true;
         };
 
-        // Formázza a kiválasztott dátumot
         const formattedDate = computed(() => {
             const date = new Date(route.params.date);
-            date.setDate(date.getDate()); // Hozzáadunk egy napot
+            date.setDate(date.getDate());
             return date.toLocaleDateString("hu-HU", {
                 year: "numeric",
                 month: "long",
@@ -90,24 +87,21 @@ export default {
             });
         });
 
-        // Ticketek betöltése a dátum és a calendarId alapján
         const fetchTickets = async () => {
             loading.value = true;
             errorMessage.value = "";
             try {
                 const selectedDate = route.params.date;
-                // Ellenőrzi, hogy van-e mentett calendarId a localStorage-ban
                 const storedCalendarId = localStorage.getItem("calendarId");
                 if (!storedCalendarId) {
                     throw new Error("Nincs mentett calendarId a localStorage-ban.");
                 }
                 calendarId.value = storedCalendarId;
                 const response = await api.get(`/api/Tickets/todolist/${selectedDate}/${calendarId.value}`);
-                // Map-elés és rendezés a currentPosition alapján
                 tickets.value = response.data
                     .map(ticket => ({
                         ...ticket,
-                        backgroundColor: ticket.color || "#ffffff", // Alapértelmezett fehér szín, ha nincs megadva
+                        backgroundColor: ticket.color || "#ffffff",
                     }))
                     .sort((a, b) => a.currentPosition - b.currentPosition);
             } catch (error) {
@@ -117,8 +111,6 @@ export default {
                 loading.value = false;
             }
         };
-
-        // Ticket törlése, majd újrasorrendeli a ticketeket
 
         const handleDelete = async (ticketId) => {
             await deleteTicket(ticketId, tickets.value, errorMessage);
@@ -133,7 +125,6 @@ export default {
             await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
         };
 
-        // Drag and drop művelet befejezése után frissítjük a pozíciókat
         const onDragEnd = async () => {
             await updateTicketOrder(tickets.value);
             await fetchTickets();
@@ -162,9 +153,9 @@ export default {
             calendarId,
             onDragEnd,
             handleSendBack,
-            showEditTicketModalFromDayView, // Gpt generated
-            editedTicket, // Gpt generated
-            openEditTicketModalFromDayView, // Gpt generated
+            showEditTicketModalFromDayView,
+            editedTicket,
+            openEditTicketModalFromDayView,
             fetchTickets,
         };
     },
