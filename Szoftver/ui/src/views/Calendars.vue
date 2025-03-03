@@ -69,7 +69,6 @@ export default {
             }
 
             localStorage.setItem("calendarId", calendarId);
-            localStorage.setItem("calendarPermission", permission);
             
             router.push("/Dashboard");
         };
@@ -185,6 +184,7 @@ export default {
     padding: 10px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
+    cursor: pointer;
 }
 
 .calendar-icon {

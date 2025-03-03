@@ -22,6 +22,9 @@ namespace Shalendar
 									.AllowCredentials());
 			});
 
+			// Add JWT Helper to DI container
+			builder.Services.AddScoped<JwtHelper>();
+
 			//Add database context (SQL Server)
 			builder.Services.AddDbContext<ShalendarDbContext>(options =>
 				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

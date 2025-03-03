@@ -86,6 +86,8 @@ export default {
         const dropDate = ref("");
         const calendarDays = ref([]);
 
+        const calendarId = localStorage.getItem("calendarId");
+
         const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
         const formattedMonth = computed(() => {
@@ -208,33 +210,8 @@ export default {
 
         const fetchCalendar = async () => {
             try {
-                const user = JSON.parse(localStorage.getItem("user"));
-                if (!user || !user.defaultCalendarId) {
-                    throw new Error("No default calendar set.");
-                }
-
-                let permissionType;
-                let calendarId = localStorage.getItem("calendarId");
-
-                if (!calendarId) {
-                    calendarId = user.defaultCalendarId;
-                    permissionType = null;
-                }
-
-                localStorage.setItem("calendarId", calendarId);
-
                 const response = await api.get(`/api/Calendars/${calendarId}`);
                 calendar.value = response.data;
-
-                if (!permissionType) {
-                    const permissionsResponse = await api.get(`/api/Calendars/user/${user.userId}`);
-                    const userPermissions = permissionsResponse.data;
-
-                    const calendarPermission = userPermissions.find(p => p.calendarId == calendarId);
-                    permissionType = calendarPermission ? calendarPermission.permissionType : "Unknown";
-
-                    localStorage.setItem("calendarPermission", permissionType)
-                }
             } catch (error) {
                 console.error("Error loading calendar:", error);
                 errorMessage.value = "Failed to load calendar.";
@@ -291,8 +268,6 @@ export default {
             const rect = dropZone.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const side = x < rect.width / 2 ? "left" : "right";
-
-            const calendarId = localStorage.getItem("calendarId");
 
             if (side === "left") {
                 dropTicketData.value = ticketData;
@@ -351,12 +326,6 @@ export default {
             const validationError = validateTimeFields(modalStartTime.value, modalEndTime.value);
             if (validationError) {
                 modalErrorMessage.value = validationError;
-                return;
-            }
-
-            const calendarId = localStorage.getItem("calendarId");
-            if (!calendarId) {
-                modalErrorMessage.value = "Calendar ID is missing.";
                 return;
             }
 

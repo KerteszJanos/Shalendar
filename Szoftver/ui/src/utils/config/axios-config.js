@@ -11,6 +11,12 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
     }
+
+    const calendarId = localStorage.getItem("calendarId");
+    if (calendarId) {
+        config.headers["X-Calendar-Id"] = calendarId;
+    }
+
     return config;
 }, (error) => Promise.reject(error));
 

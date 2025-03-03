@@ -17,10 +17,12 @@ namespace Shalendar.Controllers
 	public class CalendarsController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
+		private readonly JwtHelper _jwtHelper;
 
-		public CalendarsController(ShalendarDbContext context)
+		public CalendarsController(ShalendarDbContext context, JwtHelper jwtHelper)
 		{
 			_context = context;
+			_jwtHelper = jwtHelper;
 		}
 
 		#region Gets
@@ -29,6 +31,14 @@ namespace Shalendar.Controllers
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Calendar>> GetCalendar(int id)
 		{
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			var calendar = await _context.Calendars.FindAsync(id);
 
 			if (calendar == null)

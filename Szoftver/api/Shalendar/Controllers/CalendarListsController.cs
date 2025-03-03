@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Shalendar.Controllers
 {
@@ -17,11 +19,13 @@ namespace Shalendar.Controllers
 	public class CalendarListsController : ControllerBase
     {
         private readonly ShalendarDbContext _context;
+		private readonly JwtHelper _jwtHelper;
 
-        public CalendarListsController(ShalendarDbContext context)
-        {
-            _context = context;
-        }
+		public CalendarListsController(ShalendarDbContext context, JwtHelper jwtHelper)
+		{
+			_context = context;
+			_jwtHelper = jwtHelper;
+		}
 
 
 
@@ -31,6 +35,14 @@ namespace Shalendar.Controllers
 		[HttpGet("calendar/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetCalendarListsByCalendarId(int calendarId)
 		{
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			var lists = await _context.CalendarLists
 				.Where(list => list.CalendarId == calendarId)
 				.Select(list => new
@@ -69,6 +81,14 @@ namespace Shalendar.Controllers
 		[HttpPost]
 		public async Task<ActionResult<CalendarList>> PostCalendarList(CalendarList calendarList)
 		{
+			var requiredPermission = "owner";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			var calendarExists = await _context.Calendars.AnyAsync(c => c.Id == calendarList.CalendarId);
 			if (!calendarExists)
 			{
@@ -91,6 +111,14 @@ namespace Shalendar.Controllers
 		[HttpPut("{id}")]
 		public async Task<IActionResult> UpdateCalendarList(int id, [FromBody] CalendarList updatedList)
 		{
+			var requiredPermission = "owner";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (id != updatedList.Id)
 			{
 				return BadRequest("ID mismatch.");
@@ -127,6 +155,14 @@ namespace Shalendar.Controllers
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteCalendarList(int id)
 		{
+			var requiredPermission = "owner";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			using var transaction = await _context.Database.BeginTransactionAsync();
 
 			try
@@ -159,10 +195,6 @@ namespace Shalendar.Controllers
 				return StatusCode(500, $"Error deleting list and related tickets: {ex.Message}");
 			}
 		}
-
-
-
-
 		#endregion
 	}
 }

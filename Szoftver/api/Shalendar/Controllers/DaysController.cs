@@ -17,10 +17,12 @@ namespace Shalendar.Controllers
 	public class DaysController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
+		private readonly JwtHelper _jwtHelper;
 
-		public DaysController(ShalendarDbContext context)
+		public DaysController(ShalendarDbContext context, JwtHelper jwtHelper)
 		{
 			_context = context;
+			_jwtHelper = jwtHelper;
 		}
 
 		#region Gets
@@ -28,6 +30,14 @@ namespace Shalendar.Controllers
 		[HttpGet("{date}/{calendarId}")]
 		public async Task<IActionResult> GetDayId(string date, int calendarId)
 		{
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (!DateTime.TryParse(date, out DateTime parsedDate))
 			{
 				return BadRequest("Invalid date format.");

@@ -16,12 +16,14 @@ namespace Shalendar.Controllers
 	public class UsersController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
+		private readonly JwtHelper _jwtHelper;
 		private readonly IConfiguration _configuration;
 
 
-		public UsersController(ShalendarDbContext context, IConfiguration configuration)
+		public UsersController(ShalendarDbContext context,JwtHelper jwtHelper, IConfiguration configuration)
 		{
 			_context = context;
+			_jwtHelper = jwtHelper;
 			_configuration = configuration;
 		}
 
@@ -50,8 +52,8 @@ namespace Shalendar.Controllers
 
 		#endregion
 
-		
-		
+
+
 		#region Posts
 
 		// POST: api/Users
@@ -231,12 +233,24 @@ namespace Shalendar.Controllers
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
 			var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-			var claims = new[]
+			var userPermissions = _context.CalendarPermissions
+				.Where(p => p.UserId == user.Id)
+				.Select(p => new { p.CalendarId, p.PermissionType })
+				.ToList();
+
+			var claims = new List<Claim>
 			{
-				new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+				new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString(), ClaimValueTypes.Integer32),
 				new Claim(JwtRegisteredClaimNames.Email, user.Email),
 				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
 			};
+
+
+
+			foreach (var permission in userPermissions)
+			{
+				claims.Add(new Claim("CalendarPermission", $"{permission.CalendarId}:{permission.PermissionType}"));
+			}
 
 			var token = new JwtSecurityToken(
 				issuer: jwtSettings["Issuer"],
@@ -248,6 +262,8 @@ namespace Shalendar.Controllers
 
 			return new JwtSecurityTokenHandler().WriteToken(token);
 		}
+
+
 		private string? ValidatePassword(string password)
 		{
 			if (string.IsNullOrEmpty(password) || password.Length < 8)

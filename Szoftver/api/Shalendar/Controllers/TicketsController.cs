@@ -16,10 +16,12 @@ namespace Shalendar.Controllers
 	public class TicketsController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
+		private readonly JwtHelper _jwtHelper;
 
-		public TicketsController(ShalendarDbContext context)
+		public TicketsController(ShalendarDbContext context, JwtHelper jwtHelper)
 		{
 			_context = context;
+			_jwtHelper = jwtHelper;
 		}
 
 		#region Gets
@@ -27,6 +29,14 @@ namespace Shalendar.Controllers
 		[HttpGet("todolist/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetTodoListTicketsByDateAndCalendar(string date, int calendarId)
 		{
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (!DateTime.TryParse(date, out DateTime parsedDate))
 			{
 				return BadRequest("Invalid date format.");
@@ -70,6 +80,14 @@ namespace Shalendar.Controllers
 		[HttpGet("scheduled/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetScheduledListTicketsByDateAndCalendar(string date, int calendarId)
 		{
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (!DateTime.TryParse(date, out DateTime parsedDate))
 			{
 				return BadRequest("Invalid date format.");
@@ -115,6 +133,14 @@ namespace Shalendar.Controllers
 		[HttpGet("AllDailyTickets/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetAllDailyTicketsByDateAndCalendar(string date, int calendarId)
 		{
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (!DateTime.TryParse(date, out DateTime parsedDate))
 			{
 				return BadRequest("Invalid date format.");
@@ -158,6 +184,14 @@ namespace Shalendar.Controllers
 		[HttpPost]
 		public async Task<ActionResult<Ticket>> CreateTicket([FromBody] Ticket ticket)
 		{
+			var requiredPermission = "write";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (string.IsNullOrWhiteSpace(ticket.Name))
 			{
 				return BadRequest("Ticket name is required.");
@@ -173,6 +207,14 @@ namespace Shalendar.Controllers
 		[HttpPost("ScheduleTicket")]
 		public async Task<IActionResult> ScheduleTicket([FromBody] ScheduleTicketDto dto)
 		{
+			var requiredPermission = "write";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (dto == null || dto.TicketId <= 0)
 			{
 				return BadRequest("Invalid data.");
@@ -238,6 +280,14 @@ namespace Shalendar.Controllers
 		[HttpPut("reorder")]
 		public async Task<IActionResult> ReorderTickets([FromBody] List<TicketOrderUpdate> orderUpdates)
 		{
+			var requiredPermission = "write";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (orderUpdates == null || !orderUpdates.Any())
 			{
 				return BadRequest("Invalid order update data.");
@@ -258,6 +308,14 @@ namespace Shalendar.Controllers
 		[HttpPut("move-to-calendar/{ticketId}")]
 		public async Task<IActionResult> MoveTicketToCalendar(int ticketId)
 		{
+			var requiredPermission = "write";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			var ticket = await _context.Tickets.FindAsync(ticketId);
 			if (ticket == null)
 			{
@@ -284,6 +342,14 @@ namespace Shalendar.Controllers
 		[HttpPut("{id}")]
 		public async Task<IActionResult> UpdateTicket(int id, [FromBody] UpdateTicketDto updatedTicketDto)
 		{
+			var requiredPermission = "write";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			if (id != updatedTicketDto.Id)
 			{
 				return BadRequest("Ticket ID mismatch.");
@@ -338,6 +404,14 @@ namespace Shalendar.Controllers
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteTicket(int id)
 		{
+			var requiredPermission = "write";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return Forbid($"Access denied. Required permission: {requiredPermission}");
+			}
+
 			var ticket = await _context.Tickets.FindAsync(id);
 			if (ticket == null)
 			{
