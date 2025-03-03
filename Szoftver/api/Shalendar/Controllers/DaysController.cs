@@ -35,7 +35,10 @@ namespace Shalendar.Controllers
 
 			if (!hasPermission)
 			{
-				return Forbid($"Access denied. Required permission: {requiredPermission}");
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
 			}
 
 			if (!DateTime.TryParse(date, out DateTime parsedDate))

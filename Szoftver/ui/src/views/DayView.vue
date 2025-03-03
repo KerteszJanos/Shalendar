@@ -120,7 +120,7 @@ export default {
                 null,
                 [],
                 showAddNewTicketModal,
-                (msg) => (errorMessage.value = msg)
+                errorMessage
             );
 
             if (!errorMessage.value && !calendarListError.value && !timeError.value) {
@@ -148,7 +148,11 @@ export default {
                 const response = await api.get(`/api/Days/${route.params.date}/${calendarId.value}`);
                 currentDayId.value = response.data?.id || null;
             } catch (error) {
-                console.error("Error fetching day ID:", error);
+                if (error.response && error.response.status === 403) {
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error fetching day ID:", error);
+                }
             }
         };
 
@@ -157,7 +161,11 @@ export default {
                 const response = await api.get(`/api/CalendarLists/calendar/${calendarId.value}`);
                 calendarLists.value = response.data;
             } catch (error) {
-                console.error("Error fetching calendar lists:", error);
+                if (error.response && error.response.status === 403) {
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error fetching calendar lists:", error);
+                }
             }
         };
 
@@ -172,8 +180,12 @@ export default {
                 });
                 return response.data.id;
             } catch (error) {
-                console.error("Error creating new day:", error);
-                return null;
+                if (error.response && error.response.status === 403) {
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error creating new day:", error);
+                    return null;
+                }
             }
         };
 

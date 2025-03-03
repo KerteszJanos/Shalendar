@@ -30,7 +30,11 @@ export const updateTicketOrder = async (input) => {
 
         return sortedTickets;
     } catch (error) {
+        if (error.response && error.response.status === 403) {
+            console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+        }
+        else {
         console.error("Error updating ticket order:", error);
-        throw new Error("Failed to update ticket positions.");
+        }
     }
 };

@@ -158,8 +158,13 @@ export default {
                     backgroundColor: ticket.color || "#ffffff",
                 }));
             } catch (error) {
-                console.error("Error loading tickets:", error);
-                errorMessage.value = "Failed to load tickets.";
+                if (error.response && error.response.status === 403) {
+                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error loading tickets:", error);
+                    errorMessage.value = "Failed to load tickets.";
+                }
             } finally {
                 loading.value = false;
             }
@@ -168,14 +173,18 @@ export default {
         // Delete a ticket by its id
         const handleDelete = async (ticketId) => {
             await deleteTicket(ticketId, tickets.value, errorMessage);
-            await fetchTickets();
-            await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            if (!errorMessage.value) {
+                await fetchTickets();
+                await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            }
         };
 
         const handleSendBack = async (ticketId) => {
             await sendBackToCalendarList(ticketId);
-            await fetchTickets();
-            await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            if (!errorMessage.value) {
+                await fetchTickets();
+                await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            }
         };
 
         // Compute CSS style for a ticket based on its startTime and endTime by combining the selected date and time

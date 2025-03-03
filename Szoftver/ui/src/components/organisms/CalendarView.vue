@@ -120,7 +120,12 @@ export default {
                     scheduleTickets
                 };
             } catch (error) {
-                console.error("Error fetching tickets:", error);
+                if (error.response && error.response.status === 403) {
+                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error fetching tickets:", error);
+                }
                 return {
                     todoTickets: [],
                     scheduleTickets: []
@@ -213,8 +218,13 @@ export default {
                 const response = await api.get(`/api/Calendars/${calendarId}`);
                 calendar.value = response.data;
             } catch (error) {
-                console.error("Error loading calendar:", error);
-                errorMessage.value = "Failed to load calendar.";
+                if (error.response && error.response.status === 403) {
+                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error loading calendar:", error);
+                    errorMessage.value = "Failed to load calendar.";
+                }
             }
         };
 
@@ -291,7 +301,12 @@ export default {
 
                     await updateDayTickets(date);
                 } catch (error) {
-                    console.error("DEBUG: Right drop - error scheduling ticket:", error);
+                    if (error.response && error.response.status === 403) {
+                        errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                        console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    } else {
+                        console.error("DEBUG: Right drop - error scheduling ticket:", error);
+                    }
                 }
                 localStorage.removeItem("draggedTicket");
             }
@@ -345,7 +360,12 @@ export default {
 
                 await updateDayTickets(dropDate.value);
             } catch (error) {
-                console.error("DEBUG: Left drop - error scheduling ticket:", error);
+                if (error.response && error.response.status === 403) {
+                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("DEBUG: Left drop - error scheduling ticket:", error);
+                }
             }
 
             localStorage.removeItem("draggedTicket");

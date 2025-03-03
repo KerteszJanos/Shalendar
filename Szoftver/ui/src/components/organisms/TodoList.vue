@@ -105,8 +105,13 @@ export default {
                     }))
                     .sort((a, b) => a.currentPosition - b.currentPosition);
             } catch (error) {
-                console.error("Error loading tickets:", error);
-                errorMessage.value = "Failed to load tickets.";
+                if (error.response && error.response.status === 403) {
+                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error loading tickets:", error);
+                    errorMessage.value = "Failed to load tickets.";
+                }
             } finally {
                 loading.value = false;
             }
@@ -114,15 +119,22 @@ export default {
 
         const handleDelete = async (ticketId) => {
             await deleteTicket(ticketId, tickets.value, errorMessage);
-            await fetchTickets();
-            await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            await deleteTicket(ticketId, tickets.value, errorMessage);
+
+            if (!errorMessage.value) {
+                await fetchTickets();
+                await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            }
+
         }
 
         const handleSendBack = async (ticketId) => {
             await sendBackToCalendarList(ticketId);
-            await updateTicketOrder(tickets.value);
-            await fetchTickets();
-            await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            if (!errorMessage.value) {
+                await updateTicketOrder(tickets.value);
+                await fetchTickets();
+                await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            }
         };
 
         const onDragEnd = async () => {

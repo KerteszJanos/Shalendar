@@ -40,7 +40,10 @@ namespace Shalendar.Controllers
 
 			if (!hasPermission)
 			{
-				return Forbid($"Access denied. Required permission: {requiredPermission}");
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
 			}
 
 			var lists = await _context.CalendarLists
@@ -86,7 +89,10 @@ namespace Shalendar.Controllers
 
 			if (!hasPermission)
 			{
-				return Forbid($"Access denied. Required permission: {requiredPermission}");
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
 			}
 
 			var calendarExists = await _context.Calendars.AnyAsync(c => c.Id == calendarList.CalendarId);
@@ -116,7 +122,10 @@ namespace Shalendar.Controllers
 
 			if (!hasPermission)
 			{
-				return Forbid($"Access denied. Required permission: {requiredPermission}");
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
 			}
 
 			if (id != updatedList.Id)
@@ -160,7 +169,10 @@ namespace Shalendar.Controllers
 
 			if (!hasPermission)
 			{
-				return Forbid($"Access denied. Required permission: {requiredPermission}");
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
 			}
 
 			using var transaction = await _context.Database.BeginTransactionAsync();

@@ -17,6 +17,7 @@
 
         <label for="edit-ticket-endTime">End Time</label>
         <input id="edit-ticket-endTime" v-model="ticket.endTime" type="time" />
+        <p v-if="permissionError" class="error">{{ permissionError }}</p>
     </div>
 </Modal>
 </template>
@@ -56,6 +57,7 @@ export default {
             name: "",
             time: ""
         });
+        const permissionError = ref("");
 
         // Update previousStartTime when modal opens
         watch(
@@ -106,7 +108,12 @@ export default {
                 emit("ticketUpdated");
                 closeModal();
             } catch (error) {
-                console.error("Error updating ticket:", error);
+                if (error.response && error.response.status === 403) {
+                    permissionError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error updating ticket:", error);
+                }
             }
         };
 
@@ -115,6 +122,7 @@ export default {
             errors,
             closeModal,
             saveChanges,
+            permissionError
         };
     },
 };

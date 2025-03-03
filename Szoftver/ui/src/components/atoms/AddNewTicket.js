@@ -24,7 +24,13 @@ export const addNewTicket = async (ticketData, selectedListId, calendarLists, sh
 
         showAddNewTicketModal.value = false;
     } catch (error) {
-        console.error("Error adding ticket:", error);
-        errorMessage.value = error.response?.data || "Failed to add ticket.";
+        if (error.response && error.response.status === 403) {
+            errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+            console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+        } else {
+            console.error("Error adding ticket:", error);
+            errorMessage.value = error.response?.data || "Failed to add ticket.";
+        }
+        return;
     }
 };

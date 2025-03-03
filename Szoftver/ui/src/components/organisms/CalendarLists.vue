@@ -192,8 +192,13 @@ export default {
                 await fetchCalendarLists();
                 showEditTicketModal.value = false;
             } catch (error) {
-                console.error("Error updating ticket:", error);
-                editTicketError.value = "Failed to update ticket.";
+                if (error.response && error.response.status === 403) {
+                    editTicketError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error updating ticket:", error);
+                    editTicketError.value = "Failed to update ticket.";
+                }
             }
         };
 
@@ -237,8 +242,13 @@ export default {
 
                 showEditCalendarListModal.value = false;
             } catch (error) {
-                console.error("Error updating list:", error);
-                editListError.value = "Failed to update list.";
+                if (error.response && error.response.status === 403) {
+                    editListError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error updating list:", error);
+                    editListError.value = "Failed to update list.";
+                }
             }
         };
 
@@ -249,8 +259,13 @@ export default {
                 showEditCalendarListModal.value = false;
                 await emitter.emit("calendarUpdated");
             } catch (error) {
-                console.error("Error deleting list:", error);
-                errorMessage.value = "Failed to delete list.";
+                if (error.response && error.response.status === 403) {
+                    editListError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error deleting list:", error);
+                    editListError.value = "Failed to delete list.";
+                }
             }
         };
 
@@ -264,7 +279,11 @@ export default {
                     ),
                 }));
             } catch (error) {
-                console.error("Error loading calendar lists:", error);
+                if (error.response && error.response.status === 403) {
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error loading calendar lists:", error);
+                }
             } finally {
                 loading.value = false;
             }
@@ -301,8 +320,13 @@ export default {
                 calendarLists.value.push(newListData);
                 showAddNewCalendarListModal.value = false;
             } catch (error) {
-                console.error("Error adding list:", error);
-                newListError.value = "Failed to add list.";
+                if (error.response && error.response.status === 403) {
+                    newListError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error adding list:", error);
+                    newListError.value = "Failed to add list.";
+                }
             }
         };
 

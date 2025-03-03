@@ -21,7 +21,12 @@ export const deleteTicket = async (ticketId, listOrTickets, errorMessage) => {
             }
         }
     } catch (error) {
-        console.error("Error deleting ticket:", error);
-        errorMessage.value = "Failed to delete ticket.";
+        if (error.response && error.response.status === 403) {
+            errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+            console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+        } else {
+            console.error("Error deleting ticket:", error);
+            errorMessage.value = "Failed to delete ticket.";
+        }
     }
 };
