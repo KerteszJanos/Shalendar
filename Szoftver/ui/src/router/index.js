@@ -5,6 +5,7 @@ import Dashboard from '../views/Dashboard.vue';
 import Profile from '../views/Profile.vue';
 import CalendarView from '../components/organisms/CalendarView.vue';
 import DayView from '../views/DayView.vue';
+import Calendars from '../views/Calendars.vue';
 import { jwtDecode } from "jwt-decode";
 
 const routes = [
@@ -15,6 +16,7 @@ const routes = [
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/calendar', component: CalendarView, meta: { requiresAuth: true } },
   { path: '/day/:date', component: DayView, props: true, meta: { requiresAuth: true } },
+  { path: '/calendars', component: Calendars, props: true, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

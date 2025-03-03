@@ -2,6 +2,7 @@
 <div class="calendar-layout">
     <div class="calendar-container">
         <div class="calendar-header">
+            <button class="add-button" @click="goToCalendars">+</button>
             <h2 v-if="calendar.name">{{ calendar.name }} - {{ formattedMonth }}</h2>
             <h2 v-else>Loading...</h2>
             <div class="navigation">
@@ -201,16 +202,39 @@ export default {
             router.push(`/day/${date}`);
         };
 
+        const goToCalendars = () => {
+            router.push("/calendars");
+        };
+
         const fetchCalendar = async () => {
             try {
                 const user = JSON.parse(localStorage.getItem("user"));
                 if (!user || !user.defaultCalendarId) {
                     throw new Error("No default calendar set.");
                 }
-                const calendarId = user.defaultCalendarId;
+
+                let permissionType;
+                let calendarId = localStorage.getItem("calendarId");
+
+                if (!calendarId) {
+                    calendarId = user.defaultCalendarId;
+                    permissionType = null;
+                }
+
                 localStorage.setItem("calendarId", calendarId);
+
                 const response = await api.get(`/api/Calendars/${calendarId}`);
                 calendar.value = response.data;
+
+                if (!permissionType) {
+                    const permissionsResponse = await api.get(`/api/Calendars/user/${user.userId}`);
+                    const userPermissions = permissionsResponse.data;
+
+                    const calendarPermission = userPermissions.find(p => p.calendarId == calendarId);
+                    permissionType = calendarPermission ? calendarPermission.permissionType : "Unknown";
+
+                    localStorage.setItem("calendarPermission", permissionType)
+                }
             } catch (error) {
                 console.error("Error loading calendar:", error);
                 errorMessage.value = "Failed to load calendar.";
@@ -408,6 +432,7 @@ export default {
             modalErrorMessage,
             closeTimeModal,
             confirmTimeModal,
+            goToCalendars,
         };
     },
 };

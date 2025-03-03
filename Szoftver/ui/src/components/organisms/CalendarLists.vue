@@ -19,7 +19,7 @@
                             <p><strong>{{ element.name }}</strong></p>
                             <p v-if="element.description">{{ element.description }}</p>
                             <p v-if="element.priority">Priority: {{ element.priority }}</p>
-                            <button @click="handleDelete(element.id, list)" class="delete-btn">
+                            <button @click.stop="handleDelete(element.id, list)" class="delete-btn">
                                 Delete
                             </button>
                         </div>
@@ -133,6 +133,7 @@ export default {
         const newListError = ref("");
         const editListError = ref("");
         const editTicketError = ref("");
+        const calendarId = localStorage.getItem("calendarId");
         const editedTicket = ref({
             id: null,
             name: "",
@@ -255,11 +256,6 @@ export default {
 
         const fetchCalendarLists = async () => {
             try {
-                const user = JSON.parse(localStorage.getItem("user"));
-                if (!user || !user.defaultCalendarId) {
-                    throw new Error("No default calendar set.");
-                }
-                const calendarId = user.defaultCalendarId;
                 const response = await api.get(`/api/CalendarLists/calendar/${calendarId}`);
                 calendarLists.value = response.data.map(list => ({
                     ...list,
@@ -292,12 +288,6 @@ export default {
             }
 
             try {
-                const user = JSON.parse(localStorage.getItem("user"));
-                if (!user || !user.defaultCalendarId) {
-                    throw new Error("No default calendar set.");
-                }
-
-                const calendarId = user.defaultCalendarId;
                 const response = await api.post("/api/CalendarLists", {
                     name: newList.value.name,
                     color: newList.value.color,

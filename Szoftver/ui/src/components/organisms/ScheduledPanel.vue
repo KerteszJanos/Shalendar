@@ -21,10 +21,10 @@
                             {{ formatTime(ticket.startTime) }} - {{ formatTime(ticket.endTime) }}
                         </p>
                     </div>
-                    <button class="delete-btn" @click="handleDelete(ticket.id)">
+                    <button class="delete-btn" @click.stop="handleDelete(ticket.id)">
                         Delete
                     </button>
-                    <button @click="handleSendBack(ticket.id)" class="send-back-btn">Send Back</button>
+                    <button @click.stop="handleSendBack(ticket.id)" class="send-back-btn">Send Back</button>
                 </div>
             </div>
         </div>

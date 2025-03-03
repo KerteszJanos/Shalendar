@@ -10,8 +10,8 @@
                     <p><strong>{{ element.name }}</strong></p>
                     <p v-if="element.description">{{ element.description }}</p>
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
-                    <button @click="handleDelete(element.id)" class="delete-btn">Delete</button>
-                    <button @click="handleSendBack(element.id)" class="send-back-btn">Send Back</button>
+                    <button @click.stop="handleDelete(element.id)" class="delete-btn">Delete</button>
+                    <button @click.stop="handleSendBack(element.id)" class="send-back-btn">Send Back</button>
                 </div>
             </template>
         </draggable>
