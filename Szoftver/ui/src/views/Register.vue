@@ -89,10 +89,10 @@ export default {
                 router.push("/login");
             } catch (error) {
                 if (error.response && error.response.status === 400) {
-                    setErrorMessage(errorMessage, "Error registering user.");
+                    setErrorMessage(errorMessage, `Error registering user: ${error.response.data}`);
                     console.error("Error registering user:", error);
                 } else {
-                    setErrorMessage(errorMessage, "Registration failed. Please try again!");
+                    setErrorMessage(errorMessage, `Error registering user.`);
                     console.error("Error registering user:", error);
                 }
             }

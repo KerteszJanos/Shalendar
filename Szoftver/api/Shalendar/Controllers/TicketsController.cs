@@ -185,6 +185,38 @@ namespace Shalendar.Controllers
 
 			return Ok(tickets);
 		}
+
+		[HttpGet("AllDailyTickets/{dayId}")]
+		public async Task<ActionResult<IEnumerable<object>>> GetAllDailyTicketsByDayId(int dayId)
+		{
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
+			}
+
+			var tickets = await _context.Tickets
+				.Where(t => t.ParentId == dayId)
+				.Select(t => new
+				{
+					t.Id,
+					t.Name,
+					t.StartTime,
+					t.CurrentPosition,
+					Color = _context.CalendarLists
+						.Where(c => c.Id == t.CalendarListId)
+						.Select(c => c.Color)
+						.FirstOrDefault()
+				})
+				.ToListAsync();
+
+			return Ok(tickets);
+		}
 		#endregion
 
 

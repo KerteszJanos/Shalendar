@@ -121,8 +121,6 @@ export default {
 
         const handleDelete = async (ticketId) => {
             await deleteTicket(ticketId, tickets.value, errorMessage);
-            await deleteTicket(ticketId, tickets.value, errorMessage);
-
             if (!errorMessage.value) {
                 await fetchTickets();
                 await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);

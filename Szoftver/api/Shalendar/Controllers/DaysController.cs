@@ -52,6 +52,33 @@ namespace Shalendar.Controllers
 			return Ok(new { id = day?.Id });
 		}
 
+		[HttpGet("range/{startDate}/{endDate}/{calendarId}")]
+		public async Task<IActionResult> GetExistingDaysInRange(string startDate, string endDate, int calendarId)
+		{
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
+			}
+
+			if (!DateTime.TryParse(startDate, out DateTime parsedStartDate) || !DateTime.TryParse(endDate, out DateTime parsedEndDate))
+			{
+				return BadRequest("Invalid date format.");
+			}
+
+			var days = await _context.Days
+				.Where(d => d.CalendarId == calendarId && d.Date.Date >= parsedStartDate.Date && d.Date.Date <= parsedEndDate.Date)
+				.Select(d => new { d.Id, Date = d.Date.ToString("yyyy-MM-dd") })
+				.ToListAsync();
+
+			return Ok(new { days });
+		}
+
 		#endregion
 
 
@@ -125,6 +152,7 @@ namespace Shalendar.Controllers
 
 			return Ok("Day was not deleted as it still has tickets.");
 		}
+
 		#endregion
 	}
 }

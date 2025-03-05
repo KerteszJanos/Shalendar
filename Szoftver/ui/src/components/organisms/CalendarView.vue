@@ -63,7 +63,9 @@ import Modal from "@/components/molecules/Modal.vue";
 import {
     emitter
 } from "@/utils/eventBus";
-import { setErrorMessage } from "@/utils/errorHandler";
+import {
+    setErrorMessage
+} from "@/utils/errorHandler";
 
 export default {
     components: {
@@ -98,9 +100,13 @@ export default {
             });
         });
 
-        const fetchTicketsForDate = async (date) => {
+        const fetchTicketsForDate = async (date, dayId = null) => {
             try {
-                const response = await api.get(`/api/Tickets/AllDailyTickets/${date}/${calendar.value.id}`);
+                let endpoint = dayId ?
+                    `/api/Tickets/AllDailyTickets/${dayId}` :
+                    `/api/Tickets/AllDailyTickets/${date}/${calendar.value.id}`;
+
+                const response = await api.get(endpoint);
                 const tickets = response.data.map(ticket => ({
                     name: ticket.name,
                     startTime: ticket.startTime,
@@ -122,7 +128,7 @@ export default {
                 };
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    setErrorMessage(errorMessage,`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
                     setErrorMessage(errorMessage, "Error fetching tickets.");
@@ -146,20 +152,42 @@ export default {
             let days = [];
             let startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
             let endOffset = (7 - ((startOffset + lastDateOfMonth) % 7)) % 7;
-
             const prevMonthLastDate = new Date(year, month, 0).getDate();
 
             const formatDate = (dateObj) => {
                 return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
             };
 
+            const startDate = formatDate(new Date(year, month - 1, prevMonthLastDate - startOffset + 1));
+            const endDate = formatDate(new Date(year, month + 1, endOffset));
+
+            let dayIdMap = {}; // Dátumokat ID-khoz térképezünk
+
+            try {
+                const response = await api.get(`/api/days/range/${startDate}/${endDate}/${calendar.value.id}`);
+                if (response.data.days && response.data.days.length > 0) {
+                    response.data.days.forEach(day => {
+                        dayIdMap[day.date] = day.id;
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching existing days:", error);
+            }
+
+            const getDayIdByDate = (date) => dayIdMap[date] || null;
+
             for (let i = startOffset - 1; i >= 0; i--) {
                 let dateObj = new Date(year, month - 1, prevMonthLastDate - i);
                 let date = formatDate(dateObj);
+                let dayId = getDayIdByDate(date);
+
                 let {
                     todoTickets,
                     scheduleTickets
-                } = await fetchTicketsForDate(date);
+                } = dayId ? await fetchTicketsForDate(null, dayId) : {
+                    todoTickets: [],
+                    scheduleTickets: []
+                };
 
                 days.push({
                     number: prevMonthLastDate - i,
@@ -173,10 +201,15 @@ export default {
             for (let i = 1; i <= lastDateOfMonth; i++) {
                 let dateObj = new Date(year, month, i);
                 let date = formatDate(dateObj);
+                let dayId = getDayIdByDate(date);
+
                 let {
                     todoTickets,
                     scheduleTickets
-                } = await fetchTicketsForDate(date);
+                } = dayId ? await fetchTicketsForDate(null, dayId) : {
+                    todoTickets: [],
+                    scheduleTickets: []
+                };
 
                 days.push({
                     number: i,
@@ -190,10 +223,15 @@ export default {
             for (let i = 1; i <= endOffset; i++) {
                 let dateObj = new Date(year, month + 1, i);
                 let date = formatDate(dateObj);
+                let dayId = getDayIdByDate(date);
+
                 let {
                     todoTickets,
                     scheduleTickets
-                } = await fetchTicketsForDate(date);
+                } = dayId ? await fetchTicketsForDate(null, dayId) : {
+                    todoTickets: [],
+                    scheduleTickets: []
+                };
 
                 days.push({
                     number: i,
@@ -221,11 +259,11 @@ export default {
                 calendar.value = response.data;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    setErrorMessage(errorMessage,`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
                     console.error("Error loading calendar:", error);
-                    setErrorMessage(errorMessage,"Failed to load calendar.");
+                    setErrorMessage(errorMessage, "Failed to load calendar.");
                 }
             }
         };

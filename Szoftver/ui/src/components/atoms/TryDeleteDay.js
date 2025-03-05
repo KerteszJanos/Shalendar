@@ -12,7 +12,7 @@ export const tryDeleteDay = async (calendarId, date, ticketCount) => {
     }
 
     try {
-        await api.delete(`/api/Days/${calendarId}/${date}`);
+        await api.delete(`/api/days/${calendarId}/${date}`);
         emitter.emit("successfulDayDelete");
     } catch (error) {
         console.error("Error deleting the day:", error);
