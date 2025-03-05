@@ -115,6 +115,9 @@ import {
 import {
     validateNameField
 } from "@/components/atoms/ValidateModalInputFields";
+import {
+    setErrorMessage
+} from "@/utils/errorHandler";
 
 export default {
     components: {
@@ -170,7 +173,7 @@ export default {
 
             const validationError = validateNameField(editedTicket.value.name);
             if (validationError) {
-                editTicketError.value = validationError;
+                setErrorMessage(editTicketError, validationError);
                 return;
             }
 
@@ -193,11 +196,11 @@ export default {
                 showEditTicketModal.value = false;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    editTicketError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(editTicketError, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
                     console.error("Error updating ticket:", error);
-                    editTicketError.value = "Failed to update ticket.";
+                    setErrorMessage(editTicketError, "Failed to update ticket.");
                 }
             }
         };
@@ -220,7 +223,7 @@ export default {
 
             const validationError = validateNameField(editedList.value.name);
             if (validationError) {
-                editListError.value = validationError;
+                setErrorMessage(editListError, validationError);
                 return;
             }
 
@@ -243,11 +246,11 @@ export default {
                 showEditCalendarListModal.value = false;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    editListError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(editListError, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
                     console.error("Error updating list:", error);
-                    editListError.value = "Failed to update list.";
+                    setErrorMessage(editListError, "Failed to update list.");
                 }
             }
         };
@@ -260,11 +263,11 @@ export default {
                 await emitter.emit("calendarUpdated");
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    editListError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(editListError, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
                     console.error("Error deleting list:", error);
-                    editListError.value = "Failed to delete list.";
+                    setErrorMessage(editListError, "Failed to delete list.");
                 }
             }
         };
@@ -302,7 +305,7 @@ export default {
 
             const validationError = validateNameField(newList.value.name);
             if (validationError) {
-                newListError.value = validationError;
+                setErrorMessage(newListError, validationError);
                 return;
             }
 
@@ -321,11 +324,11 @@ export default {
                 showAddNewCalendarListModal.value = false;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    newListError.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(newListError, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
                     console.error("Error adding list:", error);
-                    newListError.value = "Failed to add list.";
+                    setErrorMessage(newListError, "Failed to add list.");
                 }
             }
         };
@@ -343,7 +346,7 @@ export default {
         };
 
         const handleAddNewTicket = async () => {
-            newTicketError.value = ""; // Clear previous error message
+            newTicketError.value = "";
 
             await addNewTicket({
                     name: newTicket.value.name,
@@ -367,7 +370,7 @@ export default {
         };
 
         const onTicketDragEnd = async (list) => {
-            await updateTicketOrder(list);
+            await updateTicketOrder(list, errorMessage);
         };
 
         const handleDelete = async (ticketId, list) => {
@@ -387,7 +390,7 @@ export default {
                     const originalLength = list.tickets.length;
                     list.tickets = list.tickets.filter(ticket => ticket.id !== payload.ticketId);
                     if (list.tickets.length < originalLength && list.tickets.length > 0) {
-                        await updateTicketOrder(list);
+                        await updateTicketOrder(list, errorMessage);
                     }
                 }
             });

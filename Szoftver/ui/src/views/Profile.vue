@@ -10,19 +10,19 @@
     <h2>Change Password</h2>
     <form @submit.prevent="changePassword">
       <label for="oldPassword">Old Password:</label>
-      <input type="password" id="oldPassword" v-model="passwordChange.oldPassword" required />
+      <input type="password" id="oldPassword" v-model="oldPassword" required />
 
       <label for="newPassword">New Password:</label>
-      <input type="password" id="newPassword" v-model="passwordChange.newPassword" required @input="validatePassword" />
+      <input type="password" id="newPassword" v-model="newPassword" required @input="validatePassword" />
 
       <ul class="password-criteria">
-        <li :class="{ valid: passwordChange.newPassword.length >= 8 }">✔ At least 8 characters</li>
-        <li :class="{ valid: /[A-Z]/.test(passwordChange.newPassword) }">✔ At least one uppercase letter</li>
-        <li :class="{ valid: /[0-9]/.test(passwordChange.newPassword) }">✔ At least one number</li>
+        <li :class="{ valid: newPassword.length >= 8 }">✔ At least 8 characters</li>
+        <li :class="{ valid: /[A-Z]/.test(newPassword) }">✔ At least one uppercase letter</li>
+        <li :class="{ valid: /[0-9]/.test(newPassword) }">✔ At least one number</li>
       </ul>
 
       <label for="confirmPassword">Confirm New Password:</label>
-      <input type="password" id="confirmPassword" v-model="passwordChange.confirmPassword" required />
+      <input type="password" id="confirmPassword" v-model="confirmPassword" required />
 
       <button type="submit" :disabled="!isPasswordValid">Change Password</button>
     </form>
@@ -36,92 +36,99 @@
 </template>
 
 <script>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import api from "@/utils/config/axios-config";
+import { setErrorMessage } from "@/utils/errorHandler";
 
 export default {
-  data() {
-    return {
-      user: {
-        email: "",
-        username: "",
-      },
-      passwordChange: {
-        oldPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      },
-      errorMessage: "",
-      successMessage: "",
-      isPasswordValid: false,
-    };
-  },
-  async created() {
-    await this.fetchUser();
-  },
-  methods: {
-    async fetchUser() {
-      this.errorMessage = "";
+  setup() {
+    const user = ref(null);
+    const oldPassword = ref("");
+    const newPassword = ref("");
+    const confirmPassword = ref("");
+    const errorMessage = ref("");
+    const successMessage = ref("");
+    const isPasswordValid = ref(false);
+    const router = useRouter();
+
+    const fetchUser = async () => {
+      errorMessage.value = "";
       try {
         const response = await api.get("/api/Users/me");
-        this.user = response.data;
+        user.value = response.data;
       } catch (error) {
         console.error("Error fetching user:", error);
-        this.errorMessage = error.response?.data || "Failed to load user data.";
+        setErrorMessage(errorMessage, error.response?.data || "Failed to load user data.");
       }
-    },
+    };
 
-    validatePassword() {
-      const { newPassword } = this.passwordChange;
-      this.isPasswordValid =
-        newPassword.length >= 8 &&
-        /[A-Z]/.test(newPassword) &&
-        /[0-9]/.test(newPassword);
-    },
+    const validatePassword = () => {
+      isPasswordValid.value =
+        newPassword.value.length >= 8 &&
+        /[A-Z]/.test(newPassword.value) &&
+        /[0-9]/.test(newPassword.value);
+    };
 
-    async changePassword() {
-      this.errorMessage = "";
-      this.successMessage = "";
+    const changePassword = async () => {
+      errorMessage.value = "";
+      successMessage.value = "";
 
-      if (!this.isPasswordValid) {
-        this.errorMessage = "New password does not meet security requirements.";
+      if (!isPasswordValid.value) {
+        setErrorMessage(errorMessage, "New password does not meet security requirements.");
         return;
       }
 
-      if (this.passwordChange.newPassword !== this.passwordChange.confirmPassword) {
-        this.errorMessage = "Passwords do not match!";
+      if (newPassword.value !== confirmPassword.value) {
+        setErrorMessage(errorMessage, "Passwords do not match!");
         return;
       }
 
       try {
         await api.put("/api/Users/change-password", {
-          oldPassword: this.passwordChange.oldPassword,
-          newPassword: this.passwordChange.newPassword,
+          oldPassword: oldPassword.value,
+          newPassword: newPassword.value,
         });
-        this.successMessage = "Password changed successfully!";
-        this.passwordChange.oldPassword = "";
-        this.passwordChange.newPassword = "";
-        this.passwordChange.confirmPassword = "";
+        successMessage.value = "Password changed successfully!";
+        oldPassword.value = "";
+        newPassword.value = "";
+        confirmPassword.value = "";
       } catch (error) {
+        setErrorMessage(errorMessage, error.response?.data || "Failed to change password.");
         console.error("Error changing password:", error);
-        this.errorMessage = error.response?.data || "Failed to change password.";
       }
-    },
+    };
 
-    async deleteAccount() {
+    const deleteAccount = async () => {
       if (!confirm("Are you sure you want to delete your account? This action is irreversible!")) {
         return;
       }
 
-      this.errorMessage = "";
+      errorMessage.value = "";
       try {
         await api.delete("/api/Users/delete");
         localStorage.removeItem("token");
-        this.$router.push("/login");
+        router.push("/login");
       } catch (error) {
+        setErrorMessage(errorMessage, error.response?.data || "Failed to delete account.");
         console.error("Error deleting account:", error);
-        this.errorMessage = error.response?.data || "Failed to delete account.";
       }
-    },
+    };
+
+    onMounted(fetchUser);
+
+    return {
+      user,
+      oldPassword,
+      newPassword,
+      confirmPassword,
+      errorMessage,
+      successMessage,
+      isPasswordValid,
+      validatePassword,
+      changePassword,
+      deleteAccount,
+    };
   },
 };
 </script>

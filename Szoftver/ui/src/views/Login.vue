@@ -3,10 +3,10 @@
     <h2>Login</h2>
     <form @submit.prevent="loginUser">
         <label for="email">Email:</label>
-        <input type="email" id="email" v-model="user.email" required />
+        <input type="email" id="email" v-model="email" required />
 
         <label for="password">Password:</label>
-        <input type="password" id="password" v-model="user.password" required />
+        <input type="password" id="password" v-model="password" required />
 
         <button type="submit">Login</button>
     </form>
@@ -20,51 +20,60 @@
 </div>
 </template>
 
+  
 <script>
-import axios from 'axios';
+import {
+    ref
+} from "vue";
+import {
+    useRouter
+} from "vue-router";
+import axios from "axios";
 import {
     API_BASE_URL
-} from '@/utils/config/config';
+} from "@/utils/config/config";
+import {
+    setErrorMessage
+} from "@/utils/errorHandler";
 
 export default {
-    data() {
-        return {
-            user: {
-                email: '',
-                password: '',
-            },
-            errorMessage: '',
-        };
-    },
-    methods: {
-        async loginUser() {
+    setup() {
+        const email = ref("");
+        const password = ref("");
+        const errorMessage = ref("");
+        const router = useRouter();
+
+        const loginUser = async () => {
             try {
                 const response = await axios.post(`${API_BASE_URL}/api/Users/login`, {
-                    email: this.user.email,
-                    password: this.user.password
+                    email: email.value,
+                    password: password.value,
                 });
 
                 if (response.data.token) {
                     localStorage.setItem("token", response.data.token);
-
                     localStorage.setItem("user", JSON.stringify(response.data.user));
-
                     axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
-
                     window.dispatchEvent(new Event("storage"));
-
-                    this.$router.push("/dashboard");
+                    router.push("/dashboard");
                 }
             } catch (error) {
+                setErrorMessage(errorMessage, error.response?.data || "Login failed");
                 console.error("Login failed:", error);
-                this.errorMessage = error.response.data;
             }
-        }
+        };
 
+        return {
+            email,
+            password,
+            errorMessage,
+            loginUser,
+        };
     },
 };
 </script>
 
+  
 <style scoped>
 .login-container {
     max-width: 400px;

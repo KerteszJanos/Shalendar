@@ -6,6 +6,8 @@
     <button @click="openModal" class="add-calendar-button">+ New Calendar</button>
 
     <div v-if="calendars.length > 0" class="calendar-container">
+        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+
         <div v-for="calendar in calendars" :key="calendar.id" class="calendar-box" @click="navigateToCalendar(calendar.id)">
             <svg class="calendar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H5V8h14v13zM7 10h5v5H7z" />
@@ -16,10 +18,9 @@
     </div>
     <p v-else>No calendars available</p>
 
-    <!-- Modal a naptár létrehozásához -->
-    <Modal :show="showModal" title="Create New Calendar" confirmText="Create" @close="closeModal" @confirm="createCalendar">
+    <Modal :show="showNewCalendarModal" title="Create New Calendar" confirmText="Create" @close="closeNewCalendarModal" @confirm="createCalendar">
         <input type="text" v-model="newCalendarName" placeholder="Enter calendar name" class="modal-input" />
-        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <p v-if="NewCalendarerrorMessage" class="error-message">{{ NewCalendarerrorMessage }}</p>
     </Modal>
 </div>
 </template>
@@ -37,22 +38,26 @@ import {
 import {
     useRouter
 } from 'vue-router';
+import {
+    setErrorMessage
+} from "@/utils/errorHandler";
 
 export default {
     components: {
         Modal
     },
     setup() {
-        // Reaktív változók
         const permissions = ref([]);
         const calendars = ref([]);
-        const showModal = ref(false);
+        const showNewCalendarModal = ref(false);
         const newCalendarName = ref("");
         const errorMessage = ref(null);
+        const NewCalendarerrorMessage = ref(null);
         const router = useRouter();
         const userId = (() => {
             const userData = localStorage.getItem("user");
             if (!userData) {
+                setErrorMessage(errorMessage, "User data not found in localStorage.");
                 console.error("User data not found in localStorage.");
                 return null;
             }
@@ -64,28 +69,27 @@ export default {
         const navigateToCalendar = (calendarId) => {
             const permission = getPermission(calendarId);
             if (!permission) {
+                setErrorMessage(errorMessage, "Permission not found for calendar");
                 console.error("Permission not found for calendar", calendarId);
                 return;
             }
 
             localStorage.setItem("calendarId", calendarId);
-            
+
             router.push("/Dashboard");
         };
 
-        // API-hívás a felhasználó naptár engedélyeinek lekérdezésére
         const fetchCalendars = async () => {
             if (!userId) {
+                errorMessage(errorMessage);
                 console.error("User ID is missing.");
                 return;
             }
 
             try {
-                // Lekérjük a felhasználó naptár engedélyeit
                 const permissionsResponse = await api.get(`/api/Calendars/user/${userId}`);
                 permissions.value = permissionsResponse.data;
 
-                // Lekérjük az egyes naptárakat a permission lista alapján
                 const calendarRequests = permissions.value.map(permission =>
                     api.get(`/api/Calendars/${permission.calendarId}`)
                 );
@@ -93,37 +97,34 @@ export default {
                 const calendarResponses = await Promise.all(calendarRequests);
                 calendars.value = calendarResponses.map(response => response.data);
             } catch (error) {
+                setErrorMessage(errorMessage, "Error fetching calendar data.");
                 console.error("Error fetching calendar data:", error);
             }
         };
 
-        // Engedélyek kinyerése az adott naptárhoz
         const getPermission = (calendarId) => {
             const permission = permissions.value.find(p => p.calendarId === calendarId);
             return permission ? permission.permissionType : "Unknown";
         };
 
-        // Modal megnyitása
         const openModal = () => {
-            showModal.value = true;
+            showNewCalendarModal.value = true;
             newCalendarName.value = "";
-            errorMessage.value = null;
+            NewCalendarerrorMessage.value = "";
         };
 
-        // Modal bezárása
-        const closeModal = () => {
-            showModal.value = false;
+        const closeNewCalendarModal = () => {
+            showNewCalendarModal.value = false;
         };
 
-        // Új naptár létrehozása
         const createCalendar = async () => {
-            // Validáció
-            errorMessage.value = validateNameField(newCalendarName.value);
-            if (errorMessage.value) {
+            setErrorMessage(NewCalendarerrorMessage, validateNameField(newCalendarName.value));
+            if (NewCalendarerrorMessage.value) {
                 return;
             }
 
             if (!userId) {
+                setErrorMessage(errorMessage, "User ID is missing.");
                 console.error("User ID is missing.");
                 return;
             }
@@ -133,30 +134,27 @@ export default {
                     name: newCalendarName.value
                 });
 
-                // Ha sikeres, újra lekérjük a teljes naptárlistát, hogy frissüljenek az engedélyek is
                 await fetchCalendars();
 
-                // Modal bezárása
-                closeModal();
+                closeNewCalendarModal();
             } catch (error) {
+                setErrorMessage(NewCalendarerrorMessage, "Failed to create calendar.");
                 console.error("Error creating calendar:", error);
-                errorMessage.value = "Failed to create calendar.";
             }
         };
 
-        // API-hívás az oldal betöltésekor
         onMounted(fetchCalendars);
 
-        // Visszaadjuk a változókat és függvényeket
         return {
             permissions,
             calendars,
-            showModal,
+            showNewCalendarModal,
             newCalendarName,
             errorMessage,
+            NewCalendarerrorMessage,
             getPermission,
             openModal,
-            closeModal,
+            closeNewCalendarModal,
             createCalendar,
             navigateToCalendar
         };

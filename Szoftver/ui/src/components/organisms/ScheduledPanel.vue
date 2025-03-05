@@ -58,6 +58,7 @@ import {
     emitter
 } from "@/utils/eventBus";
 import EditTicketModalFromDayView from "@/components/molecules/EditTicketModalFromDayView.vue";
+import { setErrorMessage } from "@/utils/errorHandler";
 
 export default {
     components: {
@@ -145,7 +146,8 @@ export default {
                 const selectedDate = route.params.date;
                 const storedCalendarId = localStorage.getItem("calendarId");
                 if (!storedCalendarId) {
-                    throw new Error("No calendarId found in localStorage.");
+                    setErrorMessage(errorMessage, "No calendarId found in localStorage.");
+                    console.error("No calendarId found in localStorage.");
                 }
                 calendarId.value = storedCalendarId;
 
@@ -159,11 +161,11 @@ export default {
                 }));
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
+                    setErrorMessage(errorMessage, "Error loading tickets.");
                     console.error("Error loading tickets:", error);
-                    errorMessage.value = "Failed to load tickets.";
                 }
             } finally {
                 loading.value = false;
@@ -180,7 +182,7 @@ export default {
         };
 
         const handleSendBack = async (ticketId) => {
-            await sendBackToCalendarList(ticketId);
+            await sendBackToCalendarList(ticketId, errorMessage);
             if (!errorMessage.value) {
                 await fetchTickets();
                 await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);

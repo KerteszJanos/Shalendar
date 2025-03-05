@@ -3,22 +3,22 @@
     <h2>Registration</h2>
     <form @submit.prevent="registerUser">
         <label for="username">Username:</label>
-        <input type="text" id="username" v-model="user.username" required />
+        <input type="text" id="username" v-model="username" required />
 
         <label for="email">Email:</label>
-        <input type="email" id="email" v-model="user.email" required />
+        <input type="email" id="email" v-model="email" required />
 
         <label for="password">Password:</label>
-        <input type="password" id="password" v-model="user.password" required />
+        <input type="password" id="password" v-model="password" required @input="validatePassword" />
 
         <ul class="password-criteria">
-            <li :class="{ valid: user.password.length >= 8 }">✔ At least 8 characters</li>
-            <li :class="{ valid: /[A-Z]/.test(user.password) }">✔ At least one uppercase letter</li>
-            <li :class="{ valid: /[0-9]/.test(user.password) }">✔ At least one number</li>
+            <li :class="{ valid: password.length >= 8 }">✔ At least 8 characters</li>
+            <li :class="{ valid: /[A-Z]/.test(password) }">✔ At least one uppercase letter</li>
+            <li :class="{ valid: /[0-9]/.test(password) }">✔ At least one number</li>
         </ul>
 
         <label for="passwordAgain">Confirm Password:</label>
-        <input type="password" id="passwordAgain" v-model="user.passwordAgain" required />
+        <input type="password" id="passwordAgain" v-model="passwordAgain" required />
 
         <button type="submit">Register</button>
     </form>
@@ -34,56 +34,79 @@
 
   
 <script>
-import axios from 'axios';
+import {
+    ref
+} from "vue";
+import {
+    useRouter
+} from "vue-router";
+import axios from "axios";
 import {
     API_BASE_URL
-} from '@/utils/config/config';
+} from "@/utils/config/config";
+import {
+    setErrorMessage
+} from "@/utils/errorHandler";
 
 export default {
-    data() {
-        return {
-            user: {
-                email: '',
-                username: '',
-                password: '',
-                passwordAgain: '',
-            },
-            errorMessage: '',
-        };
-    },
-    methods: {
-        async registerUser() {
-            this.errorMessage = '';
+    setup() {
+        const username = ref("");
+        const email = ref("");
+        const password = ref("");
+        const passwordAgain = ref("");
+        const errorMessage = ref("");
+        const router = useRouter();
 
-            if (!this.user.username.trim()) {
-                this.errorMessage = 'Username cannot be empty or just whitespace!';
+        const validatePassword = () => {
+            return (
+                password.value.length >= 8 &&
+                /[A-Z]/.test(password.value) &&
+                /[0-9]/.test(password.value)
+            );
+        };
+
+        const registerUser = async () => {
+            errorMessage.value = "";
+
+            if (!username.value.trim()) {
+                setErrorMessage(errorMessage, "Username cannot be empty or just whitespace!");
                 return;
             }
 
-            if (this.user.password !== this.user.passwordAgain) {
-                this.errorMessage = 'Passwords do not match!';
+            if (password.value !== passwordAgain.value) {
+                setErrorMessage(errorMessage, "Passwords do not match!");
                 return;
             }
 
             try {
-                const response = await axios.post(`${API_BASE_URL}/api/Users`, {
-                    email: this.user.email,
-                    username: this.user.username.trim(),
-                    password: this.user.password,
+                await axios.post(`${API_BASE_URL}/api/Users`, {
+                    email: email.value,
+                    username: username.value.trim(),
+                    password: password.value,
                     defaultCalendarId: 0,
                 });
 
-                this.$router.push("/login");
+                router.push("/login");
             } catch (error) {
-                console.error('Error registering user:', error);
-
                 if (error.response && error.response.status === 400) {
-                    this.errorMessage = error.response.data;
+                    setErrorMessage(errorMessage, "Error registering user.");
+                    console.error("Error registering user:", error);
                 } else {
-                    this.errorMessage = 'Registration failed. Please try again!';
+                    setErrorMessage(errorMessage, "Registration failed. Please try again!");
+                    console.error("Error registering user:", error);
                 }
             }
-        }
+        };
+
+        return {
+            username,
+            email,
+            password,
+            passwordAgain,
+            errorMessage,
+            validatePassword,
+            registerUser,
+        };
     },
 };
 </script>

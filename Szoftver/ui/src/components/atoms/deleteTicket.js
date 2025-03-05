@@ -1,5 +1,6 @@
 import api from "@/utils/config/axios-config";
 import { updateTicketOrder } from "@/components/atoms/updateTicketOrder";
+import { setErrorMessage } from "@/utils/errorHandler";
 
 export const deleteTicket = async (ticketId, listOrTickets, errorMessage) => {
     try {
@@ -22,11 +23,11 @@ export const deleteTicket = async (ticketId, listOrTickets, errorMessage) => {
         }
     } catch (error) {
         if (error.response && error.response.status === 403) {
-            errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+            setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
             console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
         } else {
             console.error("Error deleting ticket:", error);
-            errorMessage.value = "Failed to delete ticket.";
+            setErrorMessage(errorMessage, "Failed to delete ticket.");
         }
     }
 };

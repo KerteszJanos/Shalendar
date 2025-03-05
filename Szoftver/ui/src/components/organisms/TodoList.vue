@@ -50,6 +50,7 @@ import EditTicketModalFromDayView from "@/components/molecules/EditTicketModalFr
 import {
     emitter
 } from "@/utils/eventBus";
+import { setErrorMessage } from "@/utils/errorHandler";
 
 export default {
     components: {
@@ -94,7 +95,8 @@ export default {
                 const selectedDate = route.params.date;
                 const storedCalendarId = localStorage.getItem("calendarId");
                 if (!storedCalendarId) {
-                    throw new Error("Nincs mentett calendarId a localStorage-ban.");
+                    setErrorMessage(errorMessage, "No calendarId found in localStorage.");
+                    console.error("No calendarId found in localStorage.");
                 }
                 calendarId.value = storedCalendarId;
                 const response = await api.get(`/api/Tickets/todolist/${selectedDate}/${calendarId.value}`);
@@ -106,11 +108,11 @@ export default {
                     .sort((a, b) => a.currentPosition - b.currentPosition);
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(errorMessage,`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
+                    setErrorMessage(errorMessage, "Error loading tickets.");
                     console.error("Error loading tickets:", error);
-                    errorMessage.value = "Failed to load tickets.";
                 }
             } finally {
                 loading.value = false;
@@ -129,16 +131,16 @@ export default {
         }
 
         const handleSendBack = async (ticketId) => {
-            await sendBackToCalendarList(ticketId);
+            await sendBackToCalendarList(ticketId, errorMessage);
             if (!errorMessage.value) {
-                await updateTicketOrder(tickets.value);
+                await updateTicketOrder(tickets.value, errorMessage);
                 await fetchTickets();
                 await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
             }
         };
 
         const onDragEnd = async () => {
-            await updateTicketOrder(tickets.value);
+            await updateTicketOrder(tickets.value, errorMessage);
             await fetchTickets();
         };
 

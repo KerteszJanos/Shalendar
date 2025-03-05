@@ -1,6 +1,7 @@
 import api from "@/utils/config/axios-config";
+import { setErrorMessage } from "@/utils/errorHandler";
 
-export const updateTicketOrder = async (input) => {
+export const updateTicketOrder = async (input, errorMessage) => {
     let ticketsArray = input.tickets ? input.tickets : input;
 
     if (!ticketsArray || ticketsArray.length === 0) return;
@@ -31,10 +32,11 @@ export const updateTicketOrder = async (input) => {
         return sortedTickets;
     } catch (error) {
         if (error.response && error.response.status === 403) {
+            setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
             console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
-        }
-        else {
-        console.error("Error updating ticket order:", error);
+        } else {
+            console.error("Error updating ticket order:", error);
+            setErrorMessage(errorMessage, "Failed to update ticket order.");
         }
     }
 };

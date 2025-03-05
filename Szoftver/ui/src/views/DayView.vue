@@ -1,5 +1,6 @@
 <template>
 <div class="container">
+    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <DayPanel class="panel" />
     <TodoList class="panel" />
     <button class="add-ticket-btn" @click="showAddNewTicketModal = true">+ Add Ticket</button>
@@ -7,7 +8,7 @@
         <div class="modal-content">
             <label for="ticket-name">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
-            <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+            <p v-if="nameErrorMessage" class="error">{{ nameErrorMessage }}</p>
 
             <label for="ticket-description">Description (optional)</label>
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
@@ -56,6 +57,7 @@ import {
     validateNameField,
     validateTimeFieldsBothRequiredOrEmpty
 } from "@/components/atoms/ValidateModalInputFields";
+import { setErrorMessage } from "@/utils/errorHandler";
 
 export default {
     components: {
@@ -78,28 +80,29 @@ export default {
         const calendarId = ref(localStorage.getItem("calendarId"));
         const calendarLists = ref([]);
         const errorMessage = ref("");
+        const nameErrorMessage = ref("");
         const calendarListError = ref("");
         const timeError = ref("");
 
         const handleAddNewTicket = async () => {
-            errorMessage.value = "";
+            nameErrorMessage.value = "";
             calendarListError.value = "";
             timeError.value = "";
 
             if (!newTicket.value.calendarListId) {
-                calendarListError.value = "Please select a calendar list before adding a ticket.";
+                setErrorMessage(calendarListError, "Please select a calendar list before adding a ticket.");
                 return;
             }
 
             const nameValidationError = validateNameField(newTicket.value.name);
             if (nameValidationError) {
-                errorMessage.value = nameValidationError;
+                setErrorMessage(nameErrorMessage, nameValidationError);
                 return;
             }
 
             const timeValidationError = validateTimeFieldsBothRequiredOrEmpty(newTicket.value.startTime, newTicket.value.endTime);
             if (timeValidationError) {
-                timeError.value = timeValidationError;
+                setErrorMessage(timeError, timeValidationError);
                 return;
             }
 
@@ -120,10 +123,10 @@ export default {
                 null,
                 [],
                 showAddNewTicketModal,
-                errorMessage
+                nameErrorMessage
             );
 
-            if (!errorMessage.value && !calendarListError.value && !timeError.value) {
+            if (!nameErrorMessage.value && !calendarListError.value && !timeError.value) {
                 showAddNewTicketModal.value = false;
 
                 if (newTicket.value.startTime) {
@@ -149,8 +152,10 @@ export default {
                 currentDayId.value = response.data?.id || null;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
+                    setErrorMessage(errorMessage, "Error fetching day ID.");
                     console.error("Error fetching day ID:", error);
                 }
             }
@@ -162,8 +167,10 @@ export default {
                 calendarLists.value = response.data;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
+                    setErrorMessage("Error fetching calendar lists.");
                     console.error("Error fetching calendar lists:", error);
                 }
             }
@@ -181,8 +188,10 @@ export default {
                 return response.data.id;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
+                    setErrorMessage("Error creating new day.");
                     console.error("Error creating new day:", error);
                     return null;
                 }
@@ -209,6 +218,7 @@ export default {
             calendarId,
             calendarLists,
             errorMessage,
+            nameErrorMessage,
             calendarListError,
             timeError,
         };

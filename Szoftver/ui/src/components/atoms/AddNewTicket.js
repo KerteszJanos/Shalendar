@@ -1,11 +1,12 @@
 import api from "@/utils/config/axios-config";
 import { updateTicketOrder } from "@/components/atoms/updateTicketOrder";
 import { validateNameField } from "@/components/atoms/ValidateModalInputFields";
+import { setErrorMessage } from "@/utils/errorHandler";
 
 export const addNewTicket = async (ticketData, selectedListId, calendarLists, showAddNewTicketModal, errorMessage) => {
     const nameValidationError = validateNameField(ticketData.name);
     if (nameValidationError) {
-        errorMessage.value = nameValidationError;
+        setErrorMessage(errorMessage, nameValidationError);
         return;
     }
     
@@ -25,11 +26,11 @@ export const addNewTicket = async (ticketData, selectedListId, calendarLists, sh
         showAddNewTicketModal.value = false;
     } catch (error) {
         if (error.response && error.response.status === 403) {
-            errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+            setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
             console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
         } else {
             console.error("Error adding ticket:", error);
-            errorMessage.value = error.response?.data || "Failed to add ticket.";
+            setErrorMessage(errorMessage, error.response?.data || "Failed to add ticket.");
         }
         return;
     }

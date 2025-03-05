@@ -63,6 +63,7 @@ import Modal from "@/components/molecules/Modal.vue";
 import {
     emitter
 } from "@/utils/eventBus";
+import { setErrorMessage } from "@/utils/errorHandler";
 
 export default {
     components: {
@@ -121,9 +122,10 @@ export default {
                 };
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(errorMessage,`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
+                    setErrorMessage(errorMessage, "Error fetching tickets.");
                     console.error("Error fetching tickets:", error);
                 }
                 return {
@@ -219,11 +221,11 @@ export default {
                 calendar.value = response.data;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(errorMessage,`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
                     console.error("Error loading calendar:", error);
-                    errorMessage.value = "Failed to load calendar.";
+                    setErrorMessage(errorMessage,"Failed to load calendar.");
                 }
             }
         };
@@ -302,10 +304,11 @@ export default {
                     await updateDayTickets(date);
                 } catch (error) {
                     if (error.response && error.response.status === 403) {
-                        errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                        setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                         console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     } else {
-                        console.error("DEBUG: Right drop - error scheduling ticket:", error);
+                        setErrorMessage(errorMessage, "Right drop - error scheduling ticket.")
+                        console.error("Right drop - error scheduling ticket:", error);
                     }
                 }
                 localStorage.removeItem("draggedTicket");
@@ -325,6 +328,7 @@ export default {
                     calendarDays.value[dayIndex].scheduleTickets = scheduleTickets;
                 }
             } catch (error) {
+                setErrorMessage(errorMessage, "Error updating day tickets.");
                 console.error("Error updating day tickets:", error);
             }
         };
@@ -340,7 +344,7 @@ export default {
         const confirmTimeModal = async () => {
             const validationError = validateTimeFields(modalStartTime.value, modalEndTime.value);
             if (validationError) {
-                modalErrorMessage.value = validationError;
+                setErrorMessage(modalErrorMessage, validationError);
                 return;
             }
 
@@ -361,10 +365,11 @@ export default {
                 await updateDayTickets(dropDate.value);
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    errorMessage.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
-                    console.error("DEBUG: Left drop - error scheduling ticket:", error);
+                    setErrorMessage(errorMessage, "Left drop - error scheduling ticket.");
+                    console.error("Left drop - error scheduling ticket:", error);
                 }
             }
 
