@@ -193,6 +193,25 @@ namespace Shalendar.Controllers
 			return NoContent();
 		}
 
+
+		[HttpPut("set-default-calendar/{calendarId}")]
+		[Authorize]
+		public async Task<IActionResult> SetDefaultCalendar(int calendarId)
+		{
+			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+			var user = await _context.Users.FindAsync(userId);
+
+			if (user == null)
+			{
+				return NotFound(new { message = "User not found." });
+			}
+
+			user.DefaultCalendarId = calendarId;
+			await _context.SaveChangesAsync();
+
+			return Ok(new { message = "Default calendar updated successfully." });
+		}
+
 		#endregion
 
 

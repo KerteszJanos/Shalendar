@@ -16,6 +16,7 @@
             <p class="calendar-permission">{{ getPermission(calendar.id) }}</p>
 
             <button @click.stop="openPermissionsModal(calendar.id)" class="show-permissions-button">Calendar permissions</button>
+            <button @click.stop="setDefaultCalendar(calendar.id)" class="set-default-button">Set as Default</button>
         </div>
     </div>
     <p v-else>No calendars available</p>
@@ -31,7 +32,7 @@
             <ul>
                 <li v-for="permission in sharedPermissions" :key="permission.email">
                     {{ permission.email }} - {{ permission.permissionType }}
-                    <button v-if="permission.email !== currentUserEmail" @click="confirmDelete(permission.email)" class="delete-permission-button">Delete</button>
+                    <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button">Delete</button>
                 </li>
             </ul>
             <div class="permission-input">
@@ -96,17 +97,15 @@ export default {
             return user.userId || null;
         })();
 
-        const confirmDelete = (email) => {
-            deletePermission(email);
-        };
-
         const deletePermission = async (email) => {
             try {
-                await api.delete(`/api/Calendars/permissions/${email}`);
+                await api.delete(`/api/Calendars/${selectedCalendarId.value}/permissions/${email}`);
                 await fetchPermissions(selectedCalendarId.value);
             } catch (error) {
                 if (error.response) {
-                    if (error.response.status === 404) {
+                    if (error.response.status === 403) {
+                        setErrorMessage(PermissionsErrorMessage, "Access denied: You do not have permission to delete this.");
+                    } else if (error.response.status === 404) {
                         setErrorMessage(PermissionsErrorMessage, "User or permission not found.");
                     } else {
                         setErrorMessage(PermissionsErrorMessage, "Error deleting permission: " + (error.response.data?.message || "Unknown error."));
@@ -115,6 +114,18 @@ export default {
                     setErrorMessage(PermissionsErrorMessage, "Network error or server is unreachable.");
                 }
                 console.error("Error deleting permission:", error);
+            }
+        };
+
+        const setDefaultCalendar = async (calendarId) => {
+            try {
+                await api.put(`/api/Users/set-default-calendar/${calendarId}`);
+                const userData = JSON.parse(localStorage.getItem("user")) || {};
+                userData.defaultCalendarId = calendarId;
+                localStorage.setItem("user", JSON.stringify(userData));
+            } catch (error) {
+                setErrorMessage(errorMessage, "Error setting default calendar.");
+                console.error("Error setting default calendar:", error);
             }
         };
 
@@ -240,7 +251,7 @@ export default {
                         setErrorMessage(PermissionsErrorMessage, "User not found. Please check the email address.");
                         console.error("User not found. Please check the email address.", error);
                     } else {
-                        setErrorMessage(PermissionsErrorMessage, "Error adding permission: " + (error.response.data ?.message || "Unknown error."));
+                        setErrorMessage(PermissionsErrorMessage, "Error adding permission: " + (error.response.data?.message || "Unknown error."));
                         console.error("Error adding permission.", error);
                     }
                 } else {
@@ -274,7 +285,7 @@ export default {
             newPermissionType,
             deletePermission,
             currentUserEmail,
-            confirmDelete,
+            setDefaultCalendar,
         };
     }
 };

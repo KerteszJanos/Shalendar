@@ -34,19 +34,19 @@ namespace Shalendar.Controllers
 			var requiredPermission = "read";
 			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
 
-			if (!hasPermission)
-			{
-				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
-				{
-					StatusCode = StatusCodes.Status403Forbidden
-				};
-			}
-
 			var calendar = await _context.Calendars.FindAsync(id);
 
 			if (calendar == null)
 			{
 				return NotFound();
+			}
+
+			if (!hasPermission)
+			{
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission} for the calendar named: {calendar.Name}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
 			}
 
 			return calendar;
@@ -214,8 +214,8 @@ namespace Shalendar.Controllers
 		#region Deletes
 
 		// DELETE: api/Calendars/{calendarId}/permissions/{email}
-		[HttpDelete("permissions/{email}")]
-		public async Task<IActionResult> DeleteCalendarPermission(string email)
+		[HttpDelete("{calendarId}/permissions/{email}")]
+		public async Task<IActionResult> DeleteCalendarPermission(int calendarId, string email)
 		{
 			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 			if (user == null)
@@ -224,7 +224,7 @@ namespace Shalendar.Controllers
 			}
 
 			var permission = await _context.CalendarPermissions
-				.FirstOrDefaultAsync(cp => cp.UserId == user.Id);
+				.FirstOrDefaultAsync(cp => cp.CalendarId == calendarId && cp.UserId == user.Id);
 
 			if (permission == null)
 			{
@@ -234,8 +234,9 @@ namespace Shalendar.Controllers
 			_context.CalendarPermissions.Remove(permission);
 			await _context.SaveChangesAsync();
 
-			return Ok(new { message = "Permission deleted successfully." });
+			return Ok();
 		}
+
 
 		#endregion
 	}
