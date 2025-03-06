@@ -7,6 +7,7 @@
 
     <div v-if="calendars.length > 0" class="calendar-container">
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
 
         <div v-for="calendar in calendars" :key="calendar.id" class="calendar-box" @click="navigateToCalendar(calendar.id)">
             <svg class="calendar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -76,6 +77,7 @@ export default {
         const showNewCalendarModal = ref(false);
         const newCalendarName = ref("");
         const errorMessage = ref(null);
+        const successMessage = ref("");
         const NewCalendarErrorMessage = ref(null);
         const PermissionsErrorMessage = ref(null);
         const showPermissionsModal = ref(false);
@@ -123,8 +125,9 @@ export default {
                 const userData = JSON.parse(localStorage.getItem("user")) || {};
                 userData.defaultCalendarId = calendarId;
                 localStorage.setItem("user", JSON.stringify(userData));
+                setErrorMessage(successMessage, "Default calendar updated successfully.");
             } catch (error) {
-                setErrorMessage(errorMessage, "Error setting default calendar.");
+                setErrorMessage(PermissionsErrorMessage, "Error setting default calendar.");
                 console.error("Error setting default calendar:", error);
             }
         };
@@ -286,6 +289,7 @@ export default {
             deletePermission,
             currentUserEmail,
             setDefaultCalendar,
+            successMessage,
         };
     }
 };
@@ -372,6 +376,12 @@ export default {
 
 .error-message {
     color: red;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.success-message {
+    color: green;
     margin-top: 5px;
     font-size: 0.9em;
 }
