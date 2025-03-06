@@ -14,13 +14,36 @@
             </svg>
             <p class="calendar-name">{{ calendar.name }}</p>
             <p class="calendar-permission">{{ getPermission(calendar.id) }}</p>
+
+            <button @click.stop="openPermissionsModal(calendar.id)" class="show-permissions-button">Calendar permissions</button>
         </div>
     </div>
     <p v-else>No calendars available</p>
 
     <Modal :show="showNewCalendarModal" title="Create New Calendar" confirmText="Create" @close="closeNewCalendarModal" @confirm="createCalendar">
         <input type="text" v-model="newCalendarName" placeholder="Enter calendar name" class="modal-input" />
-        <p v-if="NewCalendarerrorMessage" class="error-message">{{ NewCalendarerrorMessage }}</p>
+        <p v-if="NewCalendarErrorMessage" class="error-message">{{ NewCalendarErrorMessage }}</p>
+    </Modal>
+
+    <Modal :show="showPermissionsModal" title="Calendar permissions" confirmText="Add" @confirm="addPermission" @close="closePermissionsModal">
+        <p v-if="PermissionsErrorMessage" class="error-message">{{ PermissionsErrorMessage }}</p>
+        <div v-if="sharedPermissions.length > 0">
+            <ul>
+                <li v-for="permission in sharedPermissions" :key="permission.email">
+                    {{ permission.email }} - {{ permission.permissionType }}
+                    <button v-if="permission.email !== currentUserEmail" @click="confirmDelete(permission.email)" class="delete-permission-button">Delete</button>
+                </li>
+            </ul>
+            <div class="permission-input">
+                <input type="email" v-model="newPermissionEmail" placeholder="Enter email" class="modal-input" />
+                <select v-model="newPermissionType" class="modal-select">
+                    <option value="read">Read</option>
+                    <option value="write">Write</option>
+                    <option value="owner">Owner</option>
+                </select>
+            </div>
+        </div>
+        <p v-else-if="!PermissionsErrorMessage">No permissions set for this calendar.</p>
     </Modal>
 </div>
 </template>
@@ -52,7 +75,14 @@ export default {
         const showNewCalendarModal = ref(false);
         const newCalendarName = ref("");
         const errorMessage = ref(null);
-        const NewCalendarerrorMessage = ref(null);
+        const NewCalendarErrorMessage = ref(null);
+        const PermissionsErrorMessage = ref(null);
+        const showPermissionsModal = ref(false);
+        const sharedPermissions = ref([]);
+        const newPermissionEmail = ref("");
+        const newPermissionType = ref("read");
+        const selectedCalendarId = ref(null);
+        const currentUserEmail = JSON.parse(localStorage.getItem("user"))?.email || "";
         const router = useRouter();
         const userId = (() => {
             const userData = localStorage.getItem("user");
@@ -65,6 +95,28 @@ export default {
             const user = JSON.parse(userData);
             return user.userId || null;
         })();
+
+        const confirmDelete = (email) => {
+            deletePermission(email);
+        };
+
+        const deletePermission = async (email) => {
+            try {
+                await api.delete(`/api/Calendars/permissions/${email}`);
+                await fetchPermissions(selectedCalendarId.value);
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 404) {
+                        setErrorMessage(PermissionsErrorMessage, "User or permission not found.");
+                    } else {
+                        setErrorMessage(PermissionsErrorMessage, "Error deleting permission: " + (error.response.data?.message || "Unknown error."));
+                    }
+                } else {
+                    setErrorMessage(PermissionsErrorMessage, "Network error or server is unreachable.");
+                }
+                console.error("Error deleting permission:", error);
+            }
+        };
 
         const navigateToCalendar = (calendarId) => {
             const permission = getPermission(calendarId);
@@ -91,7 +143,7 @@ export default {
                 permissions.value = permissionsResponse.data;
 
                 const calendarRequests = permissions.value.map(permission =>
-                    api.get(`/api/Calendars/${permission.calendarId}`)
+                    api.get(`/api/Calendars/noPermissionNeeded/${permission.calendarId}`)
                 );
 
                 const calendarResponses = await Promise.all(calendarRequests);
@@ -110,7 +162,7 @@ export default {
         const openModal = () => {
             showNewCalendarModal.value = true;
             newCalendarName.value = "";
-            NewCalendarerrorMessage.value = "";
+            NewCalendarErrorMessage.value = "";
         };
 
         const closeNewCalendarModal = () => {
@@ -118,8 +170,8 @@ export default {
         };
 
         const createCalendar = async () => {
-            setErrorMessage(NewCalendarerrorMessage, validateNameField(newCalendarName.value));
-            if (NewCalendarerrorMessage.value) {
+            setErrorMessage(NewCalendarErrorMessage, validateNameField(newCalendarName.value));
+            if (NewCalendarErrorMessage.value) {
                 return;
             }
 
@@ -138,8 +190,63 @@ export default {
 
                 closeNewCalendarModal();
             } catch (error) {
-                setErrorMessage(NewCalendarerrorMessage, "Failed to create calendar.");
+                setErrorMessage(NewCalendarErrorMessage, "Failed to create calendar.");
                 console.error("Error creating calendar:", error);
+            }
+        };
+
+        const openPermissionsModal = async (calendarId) => {
+            PermissionsErrorMessage.value = "";
+            selectedCalendarId.value = calendarId;
+            showPermissionsModal.value = true;
+            await fetchPermissions(calendarId);
+        };
+
+        const closePermissionsModal = () => {
+            showPermissionsModal.value = false;
+            sharedPermissions.value = [];
+        };
+
+        const fetchPermissions = async (calendarId) => {
+            try {
+                const response = await api.get(`/api/Calendars/${calendarId}/permissions`);
+                sharedPermissions.value = response.data;
+            } catch (error) {
+                if (error.response && error.response.status === 403) {
+                    setErrorMessage(PermissionsErrorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    setErrorMessage(PermissionsErrorMessage, "Error fetching calendar permissions.");
+                    console.error("Error fetching calendar permissions:", error);
+                }
+            }
+        };
+
+        const addPermission = async () => {
+            if (sharedPermissions?.value?.length === 0) {
+                return;
+            }
+            try {
+                await api.post(`/api/Calendars/${selectedCalendarId.value}/permissions/${newPermissionEmail.value}/${newPermissionType.value}`);
+                await fetchPermissions(selectedCalendarId.value);
+                newPermissionEmail.value = "";
+                newPermissionType.value = "read";
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        setErrorMessage(PermissionsErrorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                        console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    } else if (error.response.status === 404) {
+                        setErrorMessage(PermissionsErrorMessage, "User not found. Please check the email address.");
+                        console.error("User not found. Please check the email address.", error);
+                    } else {
+                        setErrorMessage(PermissionsErrorMessage, "Error adding permission: " + (error.response.data ?.message || "Unknown error."));
+                        console.error("Error adding permission.", error);
+                    }
+                } else {
+                    setErrorMessage(PermissionsErrorMessage, "Network error or server is unreachable.");
+                    console.error("Network error or server is unreachable.", error);
+                }
             }
         };
 
@@ -151,18 +258,42 @@ export default {
             showNewCalendarModal,
             newCalendarName,
             errorMessage,
-            NewCalendarerrorMessage,
+            NewCalendarErrorMessage,
+            PermissionsErrorMessage,
             getPermission,
             openModal,
             closeNewCalendarModal,
             createCalendar,
-            navigateToCalendar
+            navigateToCalendar,
+            showPermissionsModal,
+            openPermissionsModal,
+            closePermissionsModal,
+            sharedPermissions,
+            addPermission,
+            newPermissionEmail,
+            newPermissionType,
+            deletePermission,
+            currentUserEmail,
+            confirmDelete,
         };
     }
 };
 </script>
 
 <style scoped>
+.permission-input {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.modal-select {
+    width: 35%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
 .calendar-container {
     display: flex;
     flex-wrap: wrap;
@@ -232,5 +363,20 @@ export default {
     color: red;
     margin-top: 5px;
     font-size: 0.9em;
+}
+
+.delete-permission-button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-permission-button:hover {
+    background: darkred;
 }
 </style>

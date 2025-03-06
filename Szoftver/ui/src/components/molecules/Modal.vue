@@ -4,7 +4,7 @@
       <h2>{{ title }}</h2>
       <slot></slot>
       <div class="modal-actions">
-        <button @click="closeModal">Mégse</button>
+        <button @click="closeModal">Cancel</button>
         <button @click="confirmAction">{{ confirmText }}</button>
       </div>
     </div>

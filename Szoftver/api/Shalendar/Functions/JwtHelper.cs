@@ -51,4 +51,35 @@ public class JwtHelper
 
 		return userPermission == requiredPermissionLevel;
 	}
+
+	public async Task<bool> HasCalendarPermission(HttpContext httpContext, string requiredPermissionLevel, int calendarId)
+	{
+		var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+		{
+			return false;
+		}
+
+		var userPermission = await _context.CalendarPermissions
+			.Where(p => p.CalendarId == calendarId && p.UserId == userId)
+			.Select(p => p.PermissionType)
+			.FirstOrDefaultAsync();
+
+		if (string.IsNullOrEmpty(userPermission))
+		{
+			return false;
+		}
+
+		if (userPermission == "owner")
+		{
+			return true;
+		}
+
+		if ((requiredPermissionLevel == "read" || requiredPermissionLevel == "write") && userPermission == "write")
+		{
+			return true;
+		}
+
+		return userPermission == requiredPermissionLevel;
+	}
 }
