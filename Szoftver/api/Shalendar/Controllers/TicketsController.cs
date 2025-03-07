@@ -70,6 +70,7 @@ namespace Shalendar.Controllers
 					t.Priority,
 					t.CalendarListId,
 					t.CurrentPosition,
+					t.IsCompleted,
 					Color = _context.CalendarLists
 								.Where(c => c.Id == t.CalendarListId)
 								.Select(c => c.Color)
@@ -126,6 +127,7 @@ namespace Shalendar.Controllers
 					t.StartTime,
 					t.EndTime,
 					t.CurrentPosition,
+					t.IsCompleted,
 					Color = _context.CalendarLists
 								.Where(c => c.Id == t.CalendarListId)
 								.Select(c => c.Color)
@@ -176,6 +178,7 @@ namespace Shalendar.Controllers
 					t.Name,
 					t.StartTime,
 					t.CurrentPosition,
+					t.IsCompleted,
 					Color = _context.CalendarLists
 								.Where(c => c.Id == t.CalendarListId)
 								.Select(c => c.Color)
@@ -208,6 +211,7 @@ namespace Shalendar.Controllers
 					t.Name,
 					t.StartTime,
 					t.CurrentPosition,
+					t.IsCompleted,
 					Color = _context.CalendarLists
 						.Where(c => c.Id == t.CalendarListId)
 						.Select(c => c.Color)
@@ -450,6 +454,32 @@ namespace Shalendar.Controllers
 			{
 				return StatusCode(500, $"An error occurred while updating the ticket: {ex.Message}");
 			}
+		}
+
+		[HttpPut("updateTicketCompleted")]
+		public async Task<IActionResult> UpdateTicketCompleted(int ticketId, bool isCompleted)
+		{
+			var requiredPermission = "write";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
+			}
+
+			var ticket = await _context.Tickets.FindAsync(ticketId);
+			if (ticket == null)
+			{
+				return NotFound(new { message = "Ticket not found" });
+			}
+
+			ticket.IsCompleted = isCompleted;
+			await _context.SaveChangesAsync();
+
+			return Ok();
 		}
 
 		#endregion

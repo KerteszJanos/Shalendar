@@ -16,6 +16,7 @@
                 <draggable class="ticket" v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
                     <template #item="{ element }">
                         <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)">
+                            <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
                             <p><strong>{{ element.name }}</strong></p>
                             <p v-if="element.description">{{ element.description }}</p>
                             <p v-if="element.priority">Priority: {{ element.priority }}</p>
@@ -118,6 +119,9 @@ import {
 import {
     setErrorMessage
 } from "@/utils/errorHandler";
+import {
+    toggleTicketCompletion
+} from "@/components/atoms/isCompletedCheckBox";
 
 export default {
     components: {
@@ -160,6 +164,15 @@ export default {
             name: "",
             color: "#CCCCCC"
         });
+
+        const toggleCompletion = async (ticket) => {
+            try {
+                await toggleTicketCompletion(ticket.id, !ticket.isCompleted, errorMessage);
+                ticket.isCompleted = !ticket.isCompleted;
+            } catch (error) {
+                console.error("Failed to update ticket status:", error);
+            }
+        };
 
         const openEditTicketModal = (ticket) => {
             editedTicket.value = {
@@ -443,6 +456,7 @@ export default {
             newListError,
             editListError,
             editTicketError,
+            toggleCompletion,
         };
     },
 };
@@ -480,6 +494,14 @@ export default {
     cursor: pointer;
 }
 
+.ticket-checkbox {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 18px;
+    height: 18px;
+}
+
 .lists-content {
     display: flex;
     flex-direction: row;
@@ -503,6 +525,7 @@ export default {
 }
 
 .ticket-item {
+    position: relative;
     padding: 5px;
     border: 2px solid black;
     margin-bottom: 5px;

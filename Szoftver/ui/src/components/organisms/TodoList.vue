@@ -7,6 +7,7 @@
         <draggable v-model="tickets" @end="onDragEnd" group="tickets" itemKey="id">
             <template #item="{ element }">
                 <div class="ticket" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)">
+                    <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
                     <p><strong>{{ element.name }}</strong></p>
                     <p v-if="element.description">{{ element.description }}</p>
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
@@ -50,7 +51,10 @@ import EditTicketModalFromDayView from "@/components/molecules/EditTicketModalFr
 import {
     emitter
 } from "@/utils/eventBus";
-import { setErrorMessage } from "@/utils/errorHandler";
+import {
+    setErrorMessage
+} from "@/utils/errorHandler";
+import { toggleTicketCompletion } from "@/components/atoms/isCompletedCheckBox";
 
 export default {
     components: {
@@ -88,6 +92,15 @@ export default {
             });
         });
 
+        const toggleCompletion = async (ticket) => {
+            try {
+                await toggleTicketCompletion(ticket.id, !ticket.isCompleted, errorMessage);
+                ticket.isCompleted = !ticket.isCompleted;
+            } catch (error) {
+                console.error("Failed to update ticket status:", error);
+            }
+        };
+
         const fetchTickets = async () => {
             loading.value = true;
             errorMessage.value = "";
@@ -108,7 +121,7 @@ export default {
                     .sort((a, b) => a.currentPosition - b.currentPosition);
             } catch (error) {
                 if (error.response && error.response.status === 403) {
-                    setErrorMessage(errorMessage,`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
                     setErrorMessage(errorMessage, "Error loading tickets.");
@@ -169,12 +182,21 @@ export default {
             editedTicket,
             openEditTicketModalFromDayView,
             fetchTickets,
+            toggleCompletion,
         };
     },
 };
 </script>
 
 <style scoped>
+.ticket-checkbox {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 20px;
+    height: 20px;
+}
+
 .container {
     display: flex;
     height: 100vh;
@@ -200,6 +222,7 @@ export default {
 }
 
 .ticket {
+    position: relative;
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

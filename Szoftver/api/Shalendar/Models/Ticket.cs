@@ -30,6 +30,9 @@
 
 		[Required]
 		public int ParentId { get; set; }
+
+		[Required]
+		public bool IsCompleted { get; set; } = false;
 	}
 
 }
