@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shalendar.Contexts;
+using Shalendar.Functions;
 using Shalendar.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,14 +18,17 @@ namespace Shalendar.Controllers
 	{
 		private readonly ShalendarDbContext _context;
 		private readonly JwtHelper _jwtHelper;
+		private readonly DeleteCalendarHelper _deleteCalendarHelper;
+
 		private readonly IConfiguration _configuration;
 
 
-		public UsersController(ShalendarDbContext context,JwtHelper jwtHelper, IConfiguration configuration)
+		public UsersController(ShalendarDbContext context,JwtHelper jwtHelper, IConfiguration configuration, DeleteCalendarHelper deleteCalendarHelper)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;
 			_configuration = configuration;
+			_deleteCalendarHelper = deleteCalendarHelper;
 		}
 
 		#region Gets
@@ -222,22 +226,40 @@ namespace Shalendar.Controllers
 		[Authorize]
 		public async Task<IActionResult> DeleteCurrentUser()
 		{
+			var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+			{
+				return Unauthorized(new { message = "User not authenticated." });
+			}
 
-			//TODO: kitörölni mindent: naptárak, listák, jegyek, napok amihez a felhasználónak köze volt
+			var userPermissions = await _context.CalendarPermissions
+				.Where(cp => cp.UserId == userId)
+				.ToListAsync();
 
-			//	var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-			//	var user = await _context.Users.FindAsync(userId);
+			foreach (var permission in userPermissions)
+			{
+				bool shouldDelete = await _deleteCalendarHelper.ShouldDeleteCalendar(userId, permission.CalendarId);
+				if (shouldDelete)
+				{
+					await _deleteCalendarHelper.DeleteCalendar(permission.CalendarId);
+				}
+			}
 
-			//	if (user == null)
-			//	{
-			//		return NotFound();
-			//	}
+			// Ensure all changes are saved before deleting the user
+			await _context.SaveChangesAsync();
 
-			//	_context.Users.Remove(user);
-			//	await _context.SaveChangesAsync();
+			// Remove user
+			var user = await _context.Users.FindAsync(userId);
+			if (user != null)
+			{
+				_context.Users.Remove(user);
+				await _context.SaveChangesAsync();
+			}
 
 			return NoContent();
 		}
+
+
 
 
 		#endregion

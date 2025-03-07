@@ -18,6 +18,7 @@
 
             <button @click.stop="openPermissionsModal(calendar.id)" class="show-permissions-button">Calendar permissions</button>
             <button @click.stop="setDefaultCalendar(calendar.id)" class="set-default-button">Set as Default</button>
+            <button @click.stop="confirmDeleteCalendar(calendar.id)" class="delete-calendar-button">Delete</button>
         </div>
     </div>
     <p v-else>No calendars available</p>
@@ -98,6 +99,24 @@ export default {
             const user = JSON.parse(userData);
             return user.userId || null;
         })();
+
+        const confirmDeleteCalendar = async (calendarId) => { // gpt generated
+            if (!confirm("Warning: Deleting this calendar will remove your access. If you are the last owner, all associated content (e.g., tickets) will also be deleted. Do you want to proceed?")) {
+                return;
+            }
+            await deleteCalendar(calendarId);
+        };
+
+        const deleteCalendar = async (calendarId) => { // gpt generated
+            try {
+                const response = await api.delete(`/api/Calendars/${calendarId}`);
+                setErrorMessage(successMessage, response.data?.message);
+                fetchCalendars();
+            } catch (error) {
+                setErrorMessage(errorMessage, "Error deleting calendar.");
+                console.error("Error deleting calendar:", error);
+            }
+        };
 
         const deletePermission = async (email) => {
             try {
@@ -290,12 +309,28 @@ export default {
             currentUserEmail,
             setDefaultCalendar,
             successMessage,
+            confirmDeleteCalendar,
         };
     }
 };
 </script>
 
 <style scoped>
+.delete-calendar-button { /* gpt generated */
+    margin-left: 10px;
+    padding: 5px 10px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-calendar-button:hover { /* gpt generated */
+    background: darkred;
+}
+
 .permission-input {
     display: flex;
     gap: 10px;

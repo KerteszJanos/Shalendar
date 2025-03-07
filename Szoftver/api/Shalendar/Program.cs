@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shalendar.Contexts;
+using Shalendar.Functions;
 using System.Text;
 
 namespace Shalendar
@@ -24,6 +25,9 @@ namespace Shalendar
 
 			// Add JWT Helper to DI container
 			builder.Services.AddScoped<JwtHelper>();
+
+			// Add Delete Calendar Helper to DI container
+			builder.Services.AddScoped<DeleteCalendarHelper>();
 
 			//Add database context (SQL Server)
 			builder.Services.AddDbContext<ShalendarDbContext>(options =>

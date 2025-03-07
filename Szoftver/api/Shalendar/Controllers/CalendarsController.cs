@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
+using Shalendar.Functions;
 using Shalendar.Models;
 
 namespace Shalendar.Controllers
@@ -18,11 +20,13 @@ namespace Shalendar.Controllers
 	{
 		private readonly ShalendarDbContext _context;
 		private readonly JwtHelper _jwtHelper;
+		private readonly DeleteCalendarHelper _deleteCalendarHelper;
 
-		public CalendarsController(ShalendarDbContext context, JwtHelper jwtHelper)
+		public CalendarsController(ShalendarDbContext context, JwtHelper jwtHelper, DeleteCalendarHelper deleteCalendarHelper)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;
+			_deleteCalendarHelper = deleteCalendarHelper;
 		}
 
 		#region Gets
@@ -237,6 +241,25 @@ namespace Shalendar.Controllers
 			return Ok();
 		}
 
+		[HttpDelete("{calendarId}")]
+		public async Task<IActionResult> DeleteCalendar(int calendarId)
+		{
+			var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+			{
+				return Unauthorized(new { message = "User not authenticated." });
+			}
+
+			bool shouldDelete = await _deleteCalendarHelper.ShouldDeleteCalendar(userId, calendarId);
+
+			if (!shouldDelete)
+			{
+				return Ok(new { message = "User permission removed." });
+			}
+
+			await _deleteCalendarHelper.DeleteCalendar(calendarId);
+			return Ok(new { message = "Calendar deleted." });
+		}
 
 		#endregion
 	}
