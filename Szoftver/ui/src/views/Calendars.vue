@@ -2,6 +2,8 @@
 <div>
     <h2>Your Calendars</h2>
 
+    <p v-if="defaultCalendar" class="default-calendar">Default Calendar: {{ defaultCalendar.name }}</p>
+
     <!-- Új naptár létrehozása gomb -->
     <button @click="openModal" class="add-calendar-button">+ New Calendar</button>
 
@@ -81,6 +83,8 @@ export default {
         const successMessage = ref("");
         const NewCalendarErrorMessage = ref(null);
         const PermissionsErrorMessage = ref(null);
+        const defaultCalendar = ref(null);
+        const defaultCalendarId = JSON.parse(localStorage.getItem("user"))?.defaultCalendarId || null;
         const showPermissionsModal = ref(false);
         const sharedPermissions = ref([]);
         const newPermissionEmail = ref("");
@@ -145,6 +149,8 @@ export default {
                 userData.defaultCalendarId = calendarId;
                 localStorage.setItem("user", JSON.stringify(userData));
                 setErrorMessage(successMessage, "Default calendar updated successfully.");
+
+                defaultCalendar.value = calendars.value.find(cal => cal.id === calendarId) || null;
             } catch (error) {
                 setErrorMessage(PermissionsErrorMessage, "Error setting default calendar.");
                 console.error("Error setting default calendar:", error);
@@ -181,6 +187,8 @@ export default {
 
                 const calendarResponses = await Promise.all(calendarRequests);
                 calendars.value = calendarResponses.map(response => response.data);
+
+                defaultCalendar.value = calendars.value.find(cal => cal.id === defaultCalendarId) || null;
             } catch (error) {
                 setErrorMessage(errorMessage, "Error fetching calendar data.");
                 console.error("Error fetching calendar data:", error);
@@ -259,6 +267,13 @@ export default {
             if (sharedPermissions?.value?.length === 0) {
                 return;
             }
+
+            const userEmail = JSON.parse(localStorage.getItem("user"))?.email || "";
+            if (newPermissionEmail.value === userEmail) {
+                setErrorMessage(PermissionsErrorMessage, "You cannot grant permissions to yourself.");
+                return;
+            }
+
             try {
                 await api.post(`/api/Calendars/${selectedCalendarId.value}/permissions/${newPermissionEmail.value}/${newPermissionType.value}`);
                 await fetchPermissions(selectedCalendarId.value);
@@ -306,6 +321,7 @@ export default {
             newPermissionEmail,
             newPermissionType,
             deletePermission,
+            defaultCalendar,
             currentUserEmail,
             setDefaultCalendar,
             successMessage,
@@ -316,7 +332,8 @@ export default {
 </script>
 
 <style scoped>
-.delete-calendar-button { /* gpt generated */
+.delete-calendar-button {
+    /* gpt generated */
     margin-left: 10px;
     padding: 5px 10px;
     background: red;
@@ -327,7 +344,8 @@ export default {
     font-size: 14px;
 }
 
-.delete-calendar-button:hover { /* gpt generated */
+.delete-calendar-button:hover {
+    /* gpt generated */
     background: darkred;
 }
 
