@@ -21,12 +21,12 @@
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
                     <div class="ticket-list">
-                        <div v-for="ticket in day.scheduleTickets" :key="ticket.name" class="ticket" :style="{ backgroundColor: ticket.color }">
+                        <div v-for="ticket in day.scheduleTickets" :key="ticket.name" class="ticket" :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }">
                             {{ ticket.name }}
                         </div>
                     </div>
                     <div class="ticket-list">
-                        <div v-for="ticket in day.todoTickets" :key="ticket.name" class="ticket" :style="{ backgroundColor: ticket.color }">
+                        <div v-for="ticket in day.todoTickets" :key="ticket.name" class="ticket" :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }">
                             {{ ticket.name }}
                         </div>
                     </div>
@@ -111,7 +111,8 @@ export default {
                     name: ticket.name,
                     startTime: ticket.startTime,
                     currentPosition: ticket.currentPosition,
-                    color: ticket.color
+                    color: ticket.color,
+                    isCompleted: ticket.isCompleted
                 }));
 
                 const todoTickets = tickets
@@ -508,8 +509,19 @@ export default {
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
     flex-shrink: 0;
+    position: relative;
+}
+
+.ticket::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 15%;
+    background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+    pointer-events: none;
 }
 
 .calendar-layout {
@@ -561,6 +573,11 @@ export default {
     width: 100%;
     max-width: 100%;
     overflow: hidden;
+}
+
+.completed-ticket {
+    text-decoration: line-through;
+    opacity: 0.6;
 }
 
 .calendar-day {

@@ -1,9 +1,16 @@
 <template>
 <div class="container">
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    <DayPanel class="panel" />
-    <TodoList class="panel" />
-    <button class="add-ticket-btn" @click="showAddNewTicketModal = true">+ Add Ticket</button>
+    <button class="nav-btn left" @click="goToPreviousDay">&#9665;</button>
+    <div class="content">
+        <button class="add-ticket-btn" @click="showAddNewTicketModal = true">+ Add Ticket</button>
+        <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+        <div class="panels">
+            <DayPanel class="panel" />
+            <TodoList class="panel" />
+        </div>
+    </div>
+    <button class="nav-btn right" @click="goToNextDay">&#9655;</button>
+
     <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="handleAddNewTicket">
         <div class="modal-content">
             <label for="ticket-name">Ticket Name</label>
@@ -30,7 +37,6 @@
             <p v-if="calendarListError" class="error">{{ calendarListError }}</p>
         </div>
     </Modal>
-
 </div>
 </template>
 
@@ -38,7 +44,9 @@
 import {
     ref,
     onMounted,
-    onUnmounted
+    onUnmounted,
+    computed,
+    watch
 } from "vue";
 import {
     useRoute
@@ -57,7 +65,12 @@ import {
     validateNameField,
     validateTimeFieldsBothRequiredOrEmpty
 } from "@/components/atoms/ValidateModalInputFields";
-import { setErrorMessage } from "@/utils/errorHandler";
+import {
+    setErrorMessage
+} from "@/utils/errorHandler";
+import {
+    useRouter
+} from "vue-router";
 
 export default {
     components: {
@@ -83,6 +96,27 @@ export default {
         const nameErrorMessage = ref("");
         const calendarListError = ref("");
         const timeError = ref("");
+        const router = useRouter();
+
+        const currentDate = computed(() => {
+            return route.params.date ? new Date(route.params.date) : new Date();
+        });
+
+        const goToPreviousDay = () => {
+            const previousDate = new Date(currentDate.value);
+            previousDate.setDate(previousDate.getDate() - 1);
+            router.push({
+                path: `/day/${previousDate.toISOString().split("T")[0]}`
+            });
+        };
+
+        const goToNextDay = () => {
+            const nextDate = new Date(currentDate.value);
+            nextDate.setDate(nextDate.getDate() + 1);
+            router.push({
+                path: `/day/${nextDate.toISOString().split("T")[0]}`
+            });
+        };
 
         const handleAddNewTicket = async () => {
             nameErrorMessage.value = "";
@@ -198,6 +232,10 @@ export default {
             }
         };
 
+        watch(() => route.params.date, async () => {
+            await fetchDayId();
+        });
+
         const handleDayDeletion = () => {
             currentDayId.value = null;
         };
@@ -221,6 +259,9 @@ export default {
             nameErrorMessage,
             calendarListError,
             timeError,
+            goToPreviousDay,
+            goToNextDay,
+            currentDate,
         };
     },
 };
@@ -230,18 +271,52 @@ export default {
 .container {
     display: flex;
     height: 100vh;
-    position: relative;
+    padding: 20px;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.panels {
+    display: flex;
+    gap: 20px;
+    width: 100%;
 }
 
 .panel {
     flex: 1;
-    min-width: 50%;
+    min-width: 45%;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    background: white;
+}
+
+.nav-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 30px;
+    box-shadow: none;
+    outline: none;
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.nav-btn:hover {
+    background-color: #0056b3;
 }
 
 .add-ticket-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
+    margin-top: 20px;
     background-color: #4caf50;
     color: white;
     border: none;
@@ -249,6 +324,7 @@ export default {
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
+    align-self: center;
 }
 
 .add-ticket-btn:hover {

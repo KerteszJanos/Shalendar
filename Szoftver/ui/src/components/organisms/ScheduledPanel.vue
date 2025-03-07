@@ -13,20 +13,26 @@
                     <span class="time-label">{{ currentTime }}</span>
                 </div>
                 <div v-for="ticket in tickets" :key="ticket.id" class="ticket" :style="getTicketStyle(ticket)" @click="openEditTicketModalFromDayView(ticket)">
-                    <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" />
+
+                    <div class="ticket-header">
+                        <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" />
+                        <strong class="ticket-name">{{ ticket.name }}</strong>
+                    </div>
+
                     <div class="ticket-content">
-                        <strong>{{ ticket.name }}</strong>
                         <p v-if="ticket.description">{{ ticket.description }}</p>
                         <p v-if="ticket.priority">Priority: {{ ticket.priority }}</p>
                         <p v-if="ticket.startTime && ticket.endTime">
                             {{ formatTime(ticket.startTime) }} - {{ formatTime(ticket.endTime) }}
                         </p>
                     </div>
-                    <button class="delete-btn" @click.stop="handleDelete(ticket.id)">
-                        Delete
-                    </button>
-                    <button @click.stop="handleSendBack(ticket.id)" class="send-back-btn">Send Back</button>
+
+                    <div class="ticket-actions">
+                        <button class="delete-btn" @click.stop="handleDelete(ticket.id)">Delete</button>
+                        <button @click.stop="handleSendBack(ticket.id)" class="send-back-btn">Send Back</button>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -262,7 +268,21 @@ export default {
 
 <style scoped>
 .ticket {
-    cursor: pointer;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ticket-header {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between checkbox and text */
 }
 
 .container {
@@ -315,11 +335,14 @@ export default {
 }
 
 .ticket-checkbox {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.ticket-name {
+    font-weight: bold;
+    flex-grow: 1; /* Allows it to take up remaining space */
 }
 
 .time-indicator {
@@ -333,6 +356,32 @@ export default {
     align-items: center;
     justify-content: flex-start;
     padding-left: 5px;
+}
+
+.ticket-content {
+    font-size: 14px;
+}
+
+.ticket-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.delete-btn {
+    background: red;
+    color: white;
+    border: none;
+    padding: 3px 6px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.send-back-btn {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 3px 6px;
+    cursor: pointer;
+    border-radius: 4px;
 }
 
 .time-label {

@@ -321,8 +321,6 @@ namespace Shalendar.Controllers
 			}
 		}
 
-
-
 		#endregion
 
 
