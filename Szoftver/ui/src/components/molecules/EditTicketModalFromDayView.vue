@@ -43,12 +43,10 @@
             const ticket = ref({ ...props.ticketData });
             const previousStartTime = ref(null);
     
-            // Hibaüzenetek külön ref-ekben
             const nameError = ref("");
             const timeError = ref("");
             const permissionError = ref("");
     
-            // Update previousStartTime when modal opens
             watch(
                 () => props.show,
                 (newValue) => {

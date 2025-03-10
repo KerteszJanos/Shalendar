@@ -4,7 +4,6 @@
 
     <p v-if="defaultCalendar" class="default-calendar">Default Calendar: {{ defaultCalendar.name }}</p>
 
-    <!-- Új naptár létrehozása gomb -->
     <button @click="openModal" class="add-calendar-button">+ New Calendar</button>
 
     <div v-if="calendars.length > 0" class="calendar-container">
@@ -104,14 +103,14 @@ export default {
             return user.userId || null;
         })();
 
-        const confirmDeleteCalendar = async (calendarId) => { // gpt generated
+        const confirmDeleteCalendar = async (calendarId) => {
             if (!confirm("Warning: Deleting this calendar will remove your access. If you are the last owner, all associated content (e.g., tickets) will also be deleted. Do you want to proceed?")) {
                 return;
             }
             await deleteCalendar(calendarId);
         };
 
-        const deleteCalendar = async (calendarId) => { // gpt generated
+        const deleteCalendar = async (calendarId) => {
             try {
                 const response = await api.delete(`/api/Calendars/${calendarId}`);
                 setErrorMessage(successMessage, response.data?.message);
@@ -333,7 +332,6 @@ export default {
 
 <style scoped>
 .delete-calendar-button {
-    /* gpt generated */
     margin-left: 10px;
     padding: 5px 10px;
     background: red;
@@ -345,7 +343,6 @@ export default {
 }
 
 .delete-calendar-button:hover {
-    /* gpt generated */
     background: darkred;
 }
 

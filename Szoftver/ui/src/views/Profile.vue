@@ -117,7 +117,7 @@ export default {
                 localStorage.removeItem("user");
                 localStorage.removeItem("token");
                 localStorage.removeItem("calendarId");
-                window.dispatchEvent(new Event("storage")); // Ensure UI updates
+                window.dispatchEvent(new Event("storage"));
                 router.push("/login");
             } catch (error) {
                 setErrorMessage(errorMessage, error.response?.data || "Failed to delete account.");

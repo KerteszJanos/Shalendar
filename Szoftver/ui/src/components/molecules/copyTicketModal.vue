@@ -64,8 +64,8 @@ export default {
             errorMessage.value = "";
             try {
                 const response = await api.get(`/api/Calendars/accessible`);
-                const currentCalendarId = localStorage.getItem("calendarId"); // GPT generated
-                calendars.value = response.data.filter(calendar => calendar.id != currentCalendarId); // GPT generated
+                const currentCalendarId = localStorage.getItem("calendarId");
+                calendars.value = response.data.filter(calendar => calendar.id != currentCalendarId);
             } catch (error) {
                 console.error("Error fetching calendars:", error);
             } finally {
@@ -80,7 +80,7 @@ export default {
             }
 
             try {
-                if (props.ticketId) { // GPT generated - ellenőrzés ticketId alapján
+                if (props.ticketId) {
                     await api.post(`/api/tickets/copy-ticket`, null, {
                         params: {
                             ticketId: props.ticketId,
@@ -88,7 +88,7 @@ export default {
                             date: props.date || null
                         }
                     });
-                } else { // GPT generated - Ha nincs ticketId
+                } else {
                     await api.post(`/api/Calendars/copy-all-tickets`, null, {
                         params: {
                             calendarId: selectedCalendar.value

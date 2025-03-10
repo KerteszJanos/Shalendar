@@ -77,8 +77,8 @@ export default {
         const errorMessage = ref("");
         const calendarId = ref(null);
         const showEditTicketModalFromDayView = ref(false);
-        const showCopyTicketModal = ref(false); // GPT generated - Copy modal állapota
-        const selectedTicketId = ref(null); // GPT generated - Kiválasztott jegy ID
+        const showCopyTicketModal = ref(false);
+        const selectedTicketId = ref(null);
         const editedTicket = ref({
             id: null,
             name: "",

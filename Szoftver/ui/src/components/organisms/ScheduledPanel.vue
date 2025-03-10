@@ -87,8 +87,8 @@ export default {
         const errorMessage = ref("");
         const calendarId = ref(null);
         const showEditTicketModalFromDayView = ref(false);
-        const showCopyTicketModal = ref(false); // GPT generated - Copy modal állapota
-        const selectedTicketId = ref(null); // GPT generated - Kiválasztott jegy ID
+        const showCopyTicketModal = ref(false);
+        const selectedTicketId = ref(null);
         const editedTicket = ref({
             id: null,
             name: "",
@@ -108,7 +108,6 @@ export default {
             showEditTicketModalFromDayView.value = true;
         };
 
-        // Format the selected date for display
         const formattedDate = computed(() => {
             const date = new Date(route.params.date);
             date.setDate(date.getDate());
@@ -119,7 +118,6 @@ export default {
             });
         });
 
-        // Get the current time formatted as HH:mm
         const currentTime = ref(getCurrentTime());
 
         function getCurrentTime() {
@@ -130,7 +128,6 @@ export default {
             });
         }
 
-        // Calculate the position of the current time indicator
         const timeIndicatorStyle = ref(getTimeIndicatorStyle());
 
         const toggleCompletion = async (ticket) => {
@@ -152,8 +149,6 @@ export default {
 
         let intervalId;
         onMounted(() => {
-            // Update the current time indicator every minute if viewing today
-
             intervalId = setInterval(() => {
                 currentTime.value = getCurrentTime();
                 timeIndicatorStyle.value = getTimeIndicatorStyle();
@@ -170,7 +165,6 @@ export default {
             emitter.off("newTicketCreatedWithTime", fetchTickets);
         });
 
-        // Fetch scheduled tickets from the API endpoint using the selected date and calendarId
         const fetchTickets = async () => {
             loading.value = true;
             errorMessage.value = "";
@@ -186,7 +180,6 @@ export default {
                 const response = await api.get(
                     `/api/Tickets/scheduled/${selectedDate}/${calendarId.value}`
                 );
-                // Each ticket has a valid 'startTime' (time string, e.g., "09:00:00")
                 tickets.value = response.data.map((ticket) => ({
                     ...ticket,
                     backgroundColor: ticket.color || "#ffffff",
@@ -204,7 +197,6 @@ export default {
             }
         };
 
-        // Delete a ticket by its id
         const handleDelete = async (ticketId) => {
             await deleteTicket(ticketId, tickets.value, errorMessage);
             if (!errorMessage.value) {
@@ -244,7 +236,6 @@ export default {
             };
         };
 
-        // Format a given time string (from ticket) to HH:mm format by combining with the selected date
         const formatTime = (timeString) => {
             const dateTimeString = `${route.params.date}T${timeString}`;
             const date = new Date(dateTimeString);
@@ -297,7 +288,7 @@ export default {
 .ticket-header {
     display: flex;
     align-items: center;
-    gap: 10px; /* Space between checkbox and text */
+    gap: 10px;
 }
 
 .container {
@@ -357,7 +348,7 @@ export default {
 
 .ticket-name {
     font-weight: bold;
-    flex-grow: 1; /* Allows it to take up remaining space */
+    flex-grow: 1;
 }
 
 .time-indicator {

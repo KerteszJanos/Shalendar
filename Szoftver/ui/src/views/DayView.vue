@@ -116,7 +116,6 @@ export default {
             }
         };
 
-        // Kezeljük a ticket áthúzását a nyilakra
         const handleDrop = async (direction) => {
             const storedTicket = localStorage.getItem("draggedTicket");
             if (!storedTicket) return;
@@ -134,7 +133,7 @@ export default {
 
             await changeTicketDate(draggedTicket.id, formattedDate);
 
-            localStorage.removeItem("draggedTicket"); // Töröljük az adatokat a localStorage-ból
+            localStorage.removeItem("draggedTicket");
         };
 
         const currentDate = computed(() => {

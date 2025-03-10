@@ -148,8 +148,8 @@ export default {
         const editListError = ref("");
         const editTicketError = ref("");
         const calendarId = localStorage.getItem("calendarId");
-        const showCopyTicketModal = ref(false); // GPT generated - Copy modal állapota
-        const selectedTicketId = ref(null); // GPT generated - Kiválasztott jegy ID
+        const showCopyTicketModal = ref(false);
+        const selectedTicketId = ref(null);
         const editedTicket = ref({
             id: null,
             name: "",
@@ -328,7 +328,7 @@ export default {
         };
 
         const handleAddNewCalendarList = async () => {
-            newListError.value = ""; // Korábbi hibaüzenet törlése
+            newListError.value = "";
 
             const validationError = validateNameField(newList.value.name);
             if (validationError) {

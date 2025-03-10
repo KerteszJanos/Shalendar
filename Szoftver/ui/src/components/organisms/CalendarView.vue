@@ -94,8 +94,8 @@ export default {
         const dropTicketData = ref(null);
         const dropDate = ref("");
         const calendarDays = ref([]);
-        const showCopyTicketModal = ref(false); // GPT generated - Copy modal állapota
-        const selectedTicketId = ref(null); // GPT generated - Kiválasztott jegy ID
+        const showCopyTicketModal = ref(false);
+        const selectedTicketId = ref(null);
 
         const calendarId = localStorage.getItem("calendarId");
 
@@ -175,7 +175,7 @@ export default {
             const startDate = formatDate(new Date(year, month - 1, prevMonthLastDate - startOffset + 1));
             const endDate = formatDate(new Date(year, month + 1, endOffset));
 
-            let dayIdMap = {}; // Dátumokat ID-khoz térképezünk
+            let dayIdMap = {};
 
             try {
                 const response = await api.get(`/api/days/range/${startDate}/${endDate}/${calendar.value.id}`);
