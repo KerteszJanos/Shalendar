@@ -13,12 +13,15 @@
                     <p v-if="element.priority">Priority: {{ element.priority }}</p>
                     <button @click.stop="handleDelete(element.id)" class="delete-btn">Delete</button>
                     <button @click.stop="handleSendBack(element.id)" class="send-back-btn">Send Back</button>
+                    <button @click.stop="openCopyTicketModal(element.id)" class="copy-btn">Copy</button>
                 </div>
             </template>
         </draggable>
     </div>
 
     <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" />
+    <copyTicketModal :show="showCopyTicketModal" :ticketId="selectedTicketId" :date="route.params.date" @update:show="showCopyTicketModal = $event" />
+
 </div>
 </template>
 
@@ -54,12 +57,17 @@ import {
 import {
     setErrorMessage
 } from "@/utils/errorHandler";
-import { toggleTicketCompletion } from "@/components/atoms/isCompletedCheckBox";
+import {
+    toggleTicketCompletion
+} from "@/components/atoms/isCompletedCheckBox";
+import
+copyTicketModal from "@/components/molecules/copyTicketModal.vue";
 
 export default {
     components: {
         draggable,
-        EditTicketModalFromDayView
+        EditTicketModalFromDayView,
+        copyTicketModal,
     },
     setup() {
         const route = useRoute();
@@ -68,12 +76,19 @@ export default {
         const errorMessage = ref("");
         const calendarId = ref(null);
         const showEditTicketModalFromDayView = ref(false);
+        const showCopyTicketModal = ref(false); // GPT generated - Copy modal állapota
+        const selectedTicketId = ref(null); // GPT generated - Kiválasztott jegy ID
         const editedTicket = ref({
             id: null,
             name: "",
             description: "",
             priority: null
         });
+
+        const openCopyTicketModal = (ticketId) => {
+            selectedTicketId.value = ticketId;
+            showCopyTicketModal.value = true;
+        };
 
         const openEditTicketModalFromDayView = (ticket) => {
             editedTicket.value = {
@@ -152,7 +167,7 @@ export default {
 
         const onDragEnd = async () => {
             await updateTicketOrder(tickets.value, errorMessage);
-            await fetchTickets();
+            //await fetchTickets();
         };
 
         onMounted(() => {
@@ -183,6 +198,10 @@ export default {
             openEditTicketModalFromDayView,
             fetchTickets,
             toggleCompletion,
+            openCopyTicketModal,
+            selectedTicketId,
+            showCopyTicketModal,
+            route,
         };
     },
 };

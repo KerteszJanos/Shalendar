@@ -116,6 +116,33 @@ namespace Shalendar.Controllers
 			return Ok(permissions);
 		}
 
+		// GET: api/Calendars/accessible
+		[HttpGet("accessible")]
+		public async Task<ActionResult<IEnumerable<object>>> GetUserAccessibleCalendars()
+		{
+			var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+			{
+				return BadRequest();
+			}
+
+			var accessibleCalendars = await _context.CalendarPermissions
+				.Where(cp => cp.UserId == userId && (cp.PermissionType == "owner" || cp.PermissionType == "write"))
+				.Join(_context.Calendars,
+					  cp => cp.CalendarId,
+					  c => c.Id,
+					  (cp, c) => new { c.Id, c.Name })
+				.ToListAsync();
+
+			if (!accessibleCalendars.Any())
+			{
+				return NotFound(new { message = "No calendars found with owner or write permissions." });
+			}
+
+			return Ok(accessibleCalendars);
+		}
+
+
 		#endregion
 
 		#region Posts

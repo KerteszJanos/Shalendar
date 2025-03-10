@@ -29,6 +29,9 @@ namespace Shalendar
 			// Add Delete Calendar Helper to DI container
 			builder.Services.AddScoped<DeleteCalendarHelper>();
 
+			// Add Copy Ticket Helper to DI container
+			builder.Services.AddScoped<CopyTicketHelper>();
+
 			//Add database context (SQL Server)
 			builder.Services.AddDbContext<ShalendarDbContext>(options =>
 				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

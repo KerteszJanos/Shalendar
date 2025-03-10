@@ -30,6 +30,7 @@
                     <div class="ticket-actions">
                         <button class="delete-btn" @click.stop="handleDelete(ticket.id)">Delete</button>
                         <button @click.stop="handleSendBack(ticket.id)" class="send-back-btn">Send Back</button>
+                        <button @click.stop="openCopyTicketModal(ticket.id)" class="copy-btn">Copy</button>
                     </div>
                 </div>
 
@@ -37,6 +38,7 @@
         </div>
     </div>
     <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" />
+    <copyTicketModal :show="showCopyTicketModal" :ticketId="selectedTicketId" :date="route.params.date" @update:show="showCopyTicketModal = $event" />
 </div>
 </template>
 
@@ -71,10 +73,12 @@ import {
 import {
     toggleTicketCompletion
 } from "@/components/atoms/isCompletedCheckBox";
+import copyTicketModal from "@/components/molecules/copyTicketModal.vue";
 
 export default {
     components: {
-        EditTicketModalFromDayView
+        EditTicketModalFromDayView,
+        copyTicketModal
     },
     setup() {
         const route = useRoute();
@@ -83,12 +87,19 @@ export default {
         const errorMessage = ref("");
         const calendarId = ref(null);
         const showEditTicketModalFromDayView = ref(false);
+        const showCopyTicketModal = ref(false); // GPT generated - Copy modal állapota
+        const selectedTicketId = ref(null); // GPT generated - Kiválasztott jegy ID
         const editedTicket = ref({
             id: null,
             name: "",
             description: "",
             priority: null
         });
+
+        const openCopyTicketModal = (ticketId) => {
+            selectedTicketId.value = ticketId;
+            showCopyTicketModal.value = true;
+        };
 
         const openEditTicketModalFromDayView = (ticket) => {
             editedTicket.value = {
@@ -261,6 +272,10 @@ export default {
             openEditTicketModalFromDayView,
             fetchTickets,
             toggleCompletion,
+            openCopyTicketModal,
+            selectedTicketId,
+            showCopyTicketModal,
+            route,
         };
     },
 };

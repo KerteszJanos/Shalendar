@@ -20,6 +20,9 @@
                             <p><strong>{{ element.name }}</strong></p>
                             <p v-if="element.description">{{ element.description }}</p>
                             <p v-if="element.priority">Priority: {{ element.priority }}</p>
+                            <button @click.stop="openCopyTicketModal(element.id)" class="copy-btn">
+                                Copy
+                            </button>
                             <button @click.stop="handleDelete(element.id, list)" class="delete-btn">
                                 Delete
                             </button>
@@ -89,6 +92,7 @@
         </div>
     </Modal>
 
+    <copyTicketModal :show="showCopyTicketModal" :ticketId="selectedTicketId" @update:show="showCopyTicketModal = $event" />
 </div>
 </template>
 
@@ -122,11 +126,14 @@ import {
 import {
     toggleTicketCompletion
 } from "@/components/atoms/isCompletedCheckBox";
+import
+copyTicketModal from "@/components/molecules/copyTicketModal.vue";
 
 export default {
     components: {
         Modal,
         draggable,
+        copyTicketModal,
     },
     setup() {
         const calendarLists = ref([]);
@@ -141,6 +148,8 @@ export default {
         const editListError = ref("");
         const editTicketError = ref("");
         const calendarId = localStorage.getItem("calendarId");
+        const showCopyTicketModal = ref(false); // GPT generated - Copy modal állapota
+        const selectedTicketId = ref(null); // GPT generated - Kiválasztott jegy ID
         const editedTicket = ref({
             id: null,
             name: "",
@@ -164,6 +173,11 @@ export default {
             name: "",
             color: "#CCCCCC"
         });
+
+        const openCopyTicketModal = (ticketId) => {
+            selectedTicketId.value = ticketId;
+            showCopyTicketModal.value = true;
+        };
 
         const toggleCompletion = async (ticket) => {
             try {
@@ -457,12 +471,25 @@ export default {
             editListError,
             editTicketError,
             toggleCompletion,
+            openCopyTicketModal,
+            showCopyTicketModal,
+            selectedTicketId
         };
     },
 };
 </script>
 
 <style scoped>
+.copy-btn {
+    background: #ffc107;
+    color: white;
+    border: none;
+    padding: 5px;
+    margin-top: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
 .ticket {
     cursor: pointer;
 }
