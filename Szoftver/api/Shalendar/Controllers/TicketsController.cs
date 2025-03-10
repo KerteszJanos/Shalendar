@@ -10,10 +10,11 @@ using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Functions;
 using Shalendar.Models;
+using Shalendar.Models.Dtos;
 
 namespace Shalendar.Controllers
 {
-	[Route("api/[controller]")]
+    [Route("api/[controller]")]
 	[ApiController]
 	[Authorize]
 	public class TicketsController : ControllerBase
@@ -31,6 +32,7 @@ namespace Shalendar.Controllers
 
 		#region Gets
 
+		// GET: api/Tickets/todolist/{date}/{calendarId}
 		[HttpGet("todolist/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetTodoListTicketsByDateAndCalendar(string date, int calendarId)
 		{
@@ -86,6 +88,7 @@ namespace Shalendar.Controllers
 			return Ok(tickets);
 		}
 
+		// GET: api/Tickets/scheduled/{date}/{calendarId}
 		[HttpGet("scheduled/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetScheduledListTicketsByDateAndCalendar(string date, int calendarId)
 		{
@@ -143,6 +146,7 @@ namespace Shalendar.Controllers
 			return Ok(tickets);
 		}
 
+		// GET: api/Tickets/AllDailyTickets/{date}/{calendarId}"
 		[HttpGet("AllDailyTickets/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetAllDailyTicketsByDateAndCalendar(string date, int calendarId)
 		{
@@ -194,6 +198,7 @@ namespace Shalendar.Controllers
 			return Ok(tickets);
 		}
 
+		// GET: api/Tickets/AllDailyTickets/{dayId}
 		[HttpGet("AllDailyTickets/{dayId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetAllDailyTicketsByDayId(int dayId)
 		{
@@ -226,11 +231,14 @@ namespace Shalendar.Controllers
 
 			return Ok(tickets);
 		}
+
 		#endregion
 
 
 
 		#region Posts
+
+		// POST: api/Tickets
 		[HttpPost]
 		public async Task<ActionResult<Ticket>> CreateTicket([FromBody] Ticket ticket)
 		{
@@ -256,7 +264,7 @@ namespace Shalendar.Controllers
 			return CreatedAtAction(nameof(CreateTicket), new { id = ticket.Id }, ticket);
 		}
 
-
+		// POST: api/Tickets/ScheduleTicket
 		[HttpPost("ScheduleTicket")]
 		public async Task<IActionResult> ScheduleTicket([FromBody] ScheduleTicketDto dto)
 		{
@@ -326,7 +334,7 @@ namespace Shalendar.Controllers
 			}
 		}
 
-
+		// POST: api/Tickets/copy-ticket
 		[HttpPost("copy-ticket")]
 		public async Task<IActionResult> CopyTicket(int ticketId, int calendarId, DateTime? date = null)
 		{
@@ -370,8 +378,10 @@ namespace Shalendar.Controllers
 
 
 		#region Puts
+
+		// PUT: api/Tickets/reorder
 		[HttpPut("reorder")]
-		public async Task<IActionResult> ReorderTickets([FromBody] List<TicketOrderUpdate> orderUpdates)
+		public async Task<IActionResult> ReorderTickets([FromBody] List<TicketOrderUpdateDto> orderUpdates)
 		{
 			var requiredPermission = "write";
 			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
@@ -401,6 +411,7 @@ namespace Shalendar.Controllers
 			return NoContent();
 		}
 
+		// PUT: api/Tickets/move-to-calendar/{ticketId}
 		[HttpPut("move-to-calendar/{ticketId}")]
 		public async Task<IActionResult> MoveTicketToCalendar(int ticketId)
 		{
@@ -498,6 +509,7 @@ namespace Shalendar.Controllers
 			}
 		}
 
+		// PUT: api/Tickets/updateTicketCompleted
 		[HttpPut("updateTicketCompleted")]
 		public async Task<IActionResult> UpdateTicketCompleted(int ticketId, bool isCompleted)
 		{
@@ -524,11 +536,69 @@ namespace Shalendar.Controllers
 			return Ok();
 		}
 
+		// PUT: api/Tickets/changeDate/{ticketId}
+		[HttpPut("changeDate/{ticketId}")]
+		public async Task<IActionResult> ChangeTicketDate(int ticketId, [FromBody] string date)
+		{
+			var requiredPermission = "write";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission}" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
+			}
+
+			var ticket = await _context.Tickets.FindAsync(ticketId);
+			if (ticket == null)
+			{
+				return NotFound("Ticket not found.");
+			}
+
+			if (!DateTime.TryParse(date, out DateTime newDate))
+			{
+				return BadRequest("Invalid date format.");
+			}
+
+			var calendarId = await _context.Days
+				.Where(d => d.Id == ticket.ParentId)
+				.Select(d => d.CalendarId)
+				.FirstOrDefaultAsync();
+
+			if (calendarId == 0)
+			{
+				return BadRequest("Calendar not found for the ticket.");
+			}
+
+			var dayRecord = await _context.Days
+				.FirstOrDefaultAsync(d => d.CalendarId == calendarId && d.Date.Date == newDate.Date);
+
+			if (dayRecord == null)
+			{
+				dayRecord = new Day
+				{
+					CalendarId = calendarId,
+					Date = newDate.Date
+				};
+				_context.Days.Add(dayRecord);
+				await _context.SaveChangesAsync();
+			}
+
+			ticket.ParentId = dayRecord.Id;
+
+			await _context.SaveChangesAsync();
+			return Ok(ticket);
+		}
+
 		#endregion
 
 
 
 		#region Deletes
+
+		// DELETE: api/Tickets/api/Tickets/
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteTicket(int id)
 		{
@@ -554,6 +624,7 @@ namespace Shalendar.Controllers
 
 			return NoContent();
 		}
+
 		#endregion
 	}
 }

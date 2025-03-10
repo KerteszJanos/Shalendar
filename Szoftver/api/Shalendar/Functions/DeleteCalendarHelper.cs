@@ -15,6 +15,10 @@ namespace Shalendar.Functions
 		{
 			_context = context;
 		}
+
+		/// <summary>
+		/// Determines if the given user can delete the calendar by checking their permission level and ensuring they are the sole owner.
+		/// </summary>
 		public async Task<bool> ShouldDeleteCalendar(int userId, int calendarId)
 		{
 			var userPermission = await _context.CalendarPermissions
@@ -45,12 +49,14 @@ namespace Shalendar.Functions
 			return true;
 		}
 
+		/// <summary>
+		/// Deletes the specified calendar and all related data, including permissions, days, calendar lists, and associated tickets, while ensuring users with this calendar as their default are updated.
+		/// </summary>
 		public async Task DeleteCalendar(int calendarId)
 		{
 			using var transaction = await _context.Database.BeginTransactionAsync();
 			try
 			{
-				// Remove calendar as default calendar for users
 				var usersWithDefaultCalendar = await _context.Users
 					.Where(u => u.DefaultCalendarId == calendarId)
 					.ToListAsync();
@@ -61,38 +67,31 @@ namespace Shalendar.Functions
 				}
 				await _context.SaveChangesAsync();
 
-				// Remove calendar permissions
 				var permissions = _context.CalendarPermissions.Where(cp => cp.CalendarId == calendarId);
 				_context.CalendarPermissions.RemoveRange(permissions);
 
-				// Get all related days
 				var days = _context.Days.Where(d => d.CalendarId == calendarId);
 				var dayIds = await days.Select(d => d.Id).ToListAsync();
 
-				// Get all related calendar lists
 				var calendarLists = _context.CalendarLists.Where(cl => cl.CalendarId == calendarId);
 				var calendarListIds = await calendarLists.Select(cl => cl.Id).ToListAsync();
 
-				// Remove all related tickets (linked to a day or a calendar list) - GPT generated
 				var tickets = _context.Tickets
 					.Where(t => dayIds.Contains(t.ParentId) || calendarListIds.Contains(t.CalendarListId));
 
 				_context.Tickets.RemoveRange(tickets);
-				await _context.SaveChangesAsync(); // Ensure tickets are deleted before their references
+				await _context.SaveChangesAsync();
 
-				// Remove all related data
 				_context.Days.RemoveRange(days);
 				_context.CalendarLists.RemoveRange(calendarLists);
 				await _context.SaveChangesAsync();
 
-				// Remove the calendar itself
 				var calendar = await _context.Calendars.FindAsync(calendarId);
 				if (calendar != null)
 				{
 					_context.Calendars.Remove(calendar);
 				}
 
-				// Commit the transaction
 				await _context.SaveChangesAsync();
 				await transaction.CommitAsync();
 			}

@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Models;
+using Shalendar.Models.Dtos;
 
 namespace Shalendar.Controllers
 {
-	[Route("api/[controller]")]
+    [Route("api/[controller]")]
 	[ApiController]
 	[Authorize]
 	public class DaysController : ControllerBase
@@ -27,6 +28,7 @@ namespace Shalendar.Controllers
 
 		#region Gets
 
+		// GET: api/Days/{date}/{calendarId}
 		[HttpGet("{date}/{calendarId}")]
 		public async Task<IActionResult> GetDayId(string date, int calendarId)
 		{
@@ -52,6 +54,7 @@ namespace Shalendar.Controllers
 			return Ok(new { id = day?.Id });
 		}
 
+		// GET: api/Days/range/{startDate}/{endDate}/{calendarId}
 		[HttpGet("range/{startDate}/{endDate}/{calendarId}")]
 		public async Task<IActionResult> GetExistingDaysInRange(string startDate, string endDate, int calendarId)
 		{
@@ -84,8 +87,10 @@ namespace Shalendar.Controllers
 
 
 		#region Posts
+
+		// POST: api/Days/create
 		[HttpPost("create")]
-		public async Task<IActionResult> CreateDay([FromBody] CreateDayRequest request)
+		public async Task<IActionResult> CreateDay([FromBody] CreateDayDto request)
 		{
 			if (!DateTime.TryParse(request.Date, out DateTime parsedDate))
 			{
@@ -123,6 +128,8 @@ namespace Shalendar.Controllers
 
 
 		#region Deletes
+
+		// DELETE: api/Days/{calendarId}/{date}
 		[HttpDelete("{calendarId}/{date}")]
 		public async Task<IActionResult> DeleteDayIfNoTickets(int calendarId, string date)
 		{

@@ -15,6 +15,9 @@ public class JwtHelper
 		_context = context;
 	}
 
+	/// <summary>
+	/// Checks if the authenticated user has the required permission level for a calendar by extracting the calendar ID from the request headers.
+	/// </summary>
 	public async Task<bool> HasCalendarPermission(HttpContext httpContext, string requiredPermissionLevel)
 	{
 		var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -52,6 +55,9 @@ public class JwtHelper
 		return userPermission == requiredPermissionLevel;
 	}
 
+	/// <summary>
+	/// Checks if the authenticated user has the required permission level for a specific calendar by directly using the provided calendar ID.
+	/// </summary>
 	public async Task<bool> HasCalendarPermission(HttpContext httpContext, string requiredPermissionLevel, int calendarId)
 	{
 		var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

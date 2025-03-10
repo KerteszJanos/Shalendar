@@ -4,7 +4,8 @@
         <div class="header">{{ formattedDate }}</div>
         <p v-if="loading">Loading...</p>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-        <draggable v-model="tickets" @end="onDragEnd" group="tickets" itemKey="id">
+        <draggable v-model="tickets" @start="onDragStart" @end="onDragEnd" group="tickets" itemKey="id">
+
             <template #item="{ element }">
                 <div class="ticket" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)">
                     <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
@@ -84,6 +85,11 @@ export default {
             description: "",
             priority: null
         });
+
+        const onDragStart = (event) => {
+            const ticket = event.item.__draggable_context.element;
+            localStorage.setItem("draggedTicket", JSON.stringify(ticket));
+        };
 
         const openCopyTicketModal = (ticketId) => {
             selectedTicketId.value = ticketId;
@@ -167,18 +173,19 @@ export default {
 
         const onDragEnd = async () => {
             await updateTicketOrder(tickets.value, errorMessage);
-            //await fetchTickets();
         };
 
         onMounted(() => {
             fetchTickets();
             emitter.on("ticketTimeUnSet", fetchTickets);
             emitter.on("newTicketCreatedWithoutTime", fetchTickets);
+            emitter.on("ticketDateChanged", fetchTickets);
         });
 
         onUnmounted(() => {
             emitter.off("ticketTimeUnSet", fetchTickets);
             emitter.off("newTicketCreatedWithoutTime", fetchTickets);
+            emitter.off("ticketDateChanged", fetchTickets);
         });
 
         watch(() => route.params.date, fetchTickets);
@@ -202,6 +209,7 @@ export default {
             selectedTicketId,
             showCopyTicketModal,
             route,
+            onDragStart
         };
     },
 };

@@ -145,7 +145,6 @@ namespace Shalendar.Controllers
 			return Ok(accessibleCalendars);
 		}
 
-
 		#endregion
 
 		#region Posts
@@ -157,11 +156,9 @@ namespace Shalendar.Controllers
 			using var transaction = await _context.Database.BeginTransactionAsync();
 			try
 			{
-				// Létrehozzuk az új naptárat
 				_context.Calendars.Add(calendar);
 				await _context.SaveChangesAsync();
 
-				// Hozzáadjuk a tulajdonosi engedélyt a létrehozónak
 				var ownerPermission = new CalendarPermission
 				{
 					CalendarId = calendar.Id,
@@ -177,23 +174,20 @@ namespace Shalendar.Controllers
 				};
 
 				_context.CalendarPermissions.Add(ownerPermission);
-				_context.CalendarLists.Add(calendarList); // Hozzáadtam a listát is, mert kimaradt
+				_context.CalendarLists.Add(calendarList);
 				await _context.SaveChangesAsync();
 
-				// Ha minden rendben, commitáljuk a tranzakciót
 				await transaction.CommitAsync();
 
 				return CreatedAtAction(nameof(GetCalendar), new { id = calendar.Id }, calendar);
 			}
 			catch (Exception ex)
 			{
-				// Hiba esetén rollback, hogy ne maradjanak félkész adatok
 				await transaction.RollbackAsync();
 				return StatusCode(500, $"Hiba történt a naptár létrehozásakor: {ex.Message}");
 			}
 		}
 
-		// GPT generated
 		// POST: api/Calendars/{calendarId}/permissions/{email}/{permissionType}
 		[HttpPost("{calendarId}/permissions/{email}/{permissionType}")]
 		public async Task<IActionResult> AddCalendarPermission(int calendarId, string email, string permissionType)
@@ -238,6 +232,7 @@ namespace Shalendar.Controllers
 			return Ok();
 		}
 
+		// POST: api/Calendars/copy-all-tickets
 		[HttpPost("copy-all-tickets")]
 		public async Task<IActionResult> CopyAllTickets(int calendarId)
 		{
@@ -275,12 +270,10 @@ namespace Shalendar.Controllers
 				};
 			}
 
-			// Get Days associated with the calendar
 			var days = await _context.Days
 				.Where(d => d.CalendarId == originalCalendarId)
 				.ToListAsync();
 
-			// Copy tickets from days with date parameter
 			foreach (var day in days)
 			{
 				var dayTickets = await _context.Tickets
@@ -294,12 +287,10 @@ namespace Shalendar.Controllers
 				}
 			}
 
-			// Get CalendarLists associated with calendarId
 			var calendarLists = await _context.CalendarLists
 				.Where(cl => cl.CalendarId == originalCalendarId)
 				.ToListAsync();
 
-			// Copy tickets from CalendarLists without date parameter
 			foreach (var list in calendarLists)
 			{
 				var listTickets = await _context.Tickets
@@ -314,7 +305,6 @@ namespace Shalendar.Controllers
 
 			return Ok("All tickets successfully copied.");
 		}
-
 
 		#endregion
 
@@ -348,6 +338,7 @@ namespace Shalendar.Controllers
 			return Ok();
 		}
 
+		// DELETE: api/Calendars/{calendarId}
 		[HttpDelete("{calendarId}")]
 		public async Task<IActionResult> DeleteCalendar(int calendarId)
 		{

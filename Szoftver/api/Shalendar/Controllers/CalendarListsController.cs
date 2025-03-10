@@ -74,7 +74,6 @@ namespace Shalendar.Controllers
 			return Ok(lists);
 		}
 
-
 		#endregion
 
 
@@ -208,6 +207,7 @@ namespace Shalendar.Controllers
 				return StatusCode(500, $"Error deleting list and related tickets: {ex.Message}");
 			}
 		}
+
 		#endregion
 	}
 }

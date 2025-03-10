@@ -9,20 +9,21 @@ namespace Shalendar.Functions
 {
 	public class CopyTicketHelper
 	{
+		/// <summary>
+		/// Copies a ticket to a specified calendar and date, ensuring the corresponding calendar list and day exist, while preventing duplicate tickets.
+		/// </summary>
 		public async Task<bool> CopyTicketAsync(ShalendarDbContext context, int ticketId, int calendarId, DateTime? date)
 		{
 			using (var transaction = await context.Database.BeginTransactionAsync())
 			{
 				try
 				{
-					// Ticket és CalendarList lekérése
 					var ticket = await context.Tickets.FindAsync(ticketId);
 					if (ticket == null) return false;
 
 					var originalCalendarList = await context.CalendarLists.FindAsync(ticket.CalendarListId);
 					if (originalCalendarList == null) return false;
 
-					// Cél CalendarList keresése vagy létrehozása
 					var targetCalendarList = await context.CalendarLists
 						.FirstOrDefaultAsync(cl => cl.CalendarId == calendarId && cl.Name == originalCalendarList.Name && cl.Color == originalCalendarList.Color);
 
@@ -38,7 +39,6 @@ namespace Shalendar.Functions
 						await context.SaveChangesAsync();
 					}
 
-					// Ha van megadott dátum, ellenőrizzük a 'Day' táblában
 					int targetParentId = targetCalendarList.Id;
 
 					if (date.HasValue)
@@ -46,7 +46,6 @@ namespace Shalendar.Functions
 						var targetDay = await context.Days
 							.FirstOrDefaultAsync(d => d.CalendarId == calendarId && d.Date == date.Value);
 
-						// Ha nem létezik, létrehozzuk az új napot
 						if (targetDay == null)
 						{
 							targetDay = new Day
@@ -58,11 +57,9 @@ namespace Shalendar.Functions
 							await context.SaveChangesAsync();
 						}
 
-						// A ticket ParentId-jának az újonnan létrehozott vagy meglévő Day Id-ját állítjuk be
 						targetParentId = targetDay.Id;
 					}
 
-					// Ellenőrizzük, hogy a ticket már létezik-e
 					var existingTicket = await context.Tickets
 						.FirstOrDefaultAsync(t => t.Name == ticket.Name &&
 												  t.CalendarListId == targetCalendarList.Id &&
@@ -70,7 +67,6 @@ namespace Shalendar.Functions
 
 					if (existingTicket == null)
 					{
-						// Legnagyobb currentPosition lekérdezése
 						var maxPosition = await context.Tickets
 							.Where(t => t.ParentId == targetParentId)
 							.MaxAsync(t => (int?)t.CurrentPosition) ?? 0;

@@ -1,6 +1,6 @@
 <template>
 <div class="container">
-    <button class="nav-btn left" @click="goToPreviousDay">&#9665;</button>
+    <button class="nav-btn left" @click="goToPreviousDay" @dragover.prevent @drop="handleDrop('previous')">&#9665;</button>
     <div class="content">
         <button class="add-ticket-btn" @click="showAddNewTicketModal = true">+ Add Ticket</button>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
@@ -9,7 +9,7 @@
             <TodoList class="panel" />
         </div>
     </div>
-    <button class="nav-btn right" @click="goToNextDay">&#9655;</button>
+    <button class="nav-btn right" @click="goToNextDay" @dragover.prevent @drop="handleDrop('next')">&#9655;</button>
 
     <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="handleAddNewTicket">
         <div class="modal-content">
@@ -97,6 +97,45 @@ export default {
         const calendarListError = ref("");
         const timeError = ref("");
         const router = useRouter();
+
+        const changeTicketDate = async (ticketId, newDate) => {
+            try {
+                await api.put(`/api/Tickets/changeDate/${ticketId}`, JSON.stringify(newDate), {
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+                emitter.emit("ticketDateChanged");
+            } catch (error) {
+                if (error.response && error.response.status === 403) {
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    console.error("Error changing ticket date:", error);
+                }
+            }
+        };
+
+        // Kezeljük a ticket áthúzását a nyilakra
+        const handleDrop = async (direction) => {
+            const storedTicket = localStorage.getItem("draggedTicket");
+            if (!storedTicket) return;
+
+            const draggedTicket = JSON.parse(storedTicket);
+
+            let newDate = new Date(route.params.date);
+            if (direction === 'previous') {
+                newDate.setDate(newDate.getDate() - 1);
+            } else if (direction === 'next') {
+                newDate.setDate(newDate.getDate() + 1);
+            }
+
+            const formattedDate = newDate.toISOString().split("T")[0];
+
+            await changeTicketDate(draggedTicket.id, formattedDate);
+
+            localStorage.removeItem("draggedTicket"); // Töröljük az adatokat a localStorage-ból
+        };
 
         const currentDate = computed(() => {
             return route.params.date ? new Date(route.params.date) : new Date();
@@ -262,6 +301,7 @@ export default {
             goToPreviousDay,
             goToNextDay,
             currentDate,
+            handleDrop
         };
     },
 };

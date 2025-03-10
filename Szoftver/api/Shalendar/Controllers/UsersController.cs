@@ -6,13 +6,14 @@ using Microsoft.IdentityModel.Tokens;
 using Shalendar.Contexts;
 using Shalendar.Functions;
 using Shalendar.Models;
+using Shalendar.Models.Dtos;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace Shalendar.Controllers
 {
-	[Route("api/[controller]")]
+    [Route("api/[controller]")]
 	[ApiController]
 	public class UsersController : ControllerBase
 	{
@@ -33,6 +34,7 @@ namespace Shalendar.Controllers
 
 		#region Gets
 
+		// GET: api/Users/me
 		[HttpGet("me")]
 		[Authorize]
 		public async Task<ActionResult<User>> GetCurrentUser()
@@ -125,9 +127,9 @@ namespace Shalendar.Controllers
 			}
 		}
 
-		// POST: api/login
+		// POST: api/Users/login
 		[HttpPost("login")]
-		public async Task<IActionResult> LoginUser([FromBody] LoginModel loginModel)
+		public async Task<IActionResult> LoginUser([FromBody] LoginModelDto loginModel)
 		{
 			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginModel.Email);
 
@@ -165,9 +167,10 @@ namespace Shalendar.Controllers
 
 		#region Puts
 
+		// PUT: api/Users/change-password
 		[HttpPut("change-password")]
 		[Authorize]
-		public async Task<IActionResult> ChangePassword([FromBody] ChangePassword model)
+		public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
 		{
 			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 			var user = await _context.Users.FindAsync(userId);
@@ -197,7 +200,7 @@ namespace Shalendar.Controllers
 			return NoContent();
 		}
 
-
+		// PUT: api/Users/set-default-calendar/{calendarId}
 		[HttpPut("set-default-calendar/{calendarId}")]
 		[Authorize]
 		public async Task<IActionResult> SetDefaultCalendar(int calendarId)
@@ -222,6 +225,7 @@ namespace Shalendar.Controllers
 
 		#region Deletes
 
+		// DELETE: api/Users/delete
 		[HttpDelete("delete")]
 		[Authorize]
 		public async Task<IActionResult> DeleteCurrentUser()
@@ -245,10 +249,8 @@ namespace Shalendar.Controllers
 				}
 			}
 
-			// Ensure all changes are saved before deleting the user
 			await _context.SaveChangesAsync();
 
-			// Remove user
 			var user = await _context.Users.FindAsync(userId);
 			if (user != null)
 			{
@@ -259,15 +261,15 @@ namespace Shalendar.Controllers
 			return NoContent();
 		}
 
-
-
-
 		#endregion
 
 
 
 		#region private methods
 
+		/// <summary>
+		/// Generates a JWT token for the given user, embedding their email, ID, and calendar permissions as claims.
+		/// </summary>
 		private string GenerateJwtToken(User user)
 		{
 			var jwtSettings = _configuration.GetSection("JwtSettings");
@@ -304,7 +306,9 @@ namespace Shalendar.Controllers
 			return new JwtSecurityTokenHandler().WriteToken(token);
 		}
 
-
+		/// <summary>
+		/// Validates the given password, ensuring it is at least 8 characters long and contains at least one uppercase letter and one number.
+		/// </summary>
 		private string? ValidatePassword(string password)
 		{
 			if (string.IsNullOrEmpty(password) || password.Length < 8)
