@@ -3,6 +3,7 @@
     <div class="calendar-container">
         <div class="calendar-header">
             <button class="add-button" @click="goToCalendars">+</button>
+            <button @click.stop="openCopyTicketModal()" class="copy-btn">Copy</button>
             <h2 v-if="calendar.name">{{ calendar.name }} - {{ formattedMonth }}</h2>
             <h2 v-else>Loading...</h2>
             <div class="navigation">
@@ -44,6 +45,8 @@
             <p v-if="modalErrorMessage" class="error">{{ modalErrorMessage }}</p>
         </div>
     </Modal>
+
+    <copyTicketModal :show="showCopyTicketModal" @update:show="showCopyTicketModal = $event" />
 </div>
 </template>
 
@@ -66,10 +69,13 @@ import {
 import {
     setErrorMessage
 } from "@/utils/errorHandler";
+import
+copyTicketModal from "@/components/molecules/copyTicketModal.vue";
 
 export default {
     components: {
         Modal,
+        copyTicketModal,
     },
     setup() {
         const currentDate = ref(new Date());
@@ -88,6 +94,8 @@ export default {
         const dropTicketData = ref(null);
         const dropDate = ref("");
         const calendarDays = ref([]);
+        const showCopyTicketModal = ref(false); // GPT generated - Copy modal állapota
+        const selectedTicketId = ref(null); // GPT generated - Kiválasztott jegy ID
 
         const calendarId = localStorage.getItem("calendarId");
 
@@ -99,6 +107,11 @@ export default {
                 month: "long",
             });
         });
+
+
+        const openCopyTicketModal = () => {
+            showCopyTicketModal.value = true;
+        };
 
         const fetchTicketsForDate = async (date, dayId = null) => {
             try {
@@ -466,6 +479,9 @@ export default {
             closeTimeModal,
             confirmTimeModal,
             goToCalendars,
+            openCopyTicketModal,
+            selectedTicketId,
+            showCopyTicketModal,
         };
     },
 };

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -21,12 +22,14 @@ namespace Shalendar.Controllers
 		private readonly ShalendarDbContext _context;
 		private readonly JwtHelper _jwtHelper;
 		private readonly DeleteCalendarHelper _deleteCalendarHelper;
+		private readonly CopyTicketHelper _copyTicketHelper;
 
-		public CalendarsController(ShalendarDbContext context, JwtHelper jwtHelper, DeleteCalendarHelper deleteCalendarHelper)
+		public CalendarsController(ShalendarDbContext context, JwtHelper jwtHelper, DeleteCalendarHelper deleteCalendarHelper, CopyTicketHelper copyTicketHelper)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;
 			_deleteCalendarHelper = deleteCalendarHelper;
+			_copyTicketHelper = copyTicketHelper;
 		}
 
 		#region Gets
@@ -233,6 +236,83 @@ namespace Shalendar.Controllers
 			await _context.SaveChangesAsync();
 
 			return Ok();
+		}
+
+		[HttpPost("copy-all-tickets")]
+		public async Task<IActionResult> CopyAllTickets(int calendarId)
+		{
+			if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) || !int.TryParse(calendarIdHeader, out int originalCalendarId))
+			{
+				return BadRequest();
+			}
+
+			var requiredPermission = "read";
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+
+			if (!hasPermission)
+			{
+				var calendarName = await _context.Calendars
+						.Where(c => c.Id == originalCalendarId)
+						.Select(c => c.Name)
+						.FirstOrDefaultAsync();
+
+					return new ObjectResult(new { message = $"Required permission: {requiredPermission} for calendar: '{calendarName}'" })
+					{
+						StatusCode = StatusCodes.Status403Forbidden
+					};
+				
+			}
+
+			requiredPermission = "write";
+			hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
+
+			if (!hasPermission)
+			{
+				var calendarName = await _context.Calendars.Where(c => c.Id == calendarId).Select(c => c.Name).FirstOrDefaultAsync();
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission} for calendar: '{calendarName}'" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
+			}
+
+			// Get Days associated with the calendar
+			var days = await _context.Days
+				.Where(d => d.CalendarId == originalCalendarId)
+				.ToListAsync();
+
+			// Copy tickets from days with date parameter
+			foreach (var day in days)
+			{
+				var dayTickets = await _context.Tickets
+					.Where(t => t.ParentId == day.Id)
+					.Select(t => t.Id)
+					.ToListAsync();
+
+				foreach (var ticketId in dayTickets)
+				{
+					await _copyTicketHelper.CopyTicketAsync(_context, ticketId, calendarId, day.Date);
+				}
+			}
+
+			// Get CalendarLists associated with calendarId
+			var calendarLists = await _context.CalendarLists
+				.Where(cl => cl.CalendarId == originalCalendarId)
+				.ToListAsync();
+
+			// Copy tickets from CalendarLists without date parameter
+			foreach (var list in calendarLists)
+			{
+				var listTickets = await _context.Tickets
+					.Where(t => t.CalendarListId == list.Id && !days.Select(d => d.Id).Contains(t.ParentId))
+					.ToListAsync();
+
+				foreach (var ticket in listTickets)
+				{
+					await _copyTicketHelper.CopyTicketAsync(_context, ticket.Id, calendarId, null);
+				}
+			}
+
+			return Ok("All tickets successfully copied.");
 		}
 
 

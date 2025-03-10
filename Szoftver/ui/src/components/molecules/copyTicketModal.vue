@@ -19,6 +19,7 @@
 </Modal>
 </template>
 
+    
 <script>
 import {
     ref,
@@ -52,6 +53,7 @@ export default {
             () => props.show,
             (newValue) => {
                 if (newValue) {
+                    selectedCalendar.value = null;
                     getAccessibleCalendars();
                 }
             }
@@ -78,13 +80,21 @@ export default {
             }
 
             try {
-                await api.post(`/api/tickets/copy-ticket`, null, {
-                    params: {
-                        ticketId: props.ticketId,
-                        calendarId: selectedCalendar.value,
-                        date: props.date || null // ✅ Ha nincs date, akkor null értéket küldünk
-                    }
-                });
+                if (props.ticketId) { // GPT generated - ellenőrzés ticketId alapján
+                    await api.post(`/api/tickets/copy-ticket`, null, {
+                        params: {
+                            ticketId: props.ticketId,
+                            calendarId: selectedCalendar.value,
+                            date: props.date || null
+                        }
+                    });
+                } else { // GPT generated - Ha nincs ticketId
+                    await api.post(`/api/Calendars/copy-all-tickets`, null, {
+                        params: {
+                            calendarId: selectedCalendar.value
+                        }
+                    });
+                }
 
                 errorMessage.value = "";
                 closeModal();
@@ -114,6 +124,7 @@ export default {
 };
 </script>
 
+    
 <style scoped>
 .loading {
     font-size: 14px;

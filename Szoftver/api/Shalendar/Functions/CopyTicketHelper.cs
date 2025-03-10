@@ -70,17 +70,22 @@ namespace Shalendar.Functions
 
 					if (existingTicket == null)
 					{
+						// Legnagyobb currentPosition lekérdezése
+						var maxPosition = await context.Tickets
+							.Where(t => t.ParentId == targetParentId)
+							.MaxAsync(t => (int?)t.CurrentPosition) ?? 0;
+
 						var newTicket = new Ticket
 						{
 							Name = ticket.Name,
 							Description = ticket.Description,
-							CurrentPosition = ticket.CurrentPosition,
+							CurrentPosition = maxPosition + 1,
 							StartTime = ticket.StartTime,
 							EndTime = ticket.EndTime,
 							Priority = ticket.Priority,
 							CalendarListId = targetCalendarList.Id,
 							CurrentParentType = ticket.CurrentParentType,
-							ParentId = targetParentId, // ✅ Ha van dátum, akkor a Day.Id lesz a ParentId
+							ParentId = targetParentId,
 							IsCompleted = ticket.IsCompleted
 						};
 						context.Tickets.Add(newTicket);
