@@ -92,7 +92,7 @@
         </div>
     </Modal>
 
-    <copyTicketModal :show="showCopyTicketModal" :ticketId="selectedTicketId" @update:show="showCopyTicketModal = $event" />
+    <CopyTicketModal :show="showCopyTicketModal" :ticketId="selectedTicketId" @update:show="showCopyTicketModal = $event" />
 </div>
 </template>
 
@@ -127,13 +127,13 @@ import {
     toggleTicketCompletion
 } from "@/components/atoms/isCompletedCheckBox";
 import
-copyTicketModal from "@/components/molecules/copyTicketModal.vue";
+CopyTicketModal from "@/components/molecules/CopyTicketModal.vue";
 
 export default {
     components: {
         Modal,
         draggable,
-        copyTicketModal,
+        CopyTicketModal,
     },
     setup() {
         const calendarLists = ref([]);

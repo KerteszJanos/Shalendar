@@ -38,7 +38,7 @@
         </div>
     </div>
     <EditTicketModalFromDayView :show="showEditTicketModalFromDayView" :ticketData="editedTicket" @update:show="showEditTicketModalFromDayView = $event" @ticketUpdated="fetchTickets" />
-    <copyTicketModal :show="showCopyTicketModal" :ticketId="selectedTicketId" :date="route.params.date" @update:show="showCopyTicketModal = $event" />
+    <CopyTicketModal :show="showCopyTicketModal" :ticketId="selectedTicketId" :date="route.params.date" @update:show="showCopyTicketModal = $event" />
 </div>
 </template>
 
@@ -73,12 +73,12 @@ import {
 import {
     toggleTicketCompletion
 } from "@/components/atoms/isCompletedCheckBox";
-import copyTicketModal from "@/components/molecules/copyTicketModal.vue";
+import CopyTicketModal from "@/components/molecules/CopyTicketModal.vue";
 
 export default {
     components: {
         EditTicketModalFromDayView,
-        copyTicketModal
+        CopyTicketModal
     },
     setup() {
         const route = useRoute();

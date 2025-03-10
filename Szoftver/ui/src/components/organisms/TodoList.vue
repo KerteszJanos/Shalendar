@@ -62,7 +62,7 @@ import {
     toggleTicketCompletion
 } from "@/components/atoms/isCompletedCheckBox";
 import
-copyTicketModal from "@/components/molecules/copyTicketModal.vue";
+copyTicketModal from "@/components/molecules/CopyTicketModal.vue";
 
 export default {
     components: {

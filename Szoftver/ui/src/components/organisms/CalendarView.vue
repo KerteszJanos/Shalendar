@@ -17,7 +17,7 @@
             <div v-for="day in daysOfWeek" :key="day" class="calendar-day header">
                 {{ day }}
             </div>
-            <div v-for="day in calendarDays" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth }" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
+            <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth }" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
                 <div v-if="isDraggingTicket" class="drop-divider"></div>
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
@@ -46,7 +46,7 @@
         </div>
     </Modal>
 
-    <copyTicketModal :show="showCopyTicketModal" @update:show="showCopyTicketModal = $event" />
+    <CopyTicketModal :show="showCopyTicketModal" @update:show="showCopyTicketModal = $event" />
 </div>
 </template>
 
@@ -70,12 +70,12 @@ import {
     setErrorMessage
 } from "@/utils/errorHandler";
 import
-copyTicketModal from "@/components/molecules/copyTicketModal.vue";
+CopyTicketModal from "@/components/molecules/CopyTicketModal.vue";
 
 export default {
     components: {
         Modal,
-        copyTicketModal,
+        CopyTicketModal,
     },
     setup() {
         const currentDate = ref(new Date());
@@ -93,7 +93,7 @@ export default {
         const modalErrorMessage = ref("");
         const dropTicketData = ref(null);
         const dropDate = ref("");
-        const calendarDays = ref([]);
+        const daysInMonth = ref([]);
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
 
@@ -107,7 +107,6 @@ export default {
                 month: "long",
             });
         });
-
 
         const openCopyTicketModal = () => {
             showCopyTicketModal.value = true;
@@ -256,7 +255,7 @@ export default {
                 });
             }
 
-            calendarDays.value = days;
+            daysInMonth.value = days;
         };
 
         const goToDay = (date) => {
@@ -374,10 +373,10 @@ export default {
                     scheduleTickets
                 } = await fetchTicketsForDate(date);
 
-                const dayIndex = calendarDays.value.findIndex(day => day.date === date);
+                const dayIndex = daysInMonth.value.findIndex(day => day.date === date);
                 if (dayIndex !== -1) {
-                    calendarDays.value[dayIndex].todoTickets = todoTickets;
-                    calendarDays.value[dayIndex].scheduleTickets = scheduleTickets;
+                    daysInMonth.value[dayIndex].todoTickets = todoTickets;
+                    daysInMonth.value[dayIndex].scheduleTickets = scheduleTickets;
                 }
             } catch (error) {
                 setErrorMessage(errorMessage, "Error updating day tickets.");
@@ -464,7 +463,7 @@ export default {
         return {
             formattedMonth,
             daysOfWeek,
-            calendarDays,
+            daysInMonth,
             calendar,
             errorMessage,
             goToDay,
