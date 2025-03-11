@@ -80,7 +80,7 @@
                 }
     
                 try {
-                    await api.put(`/api/Tickets/${ticket.value.id}`, {
+                    await api.put(`/api/Tickets/updateTicket`, {
                         id: ticket.value.id,
                         name: ticket.value.name,
                         description: ticket.value.description,

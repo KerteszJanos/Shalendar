@@ -22,12 +22,12 @@
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
                     <div class="ticket-list">
-                        <div v-for="ticket in day.scheduleTickets" :key="ticket.name" class="ticket" :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }">
+                        <div v-for="(ticket, index) in day.scheduleTickets" :key="ticket.name + '-' + index" class="ticket" :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }">
                             {{ ticket.name }}
                         </div>
                     </div>
                     <div class="ticket-list">
-                        <div v-for="ticket in day.todoTickets" :key="ticket.name" class="ticket" :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }">
+                        <div v-for="(ticket, index) in day.todoTickets" :key="ticket.name + '-' + index" class="ticket" :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }">
                             {{ ticket.name }}
                         </div>
                     </div>
@@ -55,6 +55,7 @@ import {
     ref,
     computed,
     onMounted,
+    onBeforeUnmount,
     onUnmounted,
     watchEffect
 } from "vue";
@@ -71,6 +72,10 @@ import {
 } from "@/utils/errorHandler";
 import
 CopyTicketModal from "@/components/molecules/CopyTicketModal.vue";
+import {
+    connection,
+    ensureConnected
+} from "@/services/signalRService";
 
 export default {
     components: {
@@ -97,7 +102,19 @@ export default {
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
 
-        const calendarId = localStorage.getItem("calendarId");
+        const dayViewEvents = [
+            "TicketScheduled",
+            "TicketCopiedInCalendar",
+            "TicketCreatedInDayView",
+            "TicketReorderedInDayView",
+            "TicketMovedBackToCalendar",
+            "TicketUpdatedInDayView",
+            "TicketCompletedUpdatedInDayView",
+            "TicketMovedBetweenDays",
+            "TicketDeletedInDayView"
+        ];
+
+        const calendarId = ref(localStorage.getItem("calendarId"));
 
         const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -268,7 +285,7 @@ export default {
 
         const fetchCalendar = async () => {
             try {
-                const response = await api.get(`/api/Calendars/${calendarId}`);
+                const response = await api.get(`/api/Calendars/${calendarId.value}`);
                 calendar.value = response.data;
             } catch (error) {
                 if (error.response && error.response.status === 403) {
@@ -338,7 +355,7 @@ export default {
                 showTimeModal.value = true;
             } else {
                 const scheduleTicketPayload = {
-                    CalendarId: parseInt(calendarId),
+                    CalendarId: parseInt(calendarId.value),
                     Date: date,
                     TicketId: ticketData.id,
                     StartTime: null,
@@ -400,7 +417,7 @@ export default {
             }
 
             const scheduleTicketPayload = {
-                CalendarId: parseInt(calendarId),
+                CalendarId: parseInt(calendarId.value),
                 Date: dropDate.value,
                 TicketId: dropTicketData.value.id,
                 StartTime: modalStartTime.value,
@@ -442,12 +459,27 @@ export default {
             }
         });
 
-        onMounted(() => {
+        onMounted(async () => {
             fetchCalendar();
-            fetchCalendarDays()
+            fetchCalendarDays();
             emitter.on("calendarUpdated", fetchCalendarDays);
             window.addEventListener("dragstart", onGlobalDragStart);
             window.addEventListener("dragend", onGlobalDragEnd);
+
+            await ensureConnected();
+            await connection.invoke("JoinGroup", calendarId.value);
+            dayViewEvents.forEach(event => {
+                connection.on(event, async (receivedDayDate) => {
+                    const formattedDate = receivedDayDate.split("T")[0];
+                    updateDayTickets(formattedDate);
+                });
+            });
+        });
+
+        onBeforeUnmount(() => {
+            if (calendarId.value) {
+                connection.invoke("LeaveGroup", calendarId.value);
+            }
         });
 
         onUnmounted(() => {

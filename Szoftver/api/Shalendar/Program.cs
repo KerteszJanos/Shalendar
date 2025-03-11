@@ -29,6 +29,8 @@ namespace Shalendar
 			// Add Delete Calendar Helper to DI container
 			builder.Services.AddScoped<DeleteCalendarHelper>();
 
+			builder.Services.AddSignalR();
+
 			// Add Copy Ticket Helper to DI container
 			builder.Services.AddScoped<CopyTicketHelper>();
 
@@ -82,6 +84,8 @@ namespace Shalendar
 
 			//Map controllers to handle API requests
 			app.MapControllers();
+
+			app.MapHub<CalendarHub>("/calendarHub");
 
 			//Start the application
 			app.Run();

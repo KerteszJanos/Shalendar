@@ -100,7 +100,8 @@
 import {
     ref,
     onMounted,
-    watch
+    watch,
+    onBeforeUnmount
 } from "vue";
 import api from "@/utils/config/axios-config";
 import Modal from "@/components/molecules/Modal.vue";
@@ -128,6 +129,10 @@ import {
 } from "@/components/atoms/isCompletedCheckBox";
 import
 CopyTicketModal from "@/components/molecules/CopyTicketModal.vue";
+import {
+    connection,
+    ensureConnected
+} from "@/services/signalRService";
 
 export default {
     components: {
@@ -147,7 +152,7 @@ export default {
         const newListError = ref("");
         const editListError = ref("");
         const editTicketError = ref("");
-        const calendarId = localStorage.getItem("calendarId");
+        const calendarId = ref(localStorage.getItem("calendarId"));
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
         const editedTicket = ref({
@@ -173,6 +178,16 @@ export default {
             name: "",
             color: "#CCCCCC"
         });
+
+        const calendarListEvents = [
+            "TicketCreatedInCalendarLists",
+            "TicketScheduled",
+            "TicketCopiedInCalendarLists",
+            "TicketReorderedInCalendarLists",
+            "TicketUpdatedInCalendarLists",
+            "TicketCompletedUpdatedInCalendarLists",
+            "TicketDeletedInCalendarLists"
+        ];
 
         const openCopyTicketModal = (ticketId) => {
             selectedTicketId.value = ticketId;
@@ -210,7 +225,7 @@ export default {
                     return;
                 }
 
-                await api.put(`/api/Tickets/${editedTicket.value.id}`, {
+                await api.put(`/api/Tickets/updateTicket`, {
                     id: editedTicket.value.id,
                     name: editedTicket.value.name,
                     description: editedTicket.value.description,
@@ -301,7 +316,7 @@ export default {
 
         const fetchCalendarLists = async () => {
             try {
-                const response = await api.get(`/api/CalendarLists/calendar/${calendarId}`);
+                const response = await api.get(`/api/CalendarLists/calendar/${calendarId.value}`);
                 calendarLists.value = response.data.map(list => ({
                     ...list,
                     tickets: (list.tickets || []).sort(
@@ -340,7 +355,7 @@ export default {
                 const response = await api.post("/api/CalendarLists", {
                     name: newList.value.name,
                     color: newList.value.color,
-                    calendarId,
+                    calendarId: calendarId.value,
                 });
 
                 const newListData = {
@@ -422,6 +437,19 @@ export default {
                 }
             });
 
+            await ensureConnected();
+            await connection.invoke("JoinGroup", calendarId.value);
+            calendarListEvents.forEach(event => {
+                connection.on(event, async () => {
+                    fetchCalendarLists();
+                });
+            });
+        });
+
+        onBeforeUnmount(() => {
+            if (calendarId.value) {
+                connection.invoke("LeaveGroup", calendarId.value);
+            }
         });
 
         watch(showAddNewCalendarListModal, (newValue) => {
