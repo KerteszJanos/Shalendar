@@ -2,7 +2,6 @@
 <div class="container">
     <div class="day-view">
         <div class="header">{{ formattedDate }}</div>
-        <p v-if="loading">Loading...</p>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div class="time-container">
             <div class="time-scrollable">
@@ -47,6 +46,7 @@ import {
     ref,
     computed,
     onMounted,
+    onBeforeUnmount,
     onUnmounted,
     watch
 } from "vue";
@@ -74,6 +74,10 @@ import {
     toggleTicketCompletion
 } from "@/components/atoms/isCompletedCheckBox";
 import CopyTicketModal from "@/components/molecules/CopyTicketModal.vue";
+import {
+    connection,
+    ensureConnected
+} from "@/services/signalRService";
 
 export default {
     components: {
@@ -83,9 +87,8 @@ export default {
     setup() {
         const route = useRoute();
         const tickets = ref([]);
-        const loading = ref(true);
         const errorMessage = ref("");
-        const calendarId = ref(null);
+        const calendarId = ref(localStorage.getItem("calendarId"));
         const showEditTicketModalFromDayView = ref(false);
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
@@ -95,6 +98,18 @@ export default {
             description: "",
             priority: null
         });
+
+        const calendarListEvents = [
+            "TicketCreatedInDayView",
+            "TicketScheduled",
+            "TicketCopiedInCalendar",
+            "TicketReorderedInDayView",
+            "TicketMovedBackToCalendar",
+            "TicketUpdatedInDayView",
+            "TicketCompletedUpdatedInDayView",
+            "TicketMovedBetweenDays",
+            "TicketDeletedInDayView"
+        ];
 
         const openCopyTicketModal = (ticketId) => {
             selectedTicketId.value = ticketId;
@@ -148,7 +163,7 @@ export default {
         }
 
         let intervalId;
-        onMounted(() => {
+        onMounted(async () => {
             intervalId = setInterval(() => {
                 currentTime.value = getCurrentTime();
                 timeIndicatorStyle.value = getTimeIndicatorStyle();
@@ -157,6 +172,17 @@ export default {
             fetchTickets();
             emitter.on("ticketTimeSet", fetchTickets);
             emitter.on("newTicketCreatedWithTime", fetchTickets);
+
+            await ensureConnected();
+            await connection.invoke("JoinGroup", calendarId.value);
+            calendarListEvents.forEach(event => {
+                connection.on(event, async (receivedDayDate) => {
+                    const formattedDate = receivedDayDate.split("T")[0];
+                    if (route.params.date === formattedDate) {
+                        fetchTickets();
+                    }
+                });
+            });
         });
 
         onUnmounted(() => {
@@ -165,18 +191,16 @@ export default {
             emitter.off("newTicketCreatedWithTime", fetchTickets);
         });
 
+        onBeforeUnmount(() => {
+            if (calendarId.value) {
+                connection.invoke("LeaveGroup", calendarId.value);
+            }
+        });
+
         const fetchTickets = async () => {
-            loading.value = true;
+            const selectedDate = route.params.date;
             errorMessage.value = "";
             try {
-                const selectedDate = route.params.date;
-                const storedCalendarId = localStorage.getItem("calendarId");
-                if (!storedCalendarId) {
-                    setErrorMessage(errorMessage, "No calendarId found in localStorage.");
-                    console.error("No calendarId found in localStorage.");
-                }
-                calendarId.value = storedCalendarId;
-
                 const response = await api.get(
                     `/api/Tickets/scheduled/${selectedDate}/${calendarId.value}`
                 );
@@ -192,8 +216,6 @@ export default {
                     setErrorMessage(errorMessage, "Error loading tickets.");
                     console.error("Error loading tickets:", error);
                 }
-            } finally {
-                loading.value = false;
             }
         };
 
@@ -250,7 +272,6 @@ export default {
         return {
             formattedDate,
             tickets,
-            loading,
             errorMessage,
             handleDelete,
             currentTime,

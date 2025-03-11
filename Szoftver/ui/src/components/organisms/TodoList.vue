@@ -2,7 +2,6 @@
 <div class="container">
     <div class="todo-list">
         <div class="header">{{ formattedDate }}</div>
-        <p v-if="loading">Loading...</p>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <draggable v-model="tickets" @start="onDragStart" @end="onDragEnd" group="tickets" itemKey="id">
 
@@ -30,6 +29,7 @@
 import {
     ref,
     onMounted,
+    onBeforeUnmount,
     onUnmounted,
     watch,
     computed
@@ -63,6 +63,10 @@ import {
 } from "@/components/atoms/isCompletedCheckBox";
 import
 copyTicketModal from "@/components/molecules/CopyTicketModal.vue";
+import {
+    connection,
+    ensureConnected
+} from "@/services/signalRService";
 
 export default {
     components: {
@@ -73,9 +77,8 @@ export default {
     setup() {
         const route = useRoute();
         const tickets = ref([]);
-        const loading = ref(true);
         const errorMessage = ref("");
-        const calendarId = ref(null);
+        const calendarId = ref(localStorage.getItem("calendarId"));
         const showEditTicketModalFromDayView = ref(false);
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
@@ -85,6 +88,18 @@ export default {
             description: "",
             priority: null
         });
+
+        const calendarListEvents = [
+            "TicketCreatedInDayView",
+            "TicketScheduled",
+            "TicketCopiedInCalendar",
+            "TicketReorderedInDayView",
+            "TicketMovedBackToCalendar",
+            "TicketUpdatedInDayView",
+            "TicketCompletedUpdatedInDayView",
+            "TicketMovedBetweenDays",
+            "TicketDeletedInDayView"
+        ];
 
         const onDragStart = (event) => {
             const ticket = event.item.__draggable_context.element;
@@ -123,16 +138,9 @@ export default {
         };
 
         const fetchTickets = async () => {
-            loading.value = true;
+            const selectedDate = route.params.date;
             errorMessage.value = "";
             try {
-                const selectedDate = route.params.date;
-                const storedCalendarId = localStorage.getItem("calendarId");
-                if (!storedCalendarId) {
-                    setErrorMessage(errorMessage, "No calendarId found in localStorage.");
-                    console.error("No calendarId found in localStorage.");
-                }
-                calendarId.value = storedCalendarId;
                 const response = await api.get(`/api/Tickets/todolist/${selectedDate}/${calendarId.value}`);
                 tickets.value = response.data
                     .map(ticket => ({
@@ -148,8 +156,6 @@ export default {
                     setErrorMessage(errorMessage, "Error loading tickets.");
                     console.error("Error loading tickets:", error);
                 }
-            } finally {
-                loading.value = false;
             }
         };
 
@@ -175,11 +181,28 @@ export default {
             await updateTicketOrder(tickets.value, errorMessage);
         };
 
-        onMounted(() => {
+        onMounted(async () => {
             fetchTickets();
             emitter.on("ticketTimeUnSet", fetchTickets);
             emitter.on("newTicketCreatedWithoutTime", fetchTickets);
             emitter.on("ticketDateChanged", fetchTickets);
+
+            await ensureConnected();
+            await connection.invoke("JoinGroup", calendarId.value);
+            calendarListEvents.forEach(event => {
+                connection.on(event, async (receivedDayDate) => {
+                    const formattedDate = receivedDayDate.split("T")[0];
+                    if (route.params.date === formattedDate) {
+                        fetchTickets();
+                    }
+                });
+            });
+        });
+
+        onBeforeUnmount(() => {
+            if (calendarId.value) {
+                connection.invoke("LeaveGroup", calendarId.value);
+            }
         });
 
         onUnmounted(() => {
@@ -192,7 +215,6 @@ export default {
 
         return {
             tickets,
-            loading,
             errorMessage,
             formattedDate,
             handleDelete,
