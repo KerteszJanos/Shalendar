@@ -23,16 +23,22 @@ namespace Shalendar
 									.AllowCredentials());
 			});
 
+			builder.Services.AddSignalR();
+
 			// Add JWT Helper to DI container
 			builder.Services.AddScoped<JwtHelper>();
 
 			// Add Delete Calendar Helper to DI container
 			builder.Services.AddScoped<DeleteCalendarHelper>();
 
-			builder.Services.AddSignalR();
-
 			// Add Copy Ticket Helper to DI container
 			builder.Services.AddScoped<CopyTicketHelper>();
+
+			// Add Get CalendarId Helper to DI container
+			builder.Services.AddScoped<GetCalendarIdHelper>();
+
+			// Add Group Manager Service to DI container
+			builder.Services.AddSingleton<GroupManagerService>();
 
 			//Add database context (SQL Server)
 			builder.Services.AddDbContext<ShalendarDbContext>(options =>

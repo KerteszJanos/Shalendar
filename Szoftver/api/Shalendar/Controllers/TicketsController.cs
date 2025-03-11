@@ -25,14 +25,20 @@ namespace Shalendar.Controllers
 		private readonly ShalendarDbContext _context;
 		private readonly JwtHelper _jwtHelper;
 		private readonly CopyTicketHelper _copyTicketHelper;
+		private readonly GetCalendarIdHelper _getCalendarIdHelper;
+
+		private readonly GroupManagerService _groupManager;
 		private readonly IHubContext<CalendarHub> _calendarHub;
 
-		public TicketsController(ShalendarDbContext context, JwtHelper jwtHelper, CopyTicketHelper copyTicketHelper, IHubContext<CalendarHub> calendarHub)
+
+		public TicketsController(ShalendarDbContext context, JwtHelper jwtHelper, CopyTicketHelper copyTicketHelper, IHubContext<CalendarHub> calendarHub, GroupManagerService groupManager, GetCalendarIdHelper getCalendarIdHelper)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;
 			_copyTicketHelper = copyTicketHelper;
 			_calendarHub = calendarHub;
+			_groupManager = groupManager;
+			_getCalendarIdHelper = getCalendarIdHelper;
 		}
 
 		#region Gets
@@ -247,8 +253,14 @@ namespace Shalendar.Controllers
 		[HttpPost]
 		public async Task<ActionResult<Ticket>> CreateTicket([FromBody] Ticket ticket)
 		{
+
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "write";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -266,29 +278,24 @@ namespace Shalendar.Controllers
 			_context.Tickets.Add(ticket);
 			await _context.SaveChangesAsync();
 
-
-			if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) ||
-			!int.TryParse(calendarIdHeader, out int calendarId))
+			if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
 			{
-				return BadRequest();
-			}
-
-			if (ticket.CurrentParentType == "CalendarList")
-			{
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCreatedInCalendarLists");
-			}
-			else
-			{
-				var day = await _context.Days.FindAsync(ticket.ParentId);
-
-				if (day == null)
+				if (ticket.CurrentParentType == "CalendarList")
 				{
-					return BadRequest("Associated Day not found.");
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCreatedInCalendarLists");
 				}
+				else
+				{
+					var day = await _context.Days.FindAsync(ticket.ParentId);
 
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCreatedInDayView", day.Date);
+					if (day == null)
+					{
+						return BadRequest("Associated Day not found.");
+					}
+
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCreatedInDayView", day.Date);
+				}
 			}
-
 
 			return CreatedAtAction(nameof(CreateTicket), new { id = ticket.Id }, ticket);
 		}
@@ -297,8 +304,13 @@ namespace Shalendar.Controllers
 		[HttpPost("ScheduleTicket")]
 		public async Task<IActionResult> ScheduleTicket([FromBody] ScheduleTicketDto dto)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "write";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -353,13 +365,10 @@ namespace Shalendar.Controllers
 					await _context.SaveChangesAsync();
 					await transaction.CommitAsync();
 
-					if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) ||
-						!int.TryParse(calendarIdHeader, out int calendarId))
+					if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
 					{
-						return BadRequest();
+						await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketScheduled", dayRecord.Date);
 					}
-					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketScheduled", dayRecord.Date);
-
 					return Ok(ticket);
 				}
 				catch (Exception ex)
@@ -407,15 +416,17 @@ namespace Shalendar.Controllers
 
 			var result = await _copyTicketHelper.CopyTicketAsync(_context, ticketId, calendarId, date);
 
-			if (date == null)
+			if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
 			{
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCopiedInCalendarLists");
+				if (date == null)
+				{
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCopiedInCalendarLists");
+				}
+				else
+				{
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCopiedInCalendar", date);
+				}
 			}
-			else
-			{
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCopiedInCalendar", date);
-			}
-
 			return result ? Ok("Ticket successfully copied or already existed.") : NotFound("Ticket or CalendarList not found.");
 		}
 
@@ -429,8 +440,13 @@ namespace Shalendar.Controllers
 		[HttpPut("reorder")]
 		public async Task<IActionResult> ReorderTickets([FromBody] List<TicketOrderUpdateDto> orderUpdates)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "write";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -455,40 +471,36 @@ namespace Shalendar.Controllers
 			}
 			await _context.SaveChangesAsync();
 
-			if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) ||
-			!int.TryParse(calendarIdHeader, out int calendarId))
+			if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
 			{
-				return BadRequest();
-			}
 
-
-			var firstTicketId = orderUpdates.FirstOrDefault()?.TicketId;
-			if (firstTicketId == null)
-			{
-				return BadRequest("No valid tickets found.");
-			}
-
-			var firstTicket = await _context.Tickets
-				.Where(t => t.Id == firstTicketId)
-				.Select(t => new { t.CurrentParentType, t.ParentId })
-				.FirstOrDefaultAsync();
-
-			if (firstTicket?.CurrentParentType == "CalendarList")
-			{
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketReorderedInCalendarLists");
-			}
-			else
-			{
-				var day = await _context.Days.FindAsync(firstTicket?.ParentId);
-
-				if (day == null)
+				var firstTicketId = orderUpdates.FirstOrDefault()?.TicketId;
+				if (firstTicketId == null)
 				{
-					return BadRequest("Associated Day not found.");
+					return BadRequest("No valid tickets found.");
 				}
 
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketReorderedInDayView", day.Date);
-			}
+				var firstTicket = await _context.Tickets
+					.Where(t => t.Id == firstTicketId)
+					.Select(t => new { t.CurrentParentType, t.ParentId })
+					.FirstOrDefaultAsync();
 
+				if (firstTicket?.CurrentParentType == "CalendarList")
+				{
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketReorderedInCalendarLists");
+				}
+				else
+				{
+					var day = await _context.Days.FindAsync(firstTicket?.ParentId);
+
+					if (day == null)
+					{
+						return BadRequest("Associated Day not found.");
+					}
+
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketReorderedInDayView", day.Date);
+				}
+			}
 			return NoContent();
 		}
 
@@ -496,8 +508,13 @@ namespace Shalendar.Controllers
 		[HttpPut("move-to-calendar/{ticketId}")]
 		public async Task<IActionResult> MoveTicketToCalendar(int ticketId)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "write";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -524,20 +541,17 @@ namespace Shalendar.Controllers
 			{
 				await _context.SaveChangesAsync();
 
-				if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) ||
-					!int.TryParse(calendarIdHeader, out int calendarId))
+				if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
 				{
-					return BadRequest();
+					var day = await _context.Days.FindAsync(prevParentId);
+
+					if (day == null)
+					{
+						return BadRequest("Associated Day not found.");
+					}
+
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketMovedBackToCalendar", day.Date);
 				}
-				var day = await _context.Days.FindAsync(prevParentId);
-
-				if (day == null)
-				{
-					return BadRequest("Associated Day not found.");
-				}
-
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketMovedBackToCalendar", day.Date);
-
 				return Ok(ticket);
 			}
 			catch (Exception ex)
@@ -550,8 +564,13 @@ namespace Shalendar.Controllers
 		[HttpPut("updateTicket")]
 		public async Task<IActionResult> UpdateTicket([FromBody] UpdateTicketDto updatedTicketDto)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "write";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -597,29 +616,24 @@ namespace Shalendar.Controllers
 			{
 				await _context.SaveChangesAsync();
 
-				if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) ||
-					!int.TryParse(calendarIdHeader, out int calendarId))
+				if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
 				{
-					return BadRequest();
-				}
-
-
-				if (prevParentType == "CalendarList")
-				{
-					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketUpdatedInCalendarLists");
-				}
-				else
-				{
-					var day = await _context.Days.FindAsync(ticket.ParentId);
-
-					if (day == null)
+					if (prevParentType == "CalendarList")
 					{
-						return BadRequest("Associated Day not found.");
+						await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketUpdatedInCalendarLists");
 					}
+					else
+					{
+						var day = await _context.Days.FindAsync(ticket.ParentId);
 
-					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketUpdatedInDayView", day.Date);
+						if (day == null)
+						{
+							return BadRequest("Associated Day not found.");
+						}
+
+						await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketUpdatedInDayView", day.Date);
+					}
 				}
-
 				return Ok(ticket);
 			}
 			catch (Exception ex)
@@ -632,8 +646,13 @@ namespace Shalendar.Controllers
 		[HttpPut("updateTicketCompleted")]
 		public async Task<IActionResult> UpdateTicketCompleted(int ticketId, bool isCompleted)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "write";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -652,28 +671,24 @@ namespace Shalendar.Controllers
 			ticket.IsCompleted = isCompleted;
 			await _context.SaveChangesAsync();
 
-			if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) ||
-				!int.TryParse(calendarIdHeader, out int calendarId))
+			if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
 			{
-				return BadRequest();
-			}
-
-			if (ticket.CurrentParentType == "CalendarList")
-			{
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCompletedUpdatedInCalendarLists");
-			}
-			else
-			{
-				var day = await _context.Days.FindAsync(ticket.ParentId);
-
-				if (day == null)
+				if (ticket.CurrentParentType == "CalendarList")
 				{
-					return BadRequest("Associated Day not found.");
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCompletedUpdatedInCalendarLists");
 				}
+				else
+				{
+					var day = await _context.Days.FindAsync(ticket.ParentId);
 
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCompletedUpdatedInDayView", day.Date);
+					if (day == null)
+					{
+						return BadRequest("Associated Day not found.");
+					}
+
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCompletedUpdatedInDayView", day.Date);
+				}
 			}
-
 			return Ok();
 		}
 
@@ -681,8 +696,13 @@ namespace Shalendar.Controllers
 		[HttpPut("changeDate/{ticketId}")]
 		public async Task<IActionResult> ChangeTicketDate(int ticketId, [FromBody] string date)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarIdInt))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "write";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarIdInt);
 
 			if (!hasPermission)
 			{
@@ -732,20 +752,16 @@ namespace Shalendar.Controllers
 
 			await _context.SaveChangesAsync();
 
-			if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) ||
-				!int.TryParse(calendarIdHeader, out int calendarIdInt))
+			if (!_groupManager.IsUserAloneInGroup(calendarIdInt.ToString()))
 			{
-				return BadRequest();
+				var previousDay = await _context.Days.FindAsync(previousParentId);
+
+				if (previousDay != null)
+				{
+					await _calendarHub.Clients.Group(calendarIdInt.ToString()).SendAsync("TicketMovedBetweenDays", dayRecord.Date);
+					await _calendarHub.Clients.Group(calendarIdInt.ToString()).SendAsync("TicketMovedBetweenDays", previousDay.Date);
+				}
 			}
-
-			var previousDay = await _context.Days.FindAsync(previousParentId); // GPT generated - Lekérjük a korábbi napot
-
-			if (previousDay != null)
-			{
-				await _calendarHub.Clients.Group(calendarIdInt.ToString()).SendAsync("TicketMovedBetweenDays",dayRecord.Date);
-				await _calendarHub.Clients.Group(calendarIdInt.ToString()).SendAsync("TicketMovedBetweenDays", previousDay.Date);
-			}
-
 			return Ok(ticket);
 		}
 
@@ -759,8 +775,13 @@ namespace Shalendar.Controllers
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteTicket(int id)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "write";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -779,28 +800,24 @@ namespace Shalendar.Controllers
 			_context.Tickets.Remove(ticket);
 			await _context.SaveChangesAsync();
 
-			if (!HttpContext.Request.Headers.TryGetValue("X-Calendar-Id", out var calendarIdHeader) ||
-				!int.TryParse(calendarIdHeader, out int calendarId))
+			if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
 			{
-				return BadRequest();
-			}
-
-			if (ticket.CurrentParentType == "CalendarList")
-			{
-
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketDeletedInCalendarLists");
-			}
-			else
-			{
-				var day = await _context.Days.FindAsync(ticket.ParentId);
-				if (day == null)
+				if (ticket.CurrentParentType == "CalendarList")
 				{
-					return BadRequest("Associated Day not found.");
+
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketDeletedInCalendarLists");
 				}
+				else
+				{
+					var day = await _context.Days.FindAsync(ticket.ParentId);
+					if (day == null)
+					{
+						return BadRequest("Associated Day not found.");
+					}
 
-				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketDeletedInDayView", day.Date);
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketDeletedInDayView", day.Date);
+				}
 			}
-
 			return NoContent();
 		}
 
