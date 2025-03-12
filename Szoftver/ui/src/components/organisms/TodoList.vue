@@ -98,7 +98,7 @@ export default {
             "TicketUpdatedInDayView",
             "TicketCompletedUpdatedInDayView",
             "TicketMovedBetweenDays",
-            "TicketDeletedInDayView",
+            "TicketDeletedInDayView"
         ];
 
         const onDragStart = (event) => {

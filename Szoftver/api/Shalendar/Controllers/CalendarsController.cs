@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Functions;
 using Shalendar.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Shalendar.Controllers
 {
@@ -24,12 +26,17 @@ namespace Shalendar.Controllers
 		private readonly DeleteCalendarHelper _deleteCalendarHelper;
 		private readonly CopyTicketHelper _copyTicketHelper;
 
-		public CalendarsController(ShalendarDbContext context, JwtHelper jwtHelper, DeleteCalendarHelper deleteCalendarHelper, CopyTicketHelper copyTicketHelper)
+		private readonly GroupManagerService _groupManager;
+		private readonly IHubContext<CalendarHub> _calendarHub;
+
+		public CalendarsController(ShalendarDbContext context, JwtHelper jwtHelper, DeleteCalendarHelper deleteCalendarHelper, CopyTicketHelper copyTicketHelper, GroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;
 			_deleteCalendarHelper = deleteCalendarHelper;
 			_copyTicketHelper = copyTicketHelper;
+			_groupManager = groupManager;
+			_calendarHub = calendarHub;
 		}
 
 		#region Gets
@@ -259,11 +266,11 @@ namespace Shalendar.Controllers
 						.Select(c => c.Name)
 						.FirstOrDefaultAsync();
 
-					return new ObjectResult(new { message = $"Required permission: {requiredPermission} for calendar: '{calendarName}'" })
-					{
-						StatusCode = StatusCodes.Status403Forbidden
-					};
-				
+				return new ObjectResult(new { message = $"Required permission: {requiredPermission} for calendar: '{calendarName}'" })
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				};
+
 			}
 
 			requiredPermission = "write";
@@ -310,6 +317,8 @@ namespace Shalendar.Controllers
 					await _copyTicketHelper.CopyTicketAsync(_context, ticket.Id, calendarId, null);
 				}
 			}
+
+			await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("CalendarCopied");
 
 			return Ok("All tickets successfully copied.");
 		}
