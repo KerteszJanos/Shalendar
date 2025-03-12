@@ -59,6 +59,7 @@ namespace Shalendar.Controllers
 			return calendar;
 		}
 
+
 		// GET: api/Calendars/5
 		[HttpGet("noPermissionNeeded/{id}")]
 		public async Task<ActionResult<Calendar>> GetCalendarNoPermissionNeeded(int id)
@@ -73,6 +74,7 @@ namespace Shalendar.Controllers
 			return calendar;
 		}
 
+
 		// GET: api/Calendars/user/{userId}
 		[HttpGet("user/{userId}")]
 		public async Task<ActionResult<IEnumerable<CalendarPermission>>> GetUserCalendarPermissions(int userId)
@@ -83,6 +85,7 @@ namespace Shalendar.Controllers
 
 			return Ok(permissions);
 		}
+
 
 		// GET: api/Calendars/{calendarId}/permissions
 		[HttpGet("{calendarId}/permissions")]
@@ -119,6 +122,7 @@ namespace Shalendar.Controllers
 			return Ok(permissions);
 		}
 
+
 		// GET: api/Calendars/accessible
 		[HttpGet("accessible")]
 		public async Task<ActionResult<IEnumerable<object>>> GetUserAccessibleCalendars()
@@ -146,6 +150,8 @@ namespace Shalendar.Controllers
 		}
 
 		#endregion
+
+
 
 		#region Posts
 
@@ -187,6 +193,7 @@ namespace Shalendar.Controllers
 				return StatusCode(500, $"Hiba történt a naptár létrehozásakor: {ex.Message}");
 			}
 		}
+
 
 		// POST: api/Calendars/{calendarId}/permissions/{email}/{permissionType}
 		[HttpPost("{calendarId}/permissions/{email}/{permissionType}")]
@@ -231,6 +238,7 @@ namespace Shalendar.Controllers
 
 			return Ok();
 		}
+
 
 		// POST: api/Calendars/copy-all-tickets
 		[HttpPost("copy-all-tickets")]
@@ -308,9 +316,13 @@ namespace Shalendar.Controllers
 
 		#endregion
 
+
+
 		#region Puts
 
 		#endregion
+
+
 
 		#region Deletes
 
@@ -337,6 +349,7 @@ namespace Shalendar.Controllers
 
 			return Ok();
 		}
+
 
 		// DELETE: api/Calendars/{calendarId}
 		[HttpDelete("{calendarId}")]

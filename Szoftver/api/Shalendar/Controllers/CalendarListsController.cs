@@ -10,21 +10,33 @@ using Shalendar.Contexts;
 using Shalendar.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Shalendar.Functions;
+using Microsoft.AspNetCore.SignalR;
+using System.Net.Sockets;
 
 namespace Shalendar.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+	[Route("api/[controller]")]
+	[ApiController]
 	[Authorize]
 	public class CalendarListsController : ControllerBase
-    {
-        private readonly ShalendarDbContext _context;
-		private readonly JwtHelper _jwtHelper;
+	{
+		private readonly ShalendarDbContext _context;
 
-		public CalendarListsController(ShalendarDbContext context, JwtHelper jwtHelper)
+		private readonly JwtHelper _jwtHelper;
+		private readonly GetCalendarIdHelper _getCalendarIdHelper;
+
+		private readonly IHubContext<CalendarHub> _calendarHub;
+
+		private readonly GroupManagerService _groupManager;
+
+		public CalendarListsController(ShalendarDbContext context, JwtHelper jwtHelper, GetCalendarIdHelper getCalendarIdHelper, GroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;
+			_getCalendarIdHelper = getCalendarIdHelper;
+			_groupManager = groupManager;
+			_calendarHub = calendarHub;
 		}
 
 
@@ -84,8 +96,13 @@ namespace Shalendar.Controllers
 		[HttpPost]
 		public async Task<ActionResult<CalendarList>> PostCalendarList(CalendarList calendarList)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "owner";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -104,6 +121,11 @@ namespace Shalendar.Controllers
 			_context.CalendarLists.Add(calendarList);
 			await _context.SaveChangesAsync();
 
+			if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
+			{
+				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("CalendarListCreated");
+			}
+
 			return CreatedAtAction(nameof(GetCalendarListsByCalendarId), new { calendarId = calendarList.CalendarId }, calendarList);
 		}
 
@@ -117,8 +139,13 @@ namespace Shalendar.Controllers
 		[HttpPut("{id}")]
 		public async Task<IActionResult> UpdateCalendarList(int id, [FromBody] CalendarList updatedList)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "owner";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -151,6 +178,11 @@ namespace Shalendar.Controllers
 				return StatusCode(500, "Error updating the list.");
 			}
 
+			if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
+			{
+				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("CalendarListUpdated");
+			}
+
 			return NoContent();
 		}
 
@@ -164,8 +196,13 @@ namespace Shalendar.Controllers
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteCalendarList(int id)
 		{
+			if (!_getCalendarIdHelper.TryGetCalendarId(HttpContext, out int calendarId))
+			{
+				return BadRequest("Invalid or missing X-Calendar-Id header.");
+			}
+
 			var requiredPermission = "owner";
-			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission);
+			var hasPermission = await _jwtHelper.HasCalendarPermission(HttpContext, requiredPermission, calendarId);
 
 			if (!hasPermission)
 			{
@@ -199,6 +236,12 @@ namespace Shalendar.Controllers
 				await _context.SaveChangesAsync();
 
 				await transaction.CommitAsync();
+
+				if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
+				{
+					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("CalendarListDeleted");
+				}
+
 				return NoContent();
 			}
 			catch (DbUpdateException ex)

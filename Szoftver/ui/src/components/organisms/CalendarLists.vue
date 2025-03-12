@@ -34,7 +34,7 @@
             <button class="add-ticket-button" @click="openAddNewTicketModal(list.id)">+</button>
         </div>
     </div>
-    <p v-else>Add a list to start scheduling your stuff :)</p>
+    <p v-else-if="!errormessage">Add a list to start scheduling your stuff :)</p>
 
     <Modal :show="showAddNewCalendarListModal" title="Add New List" confirmText="Add" @close="showAddNewCalendarListModal = false" @confirm="handleAddNewCalendarList">
         <div class="modal-content">
@@ -188,6 +188,9 @@ export default {
             "TicketCompletedUpdatedInCalendarLists",
             "TicketDeletedInCalendarLists",
             "TicketMovedBackToCalendar",
+            "CalendarListCreated",
+            "CalendarListUpdated",
+            "CalendarListDeleted"
         ];
 
         const openCopyTicketModal = (ticketId) => {
@@ -326,8 +329,10 @@ export default {
                 }));
             } catch (error) {
                 if (error.response && error.response.status === 403) {
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
                 } else {
+                    setErrorMessage(errorMessage, "Error loading calendar lists.");
                     console.error("Error loading calendar lists:", error);
                 }
             } finally {
