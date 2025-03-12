@@ -187,7 +187,7 @@ export default {
                 window.location.reload();
             });
             connection.on("CalendarCopied", async () => {
-                window.location.reload();
+                fetchTickets();
             });
         });
 
@@ -198,6 +198,8 @@ export default {
         });
 
         onBeforeUnmount(() => {
+            connection.off("CalendarCopied");
+            
             if (calendarId.value) {
                 connection.invoke("LeaveGroup", calendarId.value);
             }

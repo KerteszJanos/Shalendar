@@ -197,9 +197,14 @@ export default {
                     }
                 });
             });
+            connection.on("CalendarCopied", async () => {
+                fetchTickets();
+            });
         });
 
         onBeforeUnmount(() => {
+            connection.off("CalendarCopied");
+            
             if (calendarId.value) {
                 connection.invoke("LeaveGroup", calendarId.value);
             }

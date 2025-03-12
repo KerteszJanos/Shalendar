@@ -191,6 +191,7 @@ export default {
             "CalendarListCreated",
             "CalendarListUpdated",
             "CalendarListDeleted",
+            "CalendarCopied"
         ];
 
         const openCopyTicketModal = (ticketId) => {

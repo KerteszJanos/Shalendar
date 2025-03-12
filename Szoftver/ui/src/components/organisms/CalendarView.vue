@@ -479,7 +479,7 @@ export default {
                 window.location.reload();
             });
             connection.on("CalendarCopied", async () => {
-                window.location.reload();
+                fetchCalendarDays();
             });
         });
 

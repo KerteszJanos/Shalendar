@@ -421,17 +421,15 @@ namespace Shalendar.Controllers
 
 			var result = await _copyTicketHelper.CopyTicketAsync(_context, ticketId, calendarId, date);
 
-			if (!_groupManager.IsUserAloneInGroup(calendarId.ToString()))
+			if (date == null)
 			{
-				if (date == null)
-				{
-					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCopiedInCalendarLists");
-				}
-				else
-				{
-					await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCopiedInCalendar", date);
-				}
+				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCopiedInCalendarLists");
 			}
+			else
+			{
+				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("TicketCopiedInCalendar", date);
+			}
+
 			return result ? Ok("Ticket successfully copied or already existed.") : NotFound("Ticket or CalendarList not found.");
 		}
 
