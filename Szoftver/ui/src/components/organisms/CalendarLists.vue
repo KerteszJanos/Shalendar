@@ -15,7 +15,7 @@
             <div class="ticket-list" v-if="list.tickets && list.tickets.length > 0">
                 <draggable class="ticket" v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
                     <template #item="{ element }">
-                        <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)">
+                        <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
                             <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
                             <p><strong>{{ element.name }}</strong></p>
                             <p v-if="element.description">{{ element.description }}</p>
@@ -34,7 +34,7 @@
             <button class="add-ticket-button" @click="openAddNewTicketModal(list.id)">+</button>
         </div>
     </div>
-    <p v-else-if="!errormessage">Add a list to start scheduling your stuff :)</p>
+    <p v-else-if="!errorMessage">Add a list to start scheduling your stuff :)</p>
 
     <Modal :show="showAddNewCalendarListModal" title="Add New List" confirmText="Add" @close="showAddNewCalendarListModal = false" @confirm="handleAddNewCalendarList">
         <div class="modal-content">
@@ -507,7 +507,7 @@ export default {
             toggleCompletion,
             openCopyTicketModal,
             showCopyTicketModal,
-            selectedTicketId
+            selectedTicketId,
         };
     },
 };
@@ -529,14 +529,15 @@ export default {
 }
 
 .lists-container {
-    width: 30vw;
-    height: 90vh;
+    width: 100%;
+    height: 100%;
     background: #c8e6c9;
     padding: 15px;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-width: 300px;
 }
 
 .header {

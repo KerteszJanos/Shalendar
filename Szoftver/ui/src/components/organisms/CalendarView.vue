@@ -12,11 +12,12 @@
             </div>
         </div>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-
-        <div class="calendar-grid">
+        <div class = "calendar-header-grid">
             <div v-for="day in daysOfWeek" :key="day" class="calendar-day header">
                 {{ day }}
             </div>
+        </div>
+        <div class="calendar-grid">
             <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth }" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
                 <div v-if="isDraggingTicket" class="drop-divider"></div>
                 <div class="day-number">{{ day.number }}</div>
@@ -578,18 +579,18 @@ export default {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
-    width: 100vw;
-    height: 90vh;
+    width: 100%;
+    height: 100%;
 }
 
 .calendar-container {
     width: 100%;
-    max-width: 80vw;
-    height: auto;
+    height: 100%;
     background: #e3f2fd;
     padding: 20px;
     border-radius: 10px;
     overflow: hidden;
+    min-width: 330px;
 }
 
 .calendar-header {
@@ -615,15 +616,26 @@ export default {
     background: rgba(0, 0, 0, 0.1);
 }
 
-.calendar-grid {
+.calendar-header-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
-    margin-top: 10px;
     width: 100%;
-    max-width: 100%;
-    overflow: hidden;
+    text-align: center;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    height: 100%;
 }
+
+.calendar-grid { 
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 5px;
+    width: 100%;
+    height: 100%;
+}
+
 
 .completed-ticket {
     text-decoration: line-through;
@@ -633,7 +645,7 @@ export default {
 .calendar-day {
     background: #fff;
     border-radius: 5px;
-    height: 100px;
+    height: auto;
     position: relative;
     cursor: pointer;
     overflow: hidden;
@@ -645,7 +657,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 5px;
-    min-width: 50px;
+    min-width: 30px;
 }
 
 .calendar-day:hover:not(.header) {
