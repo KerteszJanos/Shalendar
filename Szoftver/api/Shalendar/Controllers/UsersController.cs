@@ -55,7 +55,6 @@ namespace Shalendar.Controllers
 			});
 		}
 
-
 		#endregion
 
 
@@ -126,6 +125,7 @@ namespace Shalendar.Controllers
 				return StatusCode(500, $"Error creating user: {ex.Message}");
 			}
 		}
+
 
 		// POST: api/Users/login
 		[HttpPost("login")]
@@ -199,6 +199,7 @@ namespace Shalendar.Controllers
 
 			return NoContent();
 		}
+
 
 		// PUT: api/Users/set-default-calendar/{calendarId}
 		[HttpPut("set-default-calendar/{calendarId}")]

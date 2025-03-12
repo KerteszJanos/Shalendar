@@ -111,7 +111,7 @@ export default {
             "TicketUpdatedInDayView",
             "TicketCompletedUpdatedInDayView",
             "TicketMovedBetweenDays",
-            "TicketDeletedInDayView"
+            "TicketDeletedInDayView",
         ];
 
         const calendarId = ref(localStorage.getItem("calendarId"));
@@ -473,6 +473,9 @@ export default {
                     const formattedDate = receivedDayDate.split("T")[0];
                     updateDayTickets(formattedDate);
                 });
+            });
+            connection.on("CalendarDeleted", async () => {
+                window.location.reload()
             });
         });
 

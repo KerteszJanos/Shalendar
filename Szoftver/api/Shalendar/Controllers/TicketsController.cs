@@ -99,6 +99,7 @@ namespace Shalendar.Controllers
 			return Ok(tickets);
 		}
 
+
 		// GET: api/Tickets/scheduled/{date}/{calendarId}
 		[HttpGet("scheduled/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetScheduledListTicketsByDateAndCalendar(string date, int calendarId)
@@ -157,6 +158,7 @@ namespace Shalendar.Controllers
 			return Ok(tickets);
 		}
 
+
 		// GET: api/Tickets/AllDailyTickets/{date}/{calendarId}"
 		[HttpGet("AllDailyTickets/{date}/{calendarId}")]
 		public async Task<ActionResult<IEnumerable<object>>> GetAllDailyTicketsByDateAndCalendar(string date, int calendarId)
@@ -208,6 +210,7 @@ namespace Shalendar.Controllers
 
 			return Ok(tickets);
 		}
+
 
 		// GET: api/Tickets/AllDailyTickets/{dayId}
 		[HttpGet("AllDailyTickets/{dayId}")]
@@ -300,6 +303,7 @@ namespace Shalendar.Controllers
 			return CreatedAtAction(nameof(CreateTicket), new { id = ticket.Id }, ticket);
 		}
 
+
 		// POST: api/Tickets/ScheduleTicket
 		[HttpPost("ScheduleTicket")]
 		public async Task<IActionResult> ScheduleTicket([FromBody] ScheduleTicketDto dto)
@@ -378,6 +382,7 @@ namespace Shalendar.Controllers
 				}
 			}
 		}
+
 
 		// POST: api/Tickets/copy-ticket
 		[HttpPost("copy-ticket")]
@@ -504,6 +509,7 @@ namespace Shalendar.Controllers
 			return NoContent();
 		}
 
+
 		// PUT: api/Tickets/move-to-calendar/{ticketId}
 		[HttpPut("move-to-calendar/{ticketId}")]
 		public async Task<IActionResult> MoveTicketToCalendar(int ticketId)
@@ -559,6 +565,7 @@ namespace Shalendar.Controllers
 				return StatusCode(500, $"An error occurred: {ex.Message}");
 			}
 		}
+
 
 		// PUT: api/Tickets/updateTicket
 		[HttpPut("updateTicket")]
@@ -642,6 +649,7 @@ namespace Shalendar.Controllers
 			}
 		}
 
+
 		// PUT: api/Tickets/updateTicketCompleted
 		[HttpPut("updateTicketCompleted")]
 		public async Task<IActionResult> UpdateTicketCompleted(int ticketId, bool isCompleted)
@@ -691,6 +699,7 @@ namespace Shalendar.Controllers
 			}
 			return Ok();
 		}
+
 
 		// PUT: api/Tickets/changeDate/{ticketId}
 		[HttpPut("changeDate/{ticketId}")]

@@ -108,7 +108,7 @@ export default {
             "TicketUpdatedInDayView",
             "TicketCompletedUpdatedInDayView",
             "TicketMovedBetweenDays",
-            "TicketDeletedInDayView"
+            "TicketDeletedInDayView",
         ];
 
         const openCopyTicketModal = (ticketId) => {
@@ -182,6 +182,9 @@ export default {
                         fetchTickets();
                     }
                 });
+            });
+            connection.on("CalendarDeleted", async () => {
+                window.location.reload()
             });
         });
 

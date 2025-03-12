@@ -187,7 +187,7 @@ export default {
             "TicketUpdatedInCalendarLists",
             "TicketCompletedUpdatedInCalendarLists",
             "TicketDeletedInCalendarLists",
-            "TicketMovedBackToCalendar"
+            "TicketMovedBackToCalendar",
         ];
 
         const openCopyTicketModal = (ticketId) => {

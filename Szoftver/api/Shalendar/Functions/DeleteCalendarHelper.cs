@@ -1,19 +1,25 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Shalendar.Functions
 {
 	public class DeleteCalendarHelper
 	{
 		private readonly ShalendarDbContext _context;
+		private readonly GroupManagerService _groupManager;
+		private readonly IHubContext<CalendarHub> _calendarHub;
 
-		public DeleteCalendarHelper(ShalendarDbContext context)
+		public DeleteCalendarHelper(ShalendarDbContext context, GroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
 		{
 			_context = context;
+			_groupManager = groupManager;
+			_calendarHub = calendarHub;
 		}
 
 		/// <summary>
@@ -94,6 +100,8 @@ namespace Shalendar.Functions
 
 				await _context.SaveChangesAsync();
 				await transaction.CommitAsync();
+
+				await _calendarHub.Clients.Group(calendarId.ToString()).SendAsync("CalendarDeleted");
 			}
 			catch (Exception)
 			{
