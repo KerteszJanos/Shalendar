@@ -101,7 +101,7 @@ namespace Shalendar.Controllers
 				{
 					Name = "Default List",
 					CalendarId = defaultCalendar.Id,
-					Color = "#CCCCCC"
+					Color = "#45DFB1"
 				};
 
 				_context.CalendarLists.Add(calendarList);

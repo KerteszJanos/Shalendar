@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="calendar-grid">
-            <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth }" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
+            <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth, 'today': isToday(day.date)}" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
                 <div v-if="isDraggingTicket" class="drop-divider"></div>
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
@@ -96,6 +96,7 @@ export default {
     },
     setup() {
         const currentDate = ref(new Date());
+        const currentDay = ref(new Date().toISOString().split('T')[0]);
         const calendar = ref({
             id: null,
             name: ""
@@ -287,6 +288,10 @@ export default {
             daysInMonth.value = days;
         };
 
+        const isToday = (date) => {
+            return date === currentDay.value;
+        };
+
         const goToDay = (date) => {
             router.push(`/day/${date}`);
         };
@@ -465,6 +470,19 @@ export default {
             isDraggingTicket.value = false;
         };
 
+        const updateCurrentDayAtMidnight = () => {
+            const now = new Date();
+            const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0) - now;
+
+            setTimeout(() => {
+                currentDay.value = new Date().toISOString().split('T')[0];
+
+                setInterval(() => {
+                    currentDay.value = new Date().toISOString().split('T')[0];
+                }, 24 * 60 * 60 * 1000);
+            }, millisTillMidnight);
+        };
+
         watchEffect(() => {
             if (calendar.value.id) {
                 fetchCalendarDays();
@@ -474,6 +492,7 @@ export default {
         onMounted(async () => {
             fetchCalendar();
             fetchCalendarDays();
+            updateCurrentDayAtMidnight();
             emitter.on("calendarUpdated", fetchCalendarDays);
             window.addEventListener("dragstart", onGlobalDragStart);
             window.addEventListener("dragend", onGlobalDragEnd);
@@ -531,12 +550,17 @@ export default {
             openCopyTicketModal,
             selectedTicketId,
             showCopyTicketModal,
+            isToday
         };
     },
 };
 </script>
 
 <style scoped>
+.today {
+    border: 2px solid #80ED99;
+}
+
 .ticket-lists-container {
     display: flex;
     justify-content: space-between;
@@ -556,7 +580,13 @@ export default {
     overflow-y: auto;
     overflow-x: hidden;
     width: 50%;
+    scrollbar-width: none; /* Firefox */
 }
+
+.ticket-list::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+}
+
 
 .ticket-list:first-child {
     border-right: 2px solid #ccc;
@@ -566,10 +596,28 @@ export default {
     align-items: flex-end;
 }
 
+.add-button{
+    background: #213A57;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.copy-btn
+{
+    background: #213A57;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
 .ticket {
     width: 90%;
     font-size: 10px;
-    padding: 2px 4px;
     border-radius: 4px;
     text-align: center;
     white-space: nowrap;
@@ -602,16 +650,17 @@ export default {
     height: 100%;
     background: #e3f2fd;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 10px 0 0 10px;
     overflow: hidden;
     min-width: 330px;
 }
 
 .calendar-header {
     display: flex;
+    box-sizing: border-box;
     flex-direction: column;
     align-items: center;
-    background: #a5d6a7;
+    background: #14919B;
     padding: 10px;
     border-radius: 5px;
     width: 100%;
@@ -626,7 +675,7 @@ export default {
 
 .header-buttons {
     display: flex;
-    gap: 10px; /* Kis térköz a gombok között */
+    gap: 10px;
 }
 
 .header-bottom {
@@ -714,7 +763,7 @@ export default {
 
 .calendar-day.header {
     font-weight: bold;
-    background: #90caf9;
+    background: #0AD1C8;
     cursor: default;
     transform: none !important;
     height: auto;

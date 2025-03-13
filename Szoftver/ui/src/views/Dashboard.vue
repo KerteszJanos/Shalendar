@@ -93,6 +93,7 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    padding: 0 15px 0px 15px;
 }
 
 .error-message {

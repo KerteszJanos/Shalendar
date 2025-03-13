@@ -534,7 +534,7 @@ export default {
     height: 100%;
     background: #c8e6c9;
     padding: 15px;
-    border-radius: 10px;
+    border-radius: 0px 10px 10px 0px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -548,7 +548,7 @@ export default {
 }
 
 .add-button {
-    background: #4caf50;
+    background: #213A57;
     color: white;
     border: none;
     padding: 5px 10px;
