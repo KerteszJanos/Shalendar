@@ -2,17 +2,28 @@
 <div class="calendar-layout">
     <div class="calendar-container">
         <div class="calendar-header">
-            <button class="add-button" @click="goToCalendars">+</button>
-            <button @click.stop="openCopyTicketModal()" class="copy-btn">Copy</button>
-            <h2 v-if="calendar.name">{{ calendar.name }} - {{ formattedMonth }}</h2>
-            <h2 v-else>Loading...</h2>
-            <div class="navigation">
-                <button @click="prevMonth">◀</button>
-                <button @click="nextMonth">▶</button>
+            <div class="header-top">
+                <b v-if="calendar.name">{{ calendar.name }}</b>
+                <h2 v-else>Loading...</h2>
+                <div class="header-buttons">
+                    <button class="add-button" @click="goToCalendars">+</button>
+                    <button @click.stop="openCopyTicketModal()" class="copy-btn">Copy</button>
+                </div>
+            </div>
+
+            <div class="header-bottom">
+                <div class="date-navigation">
+                    <b>{{ formattedMonth }}</b>
+                    <div class="navigation">
+                        <button @click="prevMonth">◀</button>
+                        <button @click="nextMonth">▶</button>
+                    </div>
+                </div>
             </div>
         </div>
+
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-        <div class = "calendar-header-grid">
+        <div class="calendar-header-grid">
             <div v-for="day in daysOfWeek" :key="day" class="calendar-day header">
                 {{ day }}
             </div>
@@ -598,11 +609,45 @@ export default {
 
 .calendar-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     background: #a5d6a7;
     padding: 10px;
     border-radius: 5px;
+    width: 100%;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px; /* Kis térköz a gombok között */
+}
+
+.header-bottom {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.date-navigation {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.navigation {
+    display: flex;
+    gap: 5px;
+}
+
+.header-top button {
+    margin-left: 10px;
 }
 
 .navigation button {
@@ -630,7 +675,7 @@ export default {
     height: 100%;
 }
 
-.calendar-grid { 
+.calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-auto-rows: 1fr;
@@ -638,7 +683,6 @@ export default {
     width: 100%;
     height: 100%;
 }
-
 
 .completed-ticket {
     text-decoration: line-through;

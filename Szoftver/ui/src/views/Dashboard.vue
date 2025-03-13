@@ -3,7 +3,7 @@
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <div class="calendar-container">
         <CalendarView :style="{ flex: calendarViewSize }" />
-        <div class="resizer" @mousedown="startResizing"></div> <!-- gpt generated -->
+        <div class="resizer" @mousedown="startResizing"></div>
         <CalendarLists :style="{ flex: calendarListsSize }" />
     </div>
 </div>
@@ -28,11 +28,11 @@ export default {
     setup() {
         const errorMessage = ref("");
         const isMounted = ref(false);
-        const calendarViewSize = ref(1.3); // gpt generated
-        const calendarListsSize = ref(0.7); // gpt generated
-        let isResizing = false; // gpt generated
+        const calendarViewSize = ref(1.3);
+        const calendarListsSize = ref(0.7);
+        let isResizing = false;
 
-        const startResizing = (event) => { // gpt generated
+        const startResizing = (event) => {
             document.body.style.userSelect = "none";
             isResizing = true;
             const startX = event.clientX;
@@ -82,7 +82,7 @@ export default {
             errorMessage,
             calendarViewSize,
             calendarListsSize,
-            startResizing, // gpt generated
+            startResizing,
         };
     },
 };
@@ -117,4 +117,18 @@ export default {
 .resizer:hover {
     background-color: #999;
 }
+
+
+@media (max-width: 700px) {
+    .calendar-container {
+        flex-direction: column;
+    }
+
+    .resizer {
+        height: 5px;
+        width: 100%;
+        cursor: ns-resize;
+    }
+}
+
 </style>

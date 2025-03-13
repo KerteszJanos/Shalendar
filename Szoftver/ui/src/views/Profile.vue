@@ -17,7 +17,7 @@
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="successMessage" class="success">{{ successMessage }}</p>
 
-    <Modal :show="showPasswordModal" title="Change Password" @close="showPasswordModal = false" @confirm="changePassword"> <!-- gpt modified -->
+    <Modal :show="showPasswordModal" title="Change Password" @close="showPasswordModal = false" @confirm="changePassword">
         <p v-if="PasswordModalErrorMessage" class="error">{{ PasswordModalErrorMessage }}</p>
         <form @submit.prevent="changePassword">
             <label for="oldPassword">Old Password:</label>
@@ -55,7 +55,7 @@ import Modal from "@/components/molecules/Modal.vue";
 
 export default {
     components: {
-        Modal // gpt modified
+        Modal
     },
     setup() {
         const user = ref(null);
@@ -127,7 +127,7 @@ export default {
                     oldPassword: oldPassword.value,
                     newPassword: newPassword.value,
                 });
-                successMessage.value = "Password changed successfully!";
+                setErrorMessage(successMessage, "Password changed successfully!");
                 oldPassword.value = "";
                 newPassword.value = "";
                 confirmPassword.value = "";
