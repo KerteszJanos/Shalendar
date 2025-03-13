@@ -51,7 +51,8 @@ namespace Shalendar.Controllers
 			{
 				userId = user.Id,
 				username = user.Username,
-				email = user.Email
+				email = user.Email,
+				defaultCalendarId = user.DefaultCalendarId,
 			});
 		}
 

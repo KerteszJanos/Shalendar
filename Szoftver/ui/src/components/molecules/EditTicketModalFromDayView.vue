@@ -84,7 +84,7 @@
                         id: ticket.value.id,
                         name: ticket.value.name,
                         description: ticket.value.description,
-                        priority: ticket.value.priority,
+                        priority: ticket.value.priority || null,
                         startTime: ticket.value.startTime || null,
                         endTime: ticket.value.endTime || null,
                     });

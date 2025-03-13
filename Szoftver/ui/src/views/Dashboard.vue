@@ -41,7 +41,7 @@ export default {
 
             const onMouseMove = (moveEvent) => {
                 if (!isResizing) return;
-                const delta = (moveEvent.clientX - startX) / window.innerWidth;
+                const delta = (moveEvent.clientX - startX) / window.innerWidth * 2;
                 calendarViewSize.value = Math.max(0.2, startViewSize + delta);
                 calendarListsSize.value = Math.max(0.2, startListSize - delta);
             };

@@ -234,7 +234,7 @@ export default {
                     id: editedTicket.value.id,
                     name: editedTicket.value.name,
                     description: editedTicket.value.description,
-                    priority: editedTicket.value.priority,
+                    priority: editedTicket.value.priority || null,
                     startTime: null,
                     endTime: null,
                 });

@@ -5,33 +5,37 @@
     <div v-if="user">
         <p><strong>Username:</strong> {{ user.username }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
+        <p v-if="defaultCalendarName"><strong>Default Calendar:</strong> {{ defaultCalendarName }}</p>
     </div>
 
     <h2>Change Password</h2>
-    <form @submit.prevent="changePassword">
-        <label for="oldPassword">Old Password:</label>
-        <input type="password" id="oldPassword" v-model="oldPassword" required />
-
-        <label for="newPassword">New Password:</label>
-        <input type="password" id="newPassword" v-model="newPassword" required @input="validatePassword" />
-
-        <ul class="password-criteria">
-            <li :class="{ valid: newPassword.length >= 8 }">✔ At least 8 characters</li>
-            <li :class="{ valid: /[A-Z]/.test(newPassword) }">✔ At least one uppercase letter</li>
-            <li :class="{ valid: /[0-9]/.test(newPassword) }">✔ At least one number</li>
-        </ul>
-
-        <label for="confirmPassword">Confirm New Password:</label>
-        <input type="password" id="confirmPassword" v-model="confirmPassword" required />
-
-        <button type="submit" :disabled="!isPasswordValid">Change Password</button>
-    </form>
+    <button @click="showPasswordModal = true">Change Password</button>
 
     <h2>Delete Account</h2>
     <button @click="deleteAccount" class="delete-btn">Delete Account</button>
 
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="successMessage" class="success">{{ successMessage }}</p>
+
+    <Modal :show="showPasswordModal" title="Change Password" @close="showPasswordModal = false" @confirm="changePassword"> <!-- gpt modified -->
+        <p v-if="PasswordModalErrorMessage" class="error">{{ PasswordModalErrorMessage }}</p>
+        <form @submit.prevent="changePassword">
+            <label for="oldPassword">Old Password:</label>
+            <input type="password" id="oldPassword" v-model="oldPassword" required />
+
+            <label for="newPassword">New Password:</label>
+            <input type="password" id="newPassword" v-model="newPassword" required @input="validatePassword" />
+
+            <ul class="password-criteria">
+                <li :class="{ valid: newPassword.length >= 8 }">✔ At least 8 characters</li>
+                <li :class="{ valid: /[A-Z]/.test(newPassword) }">✔ At least one uppercase letter</li>
+                <li :class="{ valid: /[0-9]/.test(newPassword) }">✔ At least one number</li>
+            </ul>
+
+            <label for="confirmPassword">Confirm New Password:</label>
+            <input type="password" id="confirmPassword" v-model="confirmPassword" required />
+        </form>
+    </Modal>
 </div>
 </template>
 
@@ -47,8 +51,12 @@ import api from "@/utils/config/axios-config";
 import {
     setErrorMessage
 } from "@/utils/errorHandler";
+import Modal from "@/components/molecules/Modal.vue";
 
 export default {
+    components: {
+        Modal // gpt modified
+    },
     setup() {
         const user = ref(null);
         const oldPassword = ref("");
@@ -58,15 +66,38 @@ export default {
         const successMessage = ref("");
         const isPasswordValid = ref(false);
         const router = useRouter();
+        const defaultCalendarName = ref("");
+        const showPasswordModal = ref(false);
+        const PasswordModalErrorMessage = ref(false);
 
         const fetchUser = async () => {
             errorMessage.value = "";
             try {
                 const response = await api.get("/api/Users/me");
                 user.value = response.data;
+                if (user.value.defaultCalendarId) {
+                    fetchDefaultCalendar(user.value.defaultCalendarId);
+                } else {
+                    defaultCalendarName.value = "No default calendar set"
+                }
             } catch (error) {
                 console.error("Error fetching user:", error);
                 setErrorMessage(errorMessage, error.response?.data || "Failed to load user data.");
+            }
+        };
+
+        const fetchDefaultCalendar = async (calendarId) => {
+            try {
+                const response = await api.get(`/api/Calendars/${calendarId}`);
+                defaultCalendarName.value = response.data.name;
+            } catch (error) {
+                if (error.response && error.response.status === 403) {
+                    defaultCalendarName.value = `Access denied: ${error.response.data?.message || "You do not have permission."}`;
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    setErrorMessage(errorMessage, "Error fetching default calendar");
+                    console.error("Error fetching default calendar:", error);
+                }
             }
         };
 
@@ -78,16 +109,16 @@ export default {
         };
 
         const changePassword = async () => {
-            errorMessage.value = "";
+            PasswordModalErrorMessage.value = "";
             successMessage.value = "";
 
             if (!isPasswordValid.value) {
-                setErrorMessage(errorMessage, "New password does not meet security requirements.");
+                setErrorMessage(PasswordModalErrorMessage, "New password does not meet security requirements.");
                 return;
             }
 
             if (newPassword.value !== confirmPassword.value) {
-                setErrorMessage(errorMessage, "Passwords do not match!");
+                setErrorMessage(PasswordModalErrorMessage, "Passwords do not match!");
                 return;
             }
 
@@ -100,8 +131,9 @@ export default {
                 oldPassword.value = "";
                 newPassword.value = "";
                 confirmPassword.value = "";
+                showPasswordModal.value = false;
             } catch (error) {
-                setErrorMessage(errorMessage, error.response?.data || "Failed to change password.");
+                setErrorMessage(PasswordModalErrorMessage, error.response?.data || "Failed to change password.");
                 console.error("Error changing password:", error);
             }
         };
@@ -138,6 +170,9 @@ export default {
             validatePassword,
             changePassword,
             deleteAccount,
+            defaultCalendarName,
+            showPasswordModal,
+            PasswordModalErrorMessage
         };
     },
 };
