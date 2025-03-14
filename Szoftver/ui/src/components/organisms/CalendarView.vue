@@ -582,8 +582,9 @@ export default {
 }
 
 .today {
-    border: 2px solid #80ED99;
+    border: 3px solid #80ED99 !important;
 }
+
 
 .ticket-lists-container {
     display: flex;
@@ -599,14 +600,11 @@ export default {
     align-items: stretch;
     width: 50%;
     max-height: 100%;
-    /* Gpt generated: a szülőhöz igazodik */
     overflow-y: auto;
-    /* görgethetővé válik, ha túl sok a tartalom */
     overflow-x: hidden;
     scrollbar-width: none;
     /* Firefox */
     padding-bottom: 4px;
-    /* görgetésnél ne ragadjon le a tartalom */
 }
 
 .ticket-list::-webkit-scrollbar {
@@ -679,6 +677,7 @@ export default {
     border-radius: 10px 0 0 10px;
     overflow: hidden;
     min-width: 330px;
+    min-height: 300px;
 }
 
 .calendar-header {
@@ -690,6 +689,7 @@ export default {
     padding: 10px;
     border-radius: 5px;
     width: 100%;
+    border: 1px solid black;
 }
 
 .header-top {
@@ -763,13 +763,10 @@ export default {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(6, minmax(0, 1fr));
-    /* Gpt generated */
     gap: 5px;
     width: 100%;
     height: calc(100vh - 220px);
-    /* Gpt generated, igazítsd szükség szerint */
     overflow: hidden;
-    /* Gpt generated */
 }
 
 .completed-ticket {
@@ -779,12 +776,10 @@ export default {
 
 .ticket-lists-container {
     flex: 1;
-    /* Gpt generated: Kitölti a rendelkezésre álló teret */
     display: flex;
     flex-direction: row;
     gap: 5px;
     overflow: hidden;
-    /* Gpt generated: ne csússzon ki a lista a napokból */
 }
 
 .calendar-day {
@@ -803,6 +798,7 @@ export default {
     justify-content: space-between;
     padding: 5px;
     min-width: 30px;
+    border: 1px solid black;
 }
 
 .calendar-day:hover:not(.header) {
@@ -849,5 +845,18 @@ export default {
     background-color: #000;
     z-index: 1;
     pointer-events: none;
+}
+
+@media (max-width: 700px) {
+    .calendar-container {
+        width: 100%;
+        height: 100%;
+        background: #e3f2fd;
+        padding: 20px;
+        border-radius: 10px 10px 0 0;
+        overflow: hidden;
+        min-width: 330px;
+        min-height: 300px;
+    }
 }
 </style>

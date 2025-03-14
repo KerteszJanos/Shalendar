@@ -9,29 +9,36 @@
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
 
     <div class="lists-content" v-if="calendarLists.length > 0">
-        <div v-for="list in calendarLists" :key="list.id" class="list-item" :style="{ backgroundColor: list.color || '#CCCCCC' }">
-            <p class="list-title">{{ list.name }}</p>
-            <button class="edit-list-button" @click="openEditListModal(list)">Edit</button>
+        <div v-for="list in calendarLists" :key="list.id" class="list-item" :style="{ backgroundColor: colorShade(list.color, -20) || '#CCCCCC' }">
+            <div class="list-header">
+                <p class="list-title">{{ list.name }}</p>
+                <button class="edit-list-button" @click="openEditListModal(list)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
+                    Edit
+                </button>
+            </div>
             <div class="ticket-list" v-if="list.tickets && list.tickets.length > 0">
                 <draggable class="ticket" v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
                     <template #item="{ element }">
                         <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
-                            <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
-                            <p><strong>{{ element.name }}</strong></p>
-                            <p v-if="element.description">{{ element.description }}</p>
-                            <p v-if="element.priority">Priority: {{ element.priority }}</p>
-                            <button @click.stop="openCopyTicketModal(element.id)" class="copy-btn">
-                                Copy
-                            </button>
-                            <button @click.stop="handleDelete(element.id, list)" class="delete-btn">
-                                Delete
-                            </button>
+                            <div class="ticket-header">
+                                <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
+                                <p class="ticket-name"><strong>{{ element.name }}</strong></p>
+                            </div>
+                            <div class="ticket-info">
+                                <span v-if="element.description" class="description-icon" :style="{ color: colorShade(list.color, -50) || '#CCCCCC' }">
+                                    <FileText /></span>
+                                <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }">{{ element.priority }}</span>
+                            </div>
+                            <div class="ticket-actions">
+                                <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(element.id)" />
+                                <Trash2 class="icon delete-icon" @click.stop="handleDelete(element.id, list)" />
+                            </div>
                         </div>
                     </template>
                 </draggable>
             </div>
             <p v-else>No tickets.</p>
-            <button class="add-ticket-button" @click="openAddNewTicketModal(list.id)">+</button>
+            <button class="add-ticket-button" @click="openAddNewTicketModal(list.id)" :style="{ backgroundColor: list.color || '#CCCCCC' }">+</button>
         </div>
     </div>
     <p v-else-if="!errorMessage">Add a list to start scheduling your stuff :)</p>
@@ -133,12 +140,23 @@ import {
     connection,
     ensureConnected
 } from "@/services/signalRService";
+import {
+    colorShade
+} from "@/components/atoms/colorShader";
+import {
+    Copy,
+    Trash2,
+    FileText
+} from "lucide-vue-next";
 
 export default {
     components: {
         Modal,
         draggable,
         CopyTicketModal,
+        Copy,
+        Trash2,
+        FileText
     },
     setup() {
         const calendarLists = ref([]);
@@ -382,6 +400,20 @@ export default {
             }
         };
 
+        const getPriorityColor = (priority) => {
+            if (priority === 10) return "#1B5E20";
+            if (priority === 9) return "#2E7D32";
+            if (priority === 8) return "#4CAF50";
+            if (priority === 7) return "#66BB6A";
+            if (priority === 6) return "#FFEB3B";
+            if (priority === 5) return "#FFC107";
+            if (priority === 4) return "#FF9800";
+            if (priority === 3) return "#FF5722";
+            if (priority === 2) return "#F44336";
+            if (priority === 1) return "#B71C1C";
+            return "#9E9E9E";
+        };
+
         const openAddNewTicketModal = (listId) => {
             selectedListId.value = listId;
             newTicket.value = {
@@ -509,12 +541,100 @@ export default {
             openCopyTicketModal,
             showCopyTicketModal,
             selectedTicketId,
+            colorShade,
+            getPriorityColor
         };
     },
 };
 </script>
 
 <style scoped>
+.ticket-info {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.description-icon {
+    font-size: 18px;
+}
+
+.priority {
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.ticket-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 20px;
+    /* Ezzel növeljük a távolságot a név és az alsó rész között */
+}
+
+.ticket-name {
+    margin: 0;
+    font-size: 16px;
+    cursor: pointer;
+    flex-grow: 1;
+    /* A név kitölti a rendelkezésre álló helyet */
+    white-space: nowrap;
+    /* Ne törje új sorba */
+    overflow: hidden;
+    /* Ha nem fér ki, ne legyen látható */
+    text-overflow: ellipsis;
+    /* ... jelenjen meg, ha túl hosszú */
+    text-align: left;
+    /* Balra igazítás */
+}
+
+.ticket-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+    /* Kis térköz a többi tartalomtól */
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.icon:hover {
+    transform: scale(1.2);
+}
+
+.copy-icon {
+    color: #ffc107;
+    /* Sárga szín */
+}
+
+.delete-icon {
+    color: #f44336;
+    /* Piros szín */
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 5px 10px;
+    gap: 5px;
+}
+
 .copy-btn {
     background: #ffc107;
     color: white;
@@ -533,12 +653,13 @@ export default {
     width: 100%;
     height: 100%;
     background: #c8e6c9;
-    padding: 15px;
+    padding: 20px;
     border-radius: 0px 10px 10px 0px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     min-width: 300px;
+    min-height: 500px;
 }
 
 .header {
@@ -558,11 +679,10 @@ export default {
 }
 
 .ticket-checkbox {
-    position: absolute;
-    top: 5px;
-    left: 5px;
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
+    /* Ne nyomja össze a többi elemet */
 }
 
 .lists-content {
@@ -570,21 +690,42 @@ export default {
     flex-direction: row;
     gap: 10px;
     overflow-x: auto;
+    overflow-y: auto;
     white-space: nowrap;
     padding-bottom: 10px;
+    height: 100%;
+    max-height: 100%;
+    will-change: transform;
 }
 
 .list-item {
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     min-width: 200px;
     flex-shrink: 0;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    max-height: 100%;
+    overflow: hidden;
+    height: fit-content;
 }
 
 .ticket-list {
     margin-top: 10px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    flex-grow: 1;
+    max-height: 100%;
+    width: 100%;
+    scrollbar-width: none;
+}
+
+.ticket-list::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Edge */
 }
 
 .ticket-item {
@@ -592,10 +733,9 @@ export default {
     padding: 5px;
     border: 2px solid black;
     margin-bottom: 5px;
-}
-
-.ticket-item:last-child {
-    margin-bottom: 0;
+    overflow: hidden;
+    border-radius: 5px;
+    width: 200px;
 }
 
 .add-ticket-button {
@@ -606,6 +746,7 @@ export default {
     margin-top: 10px;
     border-radius: 5px;
     cursor: pointer;
+    width: 100%;
 }
 
 .modal-content {
@@ -637,13 +778,18 @@ label {
 }
 
 .edit-list-button {
-    background: #ff9800;
     color: white;
     border: none;
     padding: 5px;
     margin-top: 5px;
     border-radius: 5px;
     cursor: pointer;
+    border: 1px solid black;
+    transition: all 0.3s ease-in-out;
+}
+
+.edit-list-button:hover {
+    transform: scale(1.1);
 }
 
 .delete-list-button {
@@ -654,5 +800,20 @@ label {
     margin-top: 10px;
     border-radius: 5px;
     cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .lists-container {
+        width: 100%;
+        height: 100%;
+        background: #c8e6c9;
+        padding: 20px;
+        border-radius: 0 0 10px 10px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-width: 300px;
+        min-height: 500px;
+    }
 }
 </style>

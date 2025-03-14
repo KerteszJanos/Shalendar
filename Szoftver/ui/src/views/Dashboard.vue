@@ -94,6 +94,7 @@ export default {
     flex-direction: column;
     gap: 5px;
     padding: 0 15px 0px 15px;
+    height: 100%;
 }
 
 .error-message {
@@ -113,12 +114,12 @@ export default {
     cursor: ew-resize;
     background-color: #ccc;
     transition: background-color 0.2s;
+    flex-shrink: 0;
 }
 
 .resizer:hover {
     background-color: #999;
 }
-
 
 @media (max-width: 700px) {
     .calendar-container {
@@ -126,10 +127,11 @@ export default {
     }
 
     .resizer {
-        height: 5px;
         width: 100%;
+        height: 5px;
         cursor: ns-resize;
+        flex-shrink: 0;
+        display: none
     }
 }
-
 </style>
