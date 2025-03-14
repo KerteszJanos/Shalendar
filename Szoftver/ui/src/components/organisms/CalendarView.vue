@@ -751,7 +751,7 @@ export default {
     grid-template-rows: repeat(6, minmax(0, 1fr)); /* Gpt generated */
     gap: 5px;
     width: 100%;
-    height: calc(100vh - 200px); /* Gpt generated, igazítsd szükség szerint */
+    height: calc(100vh - 220px); /* Gpt generated, igazítsd szükség szerint */
     overflow: hidden; /* Gpt generated */
 }
 
