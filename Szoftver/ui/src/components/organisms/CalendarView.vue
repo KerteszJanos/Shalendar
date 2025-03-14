@@ -28,7 +28,7 @@
                 {{ day }}
             </div>
         </div>
-        <div class="calendar-grid">
+        <div class="calendar-grid" :style="{ gridTemplateRows: gridRowStyle }">
             <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth, 'today': isToday(day.date)}" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
                 <div v-if="isDraggingTicket" class="drop-divider"></div>
                 <div class="day-number">{{ day.number }}</div>
@@ -114,6 +114,7 @@ export default {
         const daysInMonth = ref([]);
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
+        const gridRowStyle = ref("repeat(6, minmax(0, 1fr))");
 
         const dayViewEvents = [
             "TicketScheduled",
@@ -286,6 +287,13 @@ export default {
             }
 
             daysInMonth.value = days;
+            updateGridRowStyle();
+        };
+
+        const updateGridRowStyle = () => {
+            gridRowStyle.value = Math.ceil(daysInMonth.value.length / 7) < 6 ?
+                "repeat(5, minmax(0, 1fr))" :
+                "repeat(6, minmax(0, 1fr))";
         };
 
         const isToday = (date) => {
@@ -503,6 +511,7 @@ export default {
             fetchCalendar();
             fetchCalendarDays();
             updateCurrentDayAtMidnight();
+            updateGridRowStyle();
             emitter.on("calendarUpdated", fetchCalendarDays);
             window.addEventListener("dragstart", onGlobalDragStart);
             window.addEventListener("dragend", onGlobalDragEnd);
@@ -561,16 +570,17 @@ export default {
             selectedTicketId,
             showCopyTicketModal,
             isToday,
+            gridRowStyle,
         };
     },
 };
 </script>
 
 <style scoped>
-.calendar-name
-{
+.calendar-name {
     font-size: 20px;
 }
+
 .today {
     border: 2px solid #80ED99;
 }
@@ -588,11 +598,15 @@ export default {
     flex-direction: column;
     align-items: stretch;
     width: 50%;
-    max-height: 100%;          /* Gpt generated: a szülőhöz igazodik */
-    overflow-y: auto;          /* görgethetővé válik, ha túl sok a tartalom */
+    max-height: 100%;
+    /* Gpt generated: a szülőhöz igazodik */
+    overflow-y: auto;
+    /* görgethetővé válik, ha túl sok a tartalom */
     overflow-x: hidden;
-    scrollbar-width: none;     /* Firefox */
-    padding-bottom: 4px;       /* görgetésnél ne ragadjon le a tartalom */
+    scrollbar-width: none;
+    /* Firefox */
+    padding-bottom: 4px;
+    /* görgetésnél ne ragadjon le a tartalom */
 }
 
 .ticket-list::-webkit-scrollbar {
@@ -748,13 +762,15 @@ export default {
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, minmax(0, 1fr)); /* Gpt generated */
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    /* Gpt generated */
     gap: 5px;
     width: 100%;
-    height: calc(100vh - 220px); /* Gpt generated, igazítsd szükség szerint */
-    overflow: hidden; /* Gpt generated */
+    height: calc(100vh - 220px);
+    /* Gpt generated, igazítsd szükség szerint */
+    overflow: hidden;
+    /* Gpt generated */
 }
-
 
 .completed-ticket {
     text-decoration: line-through;
@@ -762,11 +778,13 @@ export default {
 }
 
 .ticket-lists-container {
-    flex: 1; /* Gpt generated: Kitölti a rendelkezésre álló teret */
+    flex: 1;
+    /* Gpt generated: Kitölti a rendelkezésre álló teret */
     display: flex;
     flex-direction: row;
     gap: 5px;
-    overflow: hidden; /* Gpt generated: ne csússzon ki a lista a napokból */
+    overflow: hidden;
+    /* Gpt generated: ne csússzon ki a lista a napokból */
 }
 
 .calendar-day {
@@ -821,7 +839,6 @@ export default {
     border-radius: 2px;
     margin-top: 2px;
 }
-
 
 .drop-divider {
     position: absolute;
