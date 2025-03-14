@@ -401,7 +401,6 @@ export default {
         };
 
         const getPriorityColor = (priority) => {
-            if (priority === 10) return "#1B5E20";
             if (priority === 9) return "#2E7D32";
             if (priority === 8) return "#4CAF50";
             if (priority === 7) return "#66BB6A";
