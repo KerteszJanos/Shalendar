@@ -3,14 +3,14 @@
     <div class="calendar-container">
         <div class="calendar-header">
             <div class="header-top">
-                <b v-if="calendar.name">{{ calendar.name }}</b>
+                <b class="calendar-name" v-if="calendar.name">{{ calendar.name }}</b>
                 <h2 v-else>Loading...</h2>
                 <div class="header-buttons">
                     <button class="add-button" @click="goToCalendars">+</button>
                     <button @click.stop="openCopyTicketModal()" class="copy-btn">Copy</button>
                 </div>
             </div>
-
+            <div class="header-divider"></div>
             <div class="header-bottom">
                 <div class="date-navigation">
                     <b>{{ formattedMonth }}</b>
@@ -96,7 +96,7 @@ export default {
     },
     setup() {
         const currentDate = ref(new Date());
-        const currentDay = ref(new Date().toISOString().split('T')[0]);
+        const currentDay = ref("");
         const calendar = ref({
             id: null,
             name: ""
@@ -132,7 +132,7 @@ export default {
         const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
         const formattedMonth = computed(() => {
-            return currentDate.value.toLocaleDateString("hu-HU", {
+            return currentDate.value.toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
             });
@@ -471,17 +471,27 @@ export default {
         };
 
         const updateCurrentDayAtMidnight = () => {
+            currentDay.value = getLocalDateString();
             const now = new Date();
             const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0) - now;
 
             setTimeout(() => {
-                currentDay.value = new Date().toISOString().split('T')[0];
+                currentDay.value = getLocalDateString();
 
                 setInterval(() => {
-                    currentDay.value = new Date().toISOString().split('T')[0];
+                    currentDay.value = getLocalDateString();
                 }, 24 * 60 * 60 * 1000);
             }, millisTillMidnight);
         };
+
+        const getLocalDateString = () => {
+            const now = new Date();
+            return now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0');
+        };
+
+        currentDay.value = getLocalDateString();
 
         watchEffect(() => {
             if (calendar.value.id) {
@@ -550,13 +560,17 @@ export default {
             openCopyTicketModal,
             selectedTicketId,
             showCopyTicketModal,
-            isToday
+            isToday,
         };
     },
 };
 </script>
 
 <style scoped>
+.calendar-name
+{
+    font-size: 20px;
+}
 .today {
     border: 2px solid #80ED99;
 }
@@ -580,13 +594,14 @@ export default {
     overflow-y: auto;
     overflow-x: hidden;
     width: 50%;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
 .ticket-list::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Edge */
+    display: none;
+    /* Chrome, Safari, Edge */
 }
-
 
 .ticket-list:first-child {
     border-right: 2px solid #ccc;
@@ -596,7 +611,7 @@ export default {
     align-items: flex-end;
 }
 
-.add-button{
+.add-button {
     background: #213A57;
     color: white;
     border: none;
@@ -606,8 +621,7 @@ export default {
     cursor: pointer;
 }
 
-.copy-btn
-{
+.copy-btn {
     background: #213A57;
     color: white;
     border: none;
@@ -647,7 +661,8 @@ export default {
 
 .calendar-container {
     width: 100%;
-    height: 100%;
+    min-height: 500px;
+    height: auto;
     background: #e3f2fd;
     padding: 20px;
     border-radius: 10px 0 0 10px;
@@ -687,16 +702,20 @@ export default {
 .date-navigation {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 5px;
 }
 
 .navigation {
     display: flex;
-    gap: 5px;
 }
 
 .header-top button {
     margin-left: 10px;
+    transition: all 0.3s ease-in-out;
+}
+
+.header-top button:hover {
+    transform: scale(1.1);
 }
 
 .navigation button {
@@ -704,13 +723,18 @@ export default {
     border: none;
     font-size: 18px;
     cursor: pointer;
-    margin: 0 5px;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
 .navigation button:hover {
-    transform: scale(0.9);
-    background: rgba(0, 0, 0, 0.1);
+    transform: scale(1.3);
+    background: none;
+}
+
+.date-navigation b {
+    display: inline-block;
+    text-align: center;
+    min-width: 120px;
 }
 
 .calendar-header-grid {
@@ -782,6 +806,15 @@ export default {
     color: red;
     text-align: center;
 }
+
+.header-divider {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, rgba(11, 100, 119, 0) 0%, #0B6477 50%, rgba(11, 100, 119, 0) 100%);
+    border-radius: 2px;
+    margin-top: 2px;
+}
+
 
 .drop-divider {
     position: absolute;
