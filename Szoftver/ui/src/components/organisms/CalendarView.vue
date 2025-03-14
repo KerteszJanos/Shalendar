@@ -586,16 +586,13 @@ export default {
 .ticket-list {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 5px;
-    max-height: 60px;
-    min-height: 60px;
-    overflow-y: auto;
-    overflow-x: hidden;
+    align-items: stretch;
     width: 50%;
-    scrollbar-width: none;
-    /* Firefox */
+    max-height: 100%;          /* Gpt generated: a szülőhöz igazodik */
+    overflow-y: auto;          /* görgethetővé válik, ha túl sok a tartalom */
+    overflow-x: hidden;
+    scrollbar-width: none;     /* Firefox */
+    padding-bottom: 4px;       /* görgetésnél ne ragadjon le a tartalom */
 }
 
 .ticket-list::-webkit-scrollbar {
@@ -657,12 +654,12 @@ export default {
     align-items: flex-start;
     width: 100%;
     height: 100%;
+    box-sizing: border-box;
 }
 
 .calendar-container {
     width: 100%;
-    min-height: 500px;
-    height: auto;
+    height: 100%;
     background: #e3f2fd;
     padding: 20px;
     border-radius: 10px 0 0 10px;
@@ -745,21 +742,31 @@ export default {
     text-align: center;
     margin-bottom: 5px;
     margin-top: 5px;
-    height: 100%;
+    height: auto;
 }
 
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-auto-rows: 1fr;
+    grid-template-rows: repeat(6, minmax(0, 1fr)); /* Gpt generated */
     gap: 5px;
     width: 100%;
-    height: 100%;
+    height: calc(100vh - 200px); /* Gpt generated, igazítsd szükség szerint */
+    overflow: hidden; /* Gpt generated */
 }
+
 
 .completed-ticket {
     text-decoration: line-through;
     opacity: 0.6;
+}
+
+.ticket-lists-container {
+    flex: 1; /* Gpt generated: Kitölti a rendelkezésre álló teret */
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    overflow: hidden; /* Gpt generated: ne csússzon ki a lista a napokból */
 }
 
 .calendar-day {

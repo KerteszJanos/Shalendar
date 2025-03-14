@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="app-container">
     <nav v-if="isLoggedIn" class="navbar">
       <div class="nav-left">
         <router-link to="/dashboard" class="dashboard-logo">
@@ -62,6 +62,13 @@ export default {
 </script>
 
 <style scoped>
+.app-container {
+  height: 100vh; /* Gpt generated: ensures full viewport height */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Gpt generated: prevent unwanted scroll */
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
