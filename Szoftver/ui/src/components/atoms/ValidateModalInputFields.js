@@ -36,3 +36,13 @@ export function validateTimeFieldsBothRequiredOrEmpty(startTime, endTime) {
 
     return null;
 };
+
+export function validatePriorityField(priority) {
+    if (priority < 0) {
+        return "The priority must be at least 1. (or 0 to leave it empty)";
+    }
+    if (priority > 9) {
+        return "The priority cannot exceed 9.";
+    }
+    return null;
+}

@@ -1,6 +1,6 @@
 import api from "@/utils/config/axios-config";
 import { updateTicketOrder } from "@/components/atoms/updateTicketOrder";
-import { validateNameField } from "@/components/atoms/ValidateModalInputFields";
+import { validateNameField, validatePriorityField } from "@/components/atoms/ValidateModalInputFields";
 import { setErrorMessage } from "@/utils/errorHandler";
 
 export const addNewTicket = async (ticketData, selectedListId, calendarLists, showAddNewTicketModal, errorMessage) => {
@@ -10,6 +10,14 @@ export const addNewTicket = async (ticketData, selectedListId, calendarLists, sh
         return;
     }
     
+    if (ticketData.priority !== null) {
+        const priorityValidationError = validatePriorityField(ticketData.priority);
+        if (priorityValidationError) {
+            setErrorMessage(errorMessage, priorityValidationError);
+            return;
+        }
+    }
+
     try {
         const response = await api.post("/api/Tickets", ticketData);
 

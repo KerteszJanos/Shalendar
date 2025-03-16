@@ -60,13 +60,13 @@
         <div class="modal-content">
             <label for="ticket-name">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
-            <p v-if="newTicketError" class="error">{{ newTicketError }}</p>
 
             <label for="ticket-description">Description (optional)</label>
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
 
             <label for="ticket-priority">Priority (optional)</label>
-            <input id="ticket-priority" v-model="newTicket.priority" type="number" min="1" max="10" placeholder="Enter priority (1-10)" />
+            <input id="ticket-priority" v-model="newTicket.priority" type="number" min="1" max="9" placeholder="Enter priority (1-9)" />
+            <p v-if="newTicketError" class="error">{{ newTicketError }}</p>
         </div>
     </Modal>
 
@@ -89,13 +89,13 @@
         <div class="modal-content">
             <label for="edit-ticket-name">Ticket Name</label>
             <input id="edit-ticket-name" v-model="editedTicket.name" placeholder="Enter ticket name" required />
-            <p v-if="editTicketError" class="error">{{ editTicketError }}</p>
 
             <label for="edit-ticket-description">Description</label>
             <textarea id="edit-ticket-description" v-model="editedTicket.description" placeholder="Enter description"></textarea>
 
             <label for="edit-ticket-priority">Priority</label>
-            <input id="edit-ticket-priority" v-model="editedTicket.priority" type="number" min="1" max="10" placeholder="Enter priority (1-10)" />
+            <input id="edit-ticket-priority" v-model="editedTicket.priority" type="number" min="1" max="9" placeholder="Enter priority (1-9)" />
+            <p v-if="editTicketError" class="error">{{ editTicketError }}</p>
         </div>
     </Modal>
 
@@ -126,7 +126,8 @@ import {
     addNewTicket
 } from "@/components/atoms/AddNewTicket";
 import {
-    validateNameField
+    validateNameField,
+    validatePriorityField
 } from "@/components/atoms/ValidateModalInputFields";
 import {
     setErrorMessage
@@ -227,6 +228,8 @@ export default {
         };
 
         const openEditTicketModal = (ticket) => {
+            editTicketError.value = "";
+
             editedTicket.value = {
                 ...ticket
             };
@@ -234,12 +237,18 @@ export default {
         };
 
         const handleUpdateTicket = async () => {
-            editTicketError.value = "";
-
             const validationError = validateNameField(editedTicket.value.name);
             if (validationError) {
                 setErrorMessage(editTicketError, validationError);
                 return;
+            }
+
+            if (editedTicket.value.priority !== null) {
+                const priorityValidationError = validatePriorityField(editedTicket.value.priority);
+                if (priorityValidationError) {
+                    setErrorMessage(editTicketError, priorityValidationError);
+                    return;
+                }
             }
 
             try {
@@ -414,6 +423,8 @@ export default {
         };
 
         const openAddNewTicketModal = (listId) => {
+            newTicketError.value = "";
+
             selectedListId.value = listId;
             newTicket.value = {
                 name: "",
@@ -426,8 +437,6 @@ export default {
         };
 
         const handleAddNewTicket = async () => {
-            newTicketError.value = "";
-
             await addNewTicket({
                     name: newTicket.value.name,
                     description: newTicket.value.description || null,

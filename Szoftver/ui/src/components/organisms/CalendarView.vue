@@ -503,8 +503,6 @@ export default {
             updateCurrentDayAtMidnight();
             updateGridRowStyle();
             emitter.on("calendarUpdated", fetchCalendarDays);
-            window.addEventListener("dragstart", onGlobalDragStart);
-            window.addEventListener("dragend", onGlobalDragEnd);
 
             await ensureConnected();
             await connection.invoke("JoinGroup", calendarId.value);
@@ -530,8 +528,6 @@ export default {
 
         onUnmounted(() => {
             emitter.off("calendarUpdated", fetchCalendarDays);
-            window.removeEventListener("dragstart", onGlobalDragStart);
-            window.removeEventListener("dragend", onGlobalDragEnd);
         });
 
         return {

@@ -2,7 +2,7 @@
 <div class="container">
     <button class="nav-btn left" @click="goToPreviousDay" @dragover.prevent @drop="handleDrop('previous')">&#9665;</button>
     <div class="content">
-        <button class="add-ticket-btn" @click="showAddNewTicketModal = true">+ Add Ticket</button>
+        <button class="add-ticket-btn" @click="openAddTicketModal">+ Add Ticket</button>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div class="panels">
             <DayPanel class="panel" />
@@ -21,7 +21,8 @@
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
 
             <label for="ticket-priority">Priority (optional)</label>
-            <input id="ticket-priority" v-model="newTicket.priority" type="number" min="1" max="10" placeholder="Enter priority (1-10)" />
+            <input id="ticket-priority" v-model="newTicket.priority" type="number" min="1" max="9" placeholder="Enter priority (1-9)" />
+            <p v-if="priorityErrorMessage" class="error">{{ priorityErrorMessage }}</p>
 
             <label for="ticket-start-time">Start Time (optional)</label>
             <input id="ticket-start-time" v-model="newTicket.startTime" type="time" />
@@ -63,7 +64,8 @@ import {
 } from "@/utils/eventBus";
 import {
     validateNameField,
-    validateTimeFieldsBothRequiredOrEmpty
+    validateTimeFieldsBothRequiredOrEmpty,
+    validatePriorityField
 } from "@/components/atoms/ValidateModalInputFields";
 import {
     setErrorMessage
@@ -94,9 +96,28 @@ export default {
         const calendarLists = ref([]);
         const errorMessage = ref("");
         const nameErrorMessage = ref("");
+        const priorityErrorMessage = ref("");
         const calendarListError = ref("");
         const timeError = ref("");
         const router = useRouter();
+
+        const openAddTicketModal = () => {
+            nameErrorMessage.value = "";
+            priorityErrorMessage.value = "";
+            calendarListError.value = "";
+            timeError.value = "";
+
+            newTicket.value = {
+                name: "",
+                description: "",
+                priority: null,
+                startTime: "",
+                endTime: "",
+                calendarListId: null,
+            };
+
+            showAddNewTicketModal.value = true;
+        };
 
         const changeTicketDate = async (ticketId, newDate) => {
             try {
@@ -157,10 +178,6 @@ export default {
         };
 
         const handleAddNewTicket = async () => {
-            nameErrorMessage.value = "";
-            calendarListError.value = "";
-            timeError.value = "";
-
             if (!newTicket.value.calendarListId) {
                 setErrorMessage(calendarListError, "Please select a calendar list before adding a ticket.");
                 return;
@@ -176,6 +193,14 @@ export default {
             if (timeValidationError) {
                 setErrorMessage(timeError, timeValidationError);
                 return;
+            }
+
+            if (newTicket.value.priority !== null) {
+                const priorityValidationError = validatePriorityField(newTicket.value.priority);
+                if (priorityValidationError) {
+                    setErrorMessage(priorityErrorMessage, priorityValidationError);
+                    return;
+                }
             }
 
             if (!currentDayId.value) {
@@ -300,7 +325,9 @@ export default {
             goToPreviousDay,
             goToNextDay,
             currentDate,
-            handleDrop
+            handleDrop,
+            priorityErrorMessage,
+            openAddTicketModal
         };
     },
 };

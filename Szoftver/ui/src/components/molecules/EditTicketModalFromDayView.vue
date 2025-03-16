@@ -9,7 +9,8 @@
             <textarea id="edit-ticket-description" v-model="ticket.description" placeholder="Enter description"></textarea>
     
             <label for="edit-ticket-priority">Priority</label>
-            <input id="edit-ticket-priority" v-model="ticket.priority" type="number" min="1" max="10" placeholder="Enter priority (1-10)" />
+            <input id="edit-ticket-priority" v-model="ticket.priority" type="number" min="1" max="9" placeholder="Enter priority (1-9)" />
+            <p v-if="priorityError" class="error">{{ priorityError }}</p>
     
             <label for="edit-ticket-startTime">Start Time</label>
             <input id="edit-ticket-startTime" v-model="ticket.startTime" type="time" />
@@ -27,7 +28,7 @@
     import Modal from "@/components/molecules/Modal.vue";
     import api from "@/utils/config/axios-config";
     import { emitter } from "@/utils/eventBus";
-    import { validateNameField, validateTimeFieldsBothRequiredOrEmpty } from "@/components/atoms/ValidateModalInputFields";
+    import { validateNameField, validateTimeFieldsBothRequiredOrEmpty, validatePriorityField } from "@/components/atoms/ValidateModalInputFields";
     import { setErrorMessage } from "@/utils/errorHandler";
     
     export default {
@@ -45,7 +46,8 @@
     
             const nameError = ref("");
             const timeError = ref("");
-            const permissionError = ref("");
+            const permissionError = ref("")
+            const priorityError = ref("");
     
             watch(
                 () => props.show,
@@ -74,6 +76,13 @@
             const saveChanges = async () => {
                 setErrorMessage(nameError, validateNameField(ticket.value.name));
                 setErrorMessage(timeError, validateTimeFieldsBothRequiredOrEmpty(ticket.value.startTime, ticket.value.endTime));
+                if (ticket.value.priority !== null) {
+                    const priorityValidationError = validatePriorityField(ticket.value.priority);
+                    if (priorityValidationError) {
+                        setErrorMessage(priorityError, priorityValidationError);
+                        return;
+                    }
+                }
     
                 if (nameError.value || timeError.value) {
                     return;
@@ -107,7 +116,8 @@
                 saveChanges,
                 nameError,
                 timeError,
-                permissionError
+                permissionError,
+                priorityError
             };
         },
     };
