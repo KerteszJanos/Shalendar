@@ -30,7 +30,6 @@
         </div>
         <div class="calendar-grid" :style="{ gridTemplateRows: gridRowStyle }">
             <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth, 'today': isToday(day.date)}" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
-                <div v-if="isDraggingTicket" class="drop-divider"></div>
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
                     <div class="ticket-list">
@@ -103,7 +102,6 @@ export default {
         });
         const errorMessage = ref("");
         const router = useRouter();
-        const isDraggingTicket = ref(false);
 
         const showTimeModal = ref(false);
         const modalStartTime = ref("");
@@ -470,14 +468,6 @@ export default {
             closeTimeModal();
         };
 
-        const onGlobalDragStart = () => {
-            isDraggingTicket.value = true;
-        };
-
-        const onGlobalDragEnd = () => {
-            isDraggingTicket.value = false;
-        };
-
         const updateCurrentDayAtMidnight = () => {
             currentDay.value = getLocalDateString();
             const now = new Date();
@@ -544,10 +534,6 @@ export default {
             window.removeEventListener("dragend", onGlobalDragEnd);
         });
 
-        window.addEventListener("dragend", () => {
-            isDraggingTicket.value = false;
-        });
-
         return {
             formattedMonth,
             daysOfWeek,
@@ -558,7 +544,6 @@ export default {
             prevMonth,
             nextMonth,
             onTicketDrop,
-            isDraggingTicket,
             showTimeModal,
             modalStartTime,
             modalEndTime,
@@ -675,7 +660,7 @@ export default {
     flex-direction: column;
     flex-grow: 1;
     width: 100%;
-    padding: 20px;
+    padding: 18px;
     overflow: hidden;
     min-width: 330px;
     min-height: 300px;
@@ -837,17 +822,6 @@ export default {
     background: linear-gradient(to right, rgba(11, 100, 119, 0) 0%, #0B6477 50%, rgba(11, 100, 119, 0) 100%);
     border-radius: 2px;
     margin-top: 2px;
-}
-
-.drop-divider {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 2px;
-    background-color: #000;
-    z-index: 1;
-    pointer-events: none;
 }
 
 @media (max-width: 700px) {
