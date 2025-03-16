@@ -2,9 +2,9 @@
 <div class="dashboard" v-if="isMounted">
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <div class="calendar-container">
-        <CalendarView :style="{ flex: calendarViewSize }" />
+        <CalendarView :style="{ flex: calendarViewSize }" class="calendarView" />
         <div class="resizer" @mousedown="startResizing"></div>
-        <CalendarLists :style="{ flex: calendarListsSize }" />
+        <CalendarLists :style="{ flex: calendarListsSize }" class="calendarLists" />
     </div>
 </div>
 </template>
@@ -35,15 +35,44 @@ export default {
         const startResizing = (event) => {
             document.body.style.userSelect = "none";
             isResizing = true;
+
+            const isHorizontal = window.innerWidth > 700; // 700px felett vízszintes, alatta függőleges
+
             const startX = event.clientX;
+            const startY = event.clientY;
             const startViewSize = calendarViewSize.value;
             const startListSize = calendarListsSize.value;
 
+            // ✨ Külön min-height értékek százalékban (ha az ablak méretéhez igazítjuk)
+            const minHeightViewRatio = 400 / window.innerHeight * 2; // Pl. min-height: 350px
+            const minHeightListsRatio = 300 / window.innerHeight * 2; // Pl. min-height: 250px
+
             const onMouseMove = (moveEvent) => {
                 if (!isResizing) return;
-                const delta = (moveEvent.clientX - startX) / window.innerWidth * 2;
-                calendarViewSize.value = Math.max(0.2, startViewSize + delta);
-                calendarListsSize.value = Math.max(0.2, startListSize - delta);
+
+                if (isHorizontal) {
+                    // 📌 Vízszintes mozgatás (X tengely)
+                    const deltaX = (moveEvent.clientX - startX) / window.innerWidth * 2;
+                    const newViewSize = startViewSize + deltaX;
+                    const newListSize = startListSize - deltaX;
+
+                    // ✨ Külön min értékek figyelembevétele
+                    if (newViewSize >= 0.2 && newListSize >= 0.2) {
+                        calendarViewSize.value = newViewSize;
+                        calendarListsSize.value = newListSize;
+                    }
+                } else {
+                    // 📌 Függőleges mozgatás (Y tengely) külön min-height értékekkel
+                    const deltaY = (moveEvent.clientY - startY) / window.innerHeight * 2;
+                    const newViewSize = startViewSize + deltaY;
+                    const newListSize = startListSize - deltaY;
+
+                    // **Ha a CalendarView mérete kisebb lenne a saját min-height-jánál, ne engedjük tovább csökkenteni**
+                    if (newViewSize >= minHeightViewRatio && newListSize >= minHeightListsRatio) {
+                        calendarViewSize.value = newViewSize;
+                        calendarListsSize.value = newListSize;
+                    }
+                }
             };
 
             const onMouseUp = () => {
@@ -109,6 +138,14 @@ export default {
     height: 100%;
 }
 
+.calendarView {
+    min-height: 300px;
+}
+
+.calendarLists {
+    min-height: 300px;
+}
+
 .resizer {
     width: 5px;
     cursor: ew-resize;
@@ -124,6 +161,12 @@ export default {
 @media (max-width: 700px) {
     .calendar-container {
         flex-direction: column;
+        flex: 1;
+    }
+
+    .calendar-container>* {
+        flex-grow: 1;
+        min-height: 0;
     }
 
     .resizer {
@@ -131,7 +174,7 @@ export default {
         height: 5px;
         cursor: ns-resize;
         flex-shrink: 0;
-        display: none
+        max-height: 5px;
     }
 }
 </style>

@@ -667,18 +667,21 @@ export default {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
+    min-height: 300px;
 }
 
 .calendar-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
     width: 100%;
-    height: 100%;
-    background: #e3f2fd;
     padding: 20px;
-    border-radius: 10px 0 0 10px;
     overflow: hidden;
     min-width: 330px;
     min-height: 300px;
+    background: #e3f2fd;
 }
+
 
 .calendar-header {
     display: flex;
@@ -854,9 +857,7 @@ export default {
         background: #e3f2fd;
         padding: 20px;
         border-radius: 10px 10px 0 0;
-        overflow: hidden;
-        min-width: 330px;
-        min-height: 300px;
     }
+    
 }
 </style>
