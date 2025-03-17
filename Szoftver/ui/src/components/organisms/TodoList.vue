@@ -5,7 +5,7 @@
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <draggable v-model="tickets" @start="onDragStart" @end="onDragEnd" group="tickets" itemKey="id" class="ticket-container">
             <template #item="{ element }">
-                <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModalFromDayView(element)" :style="{ backgroundColor: element.backgroundColor || '#CCCCCC' }">
+                <div class="ticket-item" draggable="true" @click="openEditTicketModalFromDayView(element)" :style="{ backgroundColor: element.backgroundColor || '#CCCCCC' }">
 
                     <div class="ticket-header">
                         <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
@@ -236,10 +236,18 @@ export default {
             connection.on("CalendarCopied", async () => {
                 fetchTickets();
             });
+            connection.on("CalendarListUpdated", async () => {
+                fetchTickets();
+            });
+            connection.on("CalendarListDeleted", async () => {
+                fetchTickets();
+            });
         });
 
         onBeforeUnmount(() => {
             connection.off("CalendarCopied");
+            connection.off("CalendarListUpdated");
+            connection.off("CalendarListDeleted");
 
             if (calendarId.value) {
                 connection.invoke("LeaveGroup", calendarId.value);

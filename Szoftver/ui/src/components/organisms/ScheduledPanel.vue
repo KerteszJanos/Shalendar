@@ -135,7 +135,7 @@ export default {
             "TicketUpdatedInDayView",
             "TicketCompletedUpdatedInDayView",
             "TicketMovedBetweenDays",
-            "TicketDeletedInDayView"
+            "TicketDeletedInDayView",
         ];
 
         const openCopyTicketModal = (ticketId) => {
@@ -216,6 +216,12 @@ export default {
             connection.on("CalendarCopied", async () => {
                 fetchTickets();
             });
+            connection.on("CalendarListUpdated", async () => {
+                fetchTickets();
+            });
+            connection.on("CalendarListDeleted", async () => {
+                fetchTickets();
+            });
         });
 
         onUnmounted(() => {
@@ -226,6 +232,8 @@ export default {
 
         onBeforeUnmount(() => {
             connection.off("CalendarCopied");
+            connection.off("CalendarListUpdated");
+            connection.off("CalendarListDeleted");
 
             if (calendarId.value) {
                 connection.invoke("LeaveGroup", calendarId.value);
