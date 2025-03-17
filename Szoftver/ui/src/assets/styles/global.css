@@ -8,3 +8,114 @@ html, body, #app {
 * {
     box-sizing: border-box;
 }
+
+/*Global ticket style*/
+.ticket-item {
+    position: relative;
+    padding: 5px;
+    border: 2px solid black;
+    margin-bottom: 5px;
+    overflow: hidden;
+    border-radius: 5px;
+    width: 200px;
+}
+
+.ticket-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.ticket-checkbox {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.ticket-name {
+    margin: 0;
+    font-size: 16px;
+    cursor: pointer;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.ticket-info {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.description-icon {
+    font-size: 18px;
+}
+
+.priority {
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.ticket-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.icon:hover {
+    transform: scale(1.2);
+}
+
+.copy-icon {
+    color: #ffc107;
+}
+
+.delete-icon {
+    color: #f44336;
+}
+
+.send-back-icon {
+    color: #007bff; 
+}
+
+.copy-btn {
+    background: #ffc107;
+    color: white;
+    border: none;
+    padding: 5px;
+    margin-top: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.ticket {
+    cursor: pointer;
+}
+
+.ticket-item:hover {
+    filter: brightness(0.9);
+    transition: filter 0.3s ease-in-out;
+}
+
+
+/** {outline: 1px solid red;}*/

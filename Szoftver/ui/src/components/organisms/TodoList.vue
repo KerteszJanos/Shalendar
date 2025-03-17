@@ -4,16 +4,32 @@
         <div class="header">{{ formattedDate }}</div>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <draggable v-model="tickets" @start="onDragStart" @end="onDragEnd" group="tickets" itemKey="id">
-
             <template #item="{ element }">
-                <div class="ticket" :style="{ backgroundColor: element.backgroundColor }" @click="openEditTicketModalFromDayView(element)">
-                    <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
-                    <p><strong>{{ element.name }}</strong></p>
-                    <p v-if="element.description">{{ element.description }}</p>
-                    <p v-if="element.priority">Priority: {{ element.priority }}</p>
-                    <button @click.stop="handleDelete(element.id)" class="delete-btn">Delete</button>
-                    <button @click.stop="handleSendBack(element.id)" class="send-back-btn">Send Back</button>
-                    <button @click.stop="openCopyTicketModal(element.id)" class="copy-btn">Copy</button>
+                <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModalFromDayView(element)" :style="{ backgroundColor: element.backgroundColor || '#CCCCCC' }">
+
+                    <div class="ticket-header">
+                        <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
+                        <p class="ticket-name"><strong>{{ element.name }}</strong></p>
+                    </div>
+
+                    <div class="ticket-description" v-if="element.description">
+                        <p v-html="cleanDescription(element.description)" class="description"></p>
+                    </div>
+
+                    <div class="ticket-info">
+                        <span v-if="element.description" class="description-icon" :style="{ color: colorShade(element.backgroundColor, -50) || '#CCCCCC' }">
+                            <FileText />
+                        </span>
+                        <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }">
+                            {{ element.priority }}
+                        </span>
+                    </div>
+
+                    <div class="ticket-actions">
+                        <RotateCwSquare class="icon send-back-icon" @click.stop="handleSendBack(element.id)" />
+                        <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(element.id)" />
+                        <Trash2 class="icon delete-icon" @click.stop="handleDelete(element.id)" />
+                    </div>
                 </div>
             </template>
         </draggable>
@@ -67,12 +83,28 @@ import {
     connection,
     ensureConnected
 } from "@/services/signalRService";
+import {
+    Copy,
+    Trash2,
+    FileText,
+    RotateCwSquare
+} from "lucide-vue-next";
+import {
+    getPriorityColor
+} from "@/components/atoms/getPriorityColor";
+import {
+    colorShade
+} from "@/components/atoms/colorShader";
 
 export default {
     components: {
         draggable,
         EditTicketModalFromDayView,
         copyTicketModal,
+        Copy,
+        Trash2,
+        FileText,
+        RotateCwSquare
     },
     setup() {
         const route = useRoute();
@@ -100,6 +132,10 @@ export default {
             "TicketMovedBetweenDays",
             "TicketDeletedInDayView"
         ];
+
+        const cleanDescription = (desc) => {
+            return desc.replace(/\n/g, "<br>");
+        };
 
         const onDragStart = (event) => {
             const ticket = event.item.__draggable_context.element;
@@ -204,7 +240,7 @@ export default {
 
         onBeforeUnmount(() => {
             connection.off("CalendarCopied");
-            
+
             if (calendarId.value) {
                 connection.invoke("LeaveGroup", calendarId.value);
             }
@@ -236,24 +272,37 @@ export default {
             selectedTicketId,
             showCopyTicketModal,
             route,
-            onDragStart
+            onDragStart,
+            getPriorityColor,
+            colorShade,
+            cleanDescription
         };
     },
 };
 </script>
 
 <style scoped>
-.ticket-checkbox {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    width: 20px;
-    height: 20px;
+.description {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    display: box;
+    line-clamp: 5;
+    overflow: auto;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    scrollbar-width: none;
 }
+
+.description::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Edge */
+}
+
 
 .container {
     display: flex;
-    height: 100vh;
+    height: 100%;
 }
 
 .todo-list {
@@ -263,6 +312,13 @@ export default {
     position: relative;
     padding: 20px;
     border-right: none;
+    overflow: auto;
+    scrollbar-width: none;
+}
+
+.todo-list::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Edge */
 }
 
 .header {
@@ -271,26 +327,11 @@ export default {
     text-align: center;
     margin-bottom: 10px;
     padding: 10px;
-    background: linear-gradient(to right, #9dc1b7, #717877);
+    background: #14919B;
     border-radius: 8px;
 }
 
-.ticket {
-    position: relative;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease-in-out;
-    cursor: pointer;
-}
-
-.delete-btn {
-    background: red;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 5px;
+.ticket-item {
+    width: 100%;
 }
 </style>

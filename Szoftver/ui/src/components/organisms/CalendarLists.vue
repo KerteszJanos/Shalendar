@@ -149,6 +149,7 @@ import {
     Trash2,
     FileText
 } from "lucide-vue-next";
+import { getPriorityColor } from "@/components/atoms/getPriorityColor";
 
 export default {
     components: {
@@ -409,19 +410,6 @@ export default {
             }
         };
 
-        const getPriorityColor = (priority) => {
-            if (priority === 9) return "#2E7D32";
-            if (priority === 8) return "#4CAF50";
-            if (priority === 7) return "#66BB6A";
-            if (priority === 6) return "#FFEB3B";
-            if (priority === 5) return "#FFC107";
-            if (priority === 4) return "#FF9800";
-            if (priority === 3) return "#FF5722";
-            if (priority === 2) return "#F44336";
-            if (priority === 1) return "#B71C1C";
-            return "#9E9E9E";
-        };
-
         const openAddNewTicketModal = (listId) => {
             newTicketError.value = "";
 
@@ -557,83 +545,6 @@ export default {
 </script>
 
 <style scoped>
-.ticket-info {
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.description-icon {
-    font-size: 18px;
-}
-
-.priority {
-    font-size: 14px;
-    font-weight: bold;
-    color: black;
-    background: white;
-    padding: 2px 6px;
-    border-radius: 3px;
-}
-
-.ticket-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    overflow: hidden;
-    margin-bottom: 20px;
-    /* Ezzel növeljük a távolságot a név és az alsó rész között */
-}
-
-.ticket-name {
-    margin: 0;
-    font-size: 16px;
-    cursor: pointer;
-    flex-grow: 1;
-    /* A név kitölti a rendelkezésre álló helyet */
-    white-space: nowrap;
-    /* Ne törje új sorba */
-    overflow: hidden;
-    /* Ha nem fér ki, ne legyen látható */
-    text-overflow: ellipsis;
-    /* ... jelenjen meg, ha túl hosszú */
-    text-align: left;
-    /* Balra igazítás */
-}
-
-.ticket-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
-    /* Kis térköz a többi tartalomtól */
-}
-
-.icon {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out;
-}
-
-.icon:hover {
-    transform: scale(1.2);
-}
-
-.copy-icon {
-    color: #ffc107;
-    /* Sárga szín */
-}
-
-.delete-icon {
-    color: #f44336;
-    /* Piros szín */
-}
-
 .list-header {
     display: flex;
     justify-content: space-between;
@@ -641,20 +552,6 @@ export default {
     width: 100%;
     padding: 5px 10px;
     gap: 5px;
-}
-
-.copy-btn {
-    background: #ffc107;
-    color: white;
-    border: none;
-    padding: 5px;
-    margin-top: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.ticket {
-    cursor: pointer;
 }
 
 .lists-container {
@@ -676,23 +573,6 @@ export default {
     align-items: center;
 }
 
-.add-button {
-    background: #213A57;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    font-size: 18px;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.ticket-checkbox {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    /* Ne nyomja össze a többi elemet */
-}
-
 .lists-content {
     display: flex;
     flex-direction: row;
@@ -709,7 +589,7 @@ export default {
 .list-item {
     padding: 10px;
     border-radius: 5px;
-    min-width: 200px;
+    min-width: 220px;
     flex-shrink: 0;
     text-align: center;
     display: flex;
@@ -736,16 +616,6 @@ export default {
     /* Chrome, Safari, Edge */
 }
 
-.ticket-item {
-    position: relative;
-    padding: 5px;
-    border: 2px solid black;
-    margin-bottom: 5px;
-    overflow: hidden;
-    border-radius: 5px;
-    width: 200px;
-}
-
 .add-ticket-button {
     background: #2196f3;
     color: white;
@@ -755,6 +625,26 @@ export default {
     border-radius: 5px;
     cursor: pointer;
     width: 100%;
+    transition: all 0.3s ease-in-out;
+}
+
+.add-ticket-button:hover {
+    transform: scale(1.05);
+}
+
+.add-button {
+    background: #213A57;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.add-button:hover {
+    transform: scale(1.1);
 }
 
 .modal-content {

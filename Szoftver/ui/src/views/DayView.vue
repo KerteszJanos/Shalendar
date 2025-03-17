@@ -2,7 +2,7 @@
 <div class="container">
     <button class="nav-btn left" @click="goToPreviousDay" @dragover.prevent @drop="handleDrop('previous')">&#9665;</button>
     <div class="content">
-        <button class="add-ticket-btn" @click="openAddTicketModal">+ Add Ticket</button>
+        <button class="add-ticket-btn" @click="openAddTicketModal">+</button>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div class="panels">
             <DayPanel class="panel" />
@@ -336,8 +336,10 @@ export default {
 <style scoped>
 .container {
     display: flex;
-    height: 100vh;
-    padding: 20px;
+    height: 98%;
+    width: 100%;
+    padding: 30px 0 20px 0;
+    box-sizing: border-box;
 }
 
 .content {
@@ -345,6 +347,7 @@ export default {
     flex-direction: column;
     flex: 1;
     width: 100%;
+    height: 100%;
     align-items: center;
     justify-content: center;
 }
@@ -353,6 +356,7 @@ export default {
     display: flex;
     gap: 20px;
     width: 100%;
+    height: 100%;
 }
 
 .panel {
@@ -365,36 +369,50 @@ export default {
 }
 
 .nav-btn {
-    background-color: #007bff;
+    background-color: #213A57;
+    height: 98%;
     color: white;
     border: none;
     padding: 12px 18px;
     font-size: 16px;
     cursor: pointer;
-    border-radius: 30px;
     box-shadow: none;
     outline: none;
     transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
 
+.nav-btn.left {
+    border-radius: 0 10px 10px 0;
+    margin-right: 10px;
+}
+
+.nav-btn.right {
+    border-radius: 10px 0 0 10px;
+    margin-left: 10px;
+}
+
 .nav-btn:hover {
-    background-color: #0056b3;
+    background-color: #3f5d80;
 }
 
 .add-ticket-btn {
-    margin-top: 20px;
-    background-color: #4caf50;
+    position: absolute;
+    top: +65px;
+    background-color: #213A57;
     color: white;
     border: none;
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 5px;
+    padding: 12px 20px;
+    font-size: 18px;
+    border-radius: 50%;
     cursor: pointer;
-    align-self: center;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10;
 }
 
 .add-ticket-btn:hover {
-    background-color: #388e3c;
+    background-color: #3f5d80;
+    transform: scale(1.1);
 }
 
 .modal-content {

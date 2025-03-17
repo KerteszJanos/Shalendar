@@ -322,7 +322,7 @@ export default {
 
 .container {
     display: flex;
-    height: 100vh;
+    height: 100%;
 }
 
 .day-view {
@@ -340,7 +340,7 @@ export default {
     text-align: center;
     margin-bottom: 10px;
     padding: 10px;
-    background: linear-gradient(to right, #9dc1b7, #b1dbd3);
+    background: #14919B;
     border-radius: 8px;
 }
 
