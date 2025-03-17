@@ -270,26 +270,38 @@ export default {
             }
         };
 
-        // Compute CSS style for a ticket based on its startTime and endTime by combining the selected date and time
         const getTicketStyle = (ticket) => {
-            // Combine the selected date with the ticket's start and end time to form complete datetime strings
             const startDateTime = `${route.params.date}T${ticket.startTime}`;
             const endDateTime = `${route.params.date}T${ticket.endTime}`;
             const start = new Date(startDateTime);
             const end = new Date(endDateTime);
             const topPosition = (start.getHours() + start.getMinutes() / 60) * 400;
-            // Calculate duration in hours and convert it to pixels (400px per hour)
             const durationHours = (end - start) / (1000 * 60 * 60);
             const height = durationHours * 400;
+
+            // Megnézzük, hogy hány ticket ütközik ugyanabban az időszakban
+            const overlappingTickets = tickets.value.filter(t => {
+                const tStart = new Date(`${route.params.date}T${t.startTime}`);
+                const tEnd = new Date(`${route.params.date}T${t.endTime}`);
+                return (start < tEnd && end > tStart); // Van-e átfedés
+            });
+
+            const index = overlappingTickets.findIndex(t => t.id === ticket.id);
+            const offset = 25; // Minden ticket egy kicsit balra és lefelé tolódik
+
             return {
-                top: `${topPosition}px`,
+                top: `${topPosition + index * offset}px`, // Minden ütköző ticket picit lejjebb kerül
+                left: `${index * offset}px`, // Minden ticket egy kicsit balra tolódik
                 height: `${height}px`,
                 backgroundColor: ticket.backgroundColor,
                 position: "absolute",
-                left: "10px",
-                right: "10px",
                 padding: "5px",
                 borderRadius: "4px",
+                boxSizing: "border-box",
+                border: "1px solid rgba(0, 0, 0, 0.2)",
+                zIndex: index, // Az elöl lévő ticket magasabb rétegben van
+                right: "10px", // Az utolsó ticket nem lóg ki a szülőből
+                width: "auto", // Automatikusan kitölti a rendelkezésre álló helyet
             };
         };
 
@@ -336,6 +348,10 @@ export default {
     margin-left: 30px;
 }
 
+.ticket-item:hover {
+    z-index: 999 !important;
+}
+
 .ticket-footer {
     display: flex;
     flex-direction: row;
@@ -361,14 +377,6 @@ export default {
 .ticket-header {
     margin-bottom: 10px;
 }
-
-.ticket-checkbox {}
-
-.ticket-name {}
-
-.ticket-content {}
-
-.ticket-actions {}
 
 .container {
     display: flex;
@@ -414,25 +422,25 @@ export default {
 }
 
 .hour-marker {
-  position: absolute;
-  width: 100%;
-  height: 400px;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
-  font-size: 1rem;
-  font-weight: bold;
-  color: #333;
+    position: absolute;
+    width: 100%;
+    height: 400px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
 }
 
 .half-hour-marker {
-  position: absolute;
-  width: 100%;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    position: absolute;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .quarter-hour-marker {
-  position: absolute;
-  width: 100%;
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
+    position: absolute;
+    width: 100%;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
 }
 
 .time-indicator {
@@ -451,7 +459,8 @@ export default {
 
 .time-label {
     position: absolute;
-    left: -10px; /* Beállíthatod a kívánt balra tolt értéket */
+    left: -10px;
+    /* Beállíthatod a kívánt balra tolt értéket */
     padding: 1px 8px 1px 1px;
     clip-path: polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%);
     font-size: 0.8rem;
