@@ -440,10 +440,18 @@ export default {
 }
 
 @media (max-width: 849px) {
-    .panels
-    {
+    .panels {
         flex-direction: column;
     }
+
+    .todoList {
+        order: -1; /* TodoList előre kerül */
+    }
+
+    .dayPanel {
+        order: 1; /* DayPanel hátrébb kerül */
+    }
 }
+
 
 </style>

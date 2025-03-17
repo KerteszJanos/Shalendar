@@ -30,8 +30,8 @@ export function validateTimeFieldsBothRequiredOrEmpty(startTime, endTime) {
     const startTotalMinutes = startHours * 60 + startMinutes;
     const endTotalMinutes = endHours * 60 + endMinutes;
 
-    if (startTotalMinutes >= endTotalMinutes - 10) {
-        return "The start time must be at least 10 minutes earlier than the end time.";
+    if (startTotalMinutes >= endTotalMinutes - 14) {
+        return "The start time must be at least 15 minutes earlier than the end time.";
     }
 
     return null;

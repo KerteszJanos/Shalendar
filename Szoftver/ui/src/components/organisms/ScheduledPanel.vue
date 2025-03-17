@@ -5,8 +5,13 @@
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div class="time-container">
             <div class="time-scrollable">
-                <div class="hour-marker" v-for="hour in 24" :key="hour" :style="{ top: `${hour * 100}px` }">
-                    {{ hour }}:00
+                <div v-for="hour in Array.from({ length: 24 }, (_, i) => i)" :key="hour">
+                    <div class="hour-marker" :style="{ top: `${hour * 400}px` }">
+                        {{ hour }}:00
+                    </div>
+                    <div class="half-hour-marker" :style="{ top: `${hour * 400 + 200}px` }"></div>
+                    <div class="quarter-hour-marker" :style="{ top: `${hour * 400 + 100}px` }"></div>
+                    <div class="quarter-hour-marker" :style="{ top: `${hour * 400 + 300}px` }"></div>
                 </div>
                 <div class="time-indicator" :style="timeIndicatorStyle">
                     <span class="time-label">{{ currentTime }}</span>
@@ -17,9 +22,11 @@
                         <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" />
                         <strong class="ticket-name">{{ ticket.name }}</strong>
                     </div>
-                    <p v-if="ticket.startTime && ticket.endTime">
-                        {{ formatTime(ticket.startTime) }} - {{ formatTime(ticket.endTime) }}
-                    </p>
+                    <div class="ticket-time">
+                        <p v-if="ticket.startTime && ticket.endTime" class="ticket-time-text">
+                            {{ formatTime(ticket.startTime) }} - {{ formatTime(ticket.endTime) }}
+                        </p>
+                    </div>
                     <div class="ticket-footer">
                         <div class="ticket-info">
                             <span v-if="ticket.description" class="description-icon" :style="{ color: colorShade(ticket.backgroundColor, -50) || '#CCCCCC' }">
@@ -176,7 +183,7 @@ export default {
 
         function getTimeIndicatorStyle() {
             const now = new Date();
-            const topPx = (now.getHours() + now.getMinutes() / 60) * 100;
+            const topPx = (now.getHours() + now.getMinutes() / 60) * 400;
             return {
                 top: `${topPx}px`
             };
@@ -270,10 +277,10 @@ export default {
             const endDateTime = `${route.params.date}T${ticket.endTime}`;
             const start = new Date(startDateTime);
             const end = new Date(endDateTime);
-            const topPosition = (start.getHours() + start.getMinutes() / 60) * 100;
-            // Calculate duration in hours and convert it to pixels (100px per hour)
+            const topPosition = (start.getHours() + start.getMinutes() / 60) * 400;
+            // Calculate duration in hours and convert it to pixels (400px per hour)
             const durationHours = (end - start) / (1000 * 60 * 60);
-            const height = durationHours * 100;
+            const height = durationHours * 400;
             return {
                 top: `${topPosition}px`,
                 height: `${height}px`,
@@ -326,13 +333,24 @@ export default {
 <style scoped>
 .ticket-item {
     width: auto;
+    margin-left: 30px;
 }
-.ticket-footer
-{
+
+.ticket-footer {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
+
+.ticket-time {
+    text-align: center;
+
+}
+
+.ticket-time-text {
+    margin: 0;
+}
+
 .ticket-info {
     position: static;
     display: flex;
@@ -340,7 +358,9 @@ export default {
     gap: 5px;
 }
 
-.ticket-header {}
+.ticket-header {
+    margin-bottom: 10px;
+}
 
 .ticket-checkbox {}
 
@@ -390,19 +410,29 @@ export default {
 
 .time-scrollable {
     position: relative;
-    height: 2400px;
+    height: 9600px;
 }
 
 .hour-marker {
-    position: absolute;
-    width: 100%;
-    height: 100px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-    line-height: 100px;
-    padding-left: 10px;
-    font-size: 1rem;
-    font-weight: bold;
-    color: #333;
+  position: absolute;
+  width: 100%;
+  height: 400px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.half-hour-marker {
+  position: absolute;
+  width: 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.quarter-hour-marker {
+  position: absolute;
+  width: 100%;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
 }
 
 .time-indicator {
@@ -415,15 +445,17 @@ export default {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding-left: 5px;
-    justify-content: flex-end;
+    z-index: 99;
+    border-radius: 0 50% 50% 0;
 }
 
 .time-label {
-    padding: 2px 5px;
-    border-radius: 4px;
+    position: absolute;
+    left: -10px; /* Beállíthatod a kívánt balra tolt értéket */
+    padding: 1px 8px 1px 1px;
+    clip-path: polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%);
     font-size: 0.8rem;
     font-weight: bold;
-    color: #333;
+    background: #80ED99;
 }
 </style>
