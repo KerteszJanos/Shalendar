@@ -331,7 +331,8 @@ export default {
     flex-direction: column;
     position: relative;
     padding: 20px;
-    border-right: 1px solid #ccc;
+    background: #e3f2fd;
+    border-radius: 5px;
 }
 
 .header {
@@ -350,6 +351,12 @@ export default {
     position: relative;
     border-radius: 8px;
     margin-top: 20px;
+    scrollbar-width: none;
+}
+
+.time-container::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Edge */
 }
 
 .time-scrollable {
@@ -385,7 +392,7 @@ export default {
     left: 10px;
     right: 10px;
     height: 4px;
-    background: #ff6347;
+    background: #80ED99;
     transition: top 1s linear;
     display: flex;
     align-items: center;

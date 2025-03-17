@@ -314,6 +314,8 @@ export default {
     border-right: none;
     overflow: auto;
     scrollbar-width: none;
+    background: #c8e6c9;
+    border-radius: 5px;
 }
 
 .todo-list::-webkit-scrollbar {
