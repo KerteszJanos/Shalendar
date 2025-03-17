@@ -1,9 +1,9 @@
 <template>
 <div class="container">
+    <div class="header">{{ formattedDate }}</div>
     <div class="todo-list">
-        <div class="header">{{ formattedDate }}</div>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-        <draggable v-model="tickets" @start="onDragStart" @end="onDragEnd" group="tickets" itemKey="id">
+        <draggable v-model="tickets" @start="onDragStart" @end="onDragEnd" group="tickets" itemKey="id" class="ticket-container">
             <template #item="{ element }">
                 <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModalFromDayView(element)" :style="{ backgroundColor: element.backgroundColor || '#CCCCCC' }">
 
@@ -303,6 +303,15 @@ export default {
 .container {
     display: flex;
     height: 100%;
+    flex-direction: column;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.ticket-container
+{
+    margin-right: 20px;
+    margin-left: 20px;
 }
 
 .todo-list {
@@ -310,12 +319,9 @@ export default {
     display: flex;
     flex-direction: column;
     position: relative;
-    padding: 20px;
     border-right: none;
     overflow: auto;
     scrollbar-width: none;
-    background: #c8e6c9;
-    border-radius: 5px;
 }
 
 .todo-list::-webkit-scrollbar {
@@ -331,6 +337,7 @@ export default {
     padding: 10px;
     background: #14919B;
     border-radius: 8px;
+    margin: 20px 20px 35px 20px; 
 }
 
 .ticket-item {

@@ -18,6 +18,7 @@ html, body, #app {
     overflow: hidden;
     border-radius: 5px;
     width: 200px;
+    will-change: transform;
 }
 
 .ticket-header {

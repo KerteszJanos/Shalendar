@@ -5,8 +5,8 @@
         <button class="add-ticket-btn" @click="openAddTicketModal">+</button>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div class="panels">
-            <DayPanel class="panel" />
-            <TodoList class="panel" />
+            <DayPanel class="dayPanel" />
+            <TodoList class="todoList" />
         </div>
     </div>
     <button class="nav-btn right" @click="goToNextDay" @dragover.prevent @drop="handleDrop('next')">&#9655;</button>
@@ -336,10 +336,12 @@ export default {
 <style scoped>
 .container {
     display: flex;
-    height: 98%;
+    height: 100%;
     width: 100%;
-    padding: 30px 0 20px 0;
     box-sizing: border-box;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    min-width: 0;
 }
 
 .content {
@@ -354,23 +356,31 @@ export default {
 
 .panels {
     display: flex;
+    flex: 1;
     gap: 20px;
     width: 100%;
     height: 100%;
 }
 
-.panel {
+.dayPanel {
     flex: 1;
-    min-width: 45%;
+    min-width: 30%;
     border: 1px solid #ccc;
-    padding: 10px;
     border-radius: 5px;
-    background: white;
+    background: #e3f2fd;
+}
+
+.todoList {
+    flex: 1;
+    min-width: 30%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #c8e6c9;
 }
 
 .nav-btn {
     background-color: #213A57;
-    height: 98%;
+    height: 90%;
     color: white;
     border: none;
     padding: 12px 18px;
@@ -379,6 +389,7 @@ export default {
     box-shadow: none;
     outline: none;
     transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+    align-self: center;
 }
 
 .nav-btn.left {
@@ -427,4 +438,12 @@ export default {
     font-weight: bold;
     text-align: center;
 }
+
+@media (max-width: 849px) {
+    .panels
+    {
+        flex-direction: column;
+    }
+}
+
 </style>
