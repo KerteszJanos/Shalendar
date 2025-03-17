@@ -296,9 +296,7 @@ export default {
                 backgroundColor: ticket.backgroundColor,
                 position: "absolute",
                 padding: "5px",
-                borderRadius: "4px",
                 boxSizing: "border-box",
-                border: "1px solid rgba(0, 0, 0, 0.2)",
                 zIndex: index, // Az elöl lévő ticket magasabb rétegben van
                 right: "10px", // Az utolsó ticket nem lóg ki a szülőből
                 width: "auto", // Automatikusan kitölti a rendelkezésre álló helyet
@@ -346,6 +344,7 @@ export default {
 .ticket-item {
     width: auto;
     margin-left: 30px;
+    border: 2px solid black;
 }
 
 .ticket-item:hover {
