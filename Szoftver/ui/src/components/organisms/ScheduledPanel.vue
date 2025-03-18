@@ -454,8 +454,7 @@ export default {
 }
 
 .time-container::-webkit-scrollbar-corner {
-    background: url('@/assets/images/Shailendra.jpg') no-repeat center center;
-    background-size: cover;
+    background: #e3f2fd;
 }
 
 .time-container::-webkit-scrollbar-thumb {
