@@ -298,48 +298,44 @@ export default {
         };
 
         const getTicketStyle = (ticket) => {
-    const startDateTime = `${route.params.date}T${ticket.startTime}`;
-    const endDateTime = `${route.params.date}T${ticket.endTime}`;
-    const start = new Date(startDateTime);
-    const end = new Date(endDateTime);
-    const topPosition = (start.getHours() + start.getMinutes() / 60) * 400;
-    const durationHours = (end - start) / (1000 * 60 * 60);
-    const height = durationHours * 400;
+            const startDateTime = `${route.params.date}T${ticket.startTime}`;
+            const endDateTime = `${route.params.date}T${ticket.endTime}`;
+            const start = new Date(startDateTime);
+            const end = new Date(endDateTime);
+            const topPosition = (start.getHours() + start.getMinutes() / 60) * 400;
+            const durationHours = (end - start) / (1000 * 60 * 60);
+            const height = durationHours * 400;
 
-    // Check overlapping tickets
-    let overlappingTickets = tickets.value.filter(t => {
-        const tStart = new Date(`${route.params.date}T${t.startTime}`);
-        const tEnd = new Date(`${route.params.date}T${t.endTime}`);
-        return (start < tEnd && end > tStart);
-    });
+            // Check overlapping tickets
+            let overlappingTickets = tickets.value.filter(t => {
+                const tStart = new Date(`${route.params.date}T${t.startTime}`);
+                const tEnd = new Date(`${route.params.date}T${t.endTime}`);
+                return (start < tEnd && end > tStart);
+            });
 
-    // Sort overlapping tickets by duration (longer first)
-    overlappingTickets = overlappingTickets.sort((a, b) => {
-        const durationA = new Date(`${route.params.date}T${a.endTime}`) - new Date(`${route.params.date}T${a.startTime}`);
-        const durationB = new Date(`${route.params.date}T${b.endTime}`) - new Date(`${route.params.date}T${b.startTime}`);
-        return durationB - durationA;
-    });
+            // Sort overlapping tickets by duration (longer first)
+            overlappingTickets = overlappingTickets.sort((a, b) => {
+                const durationA = new Date(`${route.params.date}T${a.endTime}`) - new Date(`${route.params.date}T${a.startTime}`);
+                const durationB = new Date(`${route.params.date}T${b.endTime}`) - new Date(`${route.params.date}T${b.startTime}`);
+                return durationB - durationA;
+            });
 
-    const index = overlappingTickets.findIndex(t => t.id === ticket.id);
-    const offset = 25; // Offset for each overlapping ticket
-    
-    // Only shift left if less than 5 overlapping tickets
-    const leftOffset = overlappingTickets.length < 6 ? index * offset : 0;
+            const index = overlappingTickets.findIndex(t => t.id === ticket.id);
+            const offset = 25; // Offset for each overlapping ticket
 
-    return {
-        top: `${topPosition + index * offset}px`, // Shift down
-        left: `${leftOffset}px`, // Shift left only if less than 5 tickets overlap
-        height: `${height}px`,
-        backgroundColor: ticket.backgroundColor,
-        position: "absolute",
-        padding: "5px",
-        boxSizing: "border-box",
-        zIndex: index, // Higher index means ticket is on top
-        right: "10px", // Ensure the last ticket does not overflow the parent
-        width: "auto", // Auto width
-    };
-};
-
+            return {
+                top: `${topPosition + index * offset}px`, // Shift down
+                left: `${index * offset}px`, // Shift left only if less than 5 tickets overlap
+                height: `${height}px`,
+                backgroundColor: ticket.backgroundColor,
+                position: "absolute",
+                padding: "5px",
+                boxSizing: "border-box",
+                zIndex: index, // Higher index means ticket is on top
+                right: "10px", // Ensure the last ticket does not overflow the parent
+                width: "auto", // Auto width
+            };
+        };
 
         const formatTime = (timeString) => {
             const dateTimeString = `${route.params.date}T${timeString}`;
