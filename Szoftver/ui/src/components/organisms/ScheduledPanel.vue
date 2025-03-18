@@ -453,6 +453,11 @@ export default {
     border-radius: 8px;
 }
 
+.time-container::-webkit-scrollbar-corner {
+    background: url('@/assets/images/Shailendra.jpg') no-repeat center center;
+    background-size: cover;
+}
+
 .time-container::-webkit-scrollbar-thumb {
     background: #0B6477; /* Görgetősáv színe */
     border-radius: 8px;
