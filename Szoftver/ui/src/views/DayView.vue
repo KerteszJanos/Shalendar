@@ -436,7 +436,6 @@ export default {
 
 .error {
     color: red;
-    font-weight: bold;
     text-align: center;
 }
 

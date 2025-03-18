@@ -1,14 +1,19 @@
 export const setErrorMessage = (() => {
-    let currentErrorId = 0;
+    //A WeakMap allows associating data with object keys while automatically removing entries when the referenced objects are garbage-collected, thereby preventing memory leaks.
+    const timeoutMap = new WeakMap();
 
     return (errorMessageRef, message, timeout = 5000) => {
-        const errorId = ++currentErrorId;
+        if (timeoutMap.has(errorMessageRef)) {
+            clearTimeout(timeoutMap.get(errorMessageRef));
+        }
+
         errorMessageRef.value = message;
 
-        setTimeout(() => {
-            if (errorId === currentErrorId) {
-                errorMessageRef.value = "";
-            }
+        const timeoutId = setTimeout(() => {
+            errorMessageRef.value = "";
+            timeoutMap.delete(errorMessageRef);
         }, timeout);
+
+        timeoutMap.set(errorMessageRef, timeoutId);
     };
 })();
