@@ -16,7 +16,7 @@
 import {
     ref,
     computed
-} from "vue"; // JAVÍTVA!
+} from "vue";
 
 export default {
     props: {
@@ -24,9 +24,8 @@ export default {
             type: Array,
             default: () => []
         },
-        modelValue: [String, Number] // String ÉS Number támogatása
+        modelValue: [String, Number]
     },
-
     emits: ["update:modelValue"],
     setup(props, {
         emit
@@ -75,6 +74,10 @@ export default {
 .dropdown-list {
     position: absolute;
     width: 100%;
+    max-height: 150px;
+    /* GPT generated: Limits height to enable scrolling */
+    overflow-y: auto;
+    /* GPT generated: Enables scrolling */
     list-style: none;
     margin: 0;
     padding: 0;

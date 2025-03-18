@@ -54,7 +54,7 @@
                     </button>
                 </li>
             </ul>
-            <div class="permission-input">
+            <div class="permission-input modal-content">
                 <input type="email" v-model="newPermissionEmail" placeholder="Enter email" class="modal-input" />
                 <select v-model="newPermissionType" class="modal-select">
                     <option value="read">Read</option>
@@ -365,17 +365,18 @@ export default {
 .add-calendar-button {
     margin-bottom: 15px;
     padding: 12px 18px;
-    background: #4a90e2;
+    background: #213A57;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    transition: background 0.2s;
+    transition: all 0.3s ease-in-out;
 }
 
 .add-calendar-button:hover {
-    background: #357abd;
+    background: #39608b;
+    transform: scale(1.1);
 }
 
 .calendar-container {
@@ -409,7 +410,7 @@ export default {
 }
 
 .calendar-box:hover {
-    transform: scale(1.05);
+    transform: scale(1.01);
     cursor: pointer;
     box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.15);
 }
@@ -424,7 +425,7 @@ export default {
     width: 70px;
     /* Nagyobb ikon */
     height: 70px;
-    fill: #4a90e2;
+    fill: #0AD1C8;
 }
 
 .calendar-name {
@@ -458,24 +459,25 @@ export default {
     cursor: pointer;
     font-size: 13px;
     flex: 1;
+    transition: all 0.3s ease-in-out;
 }
 
 .permissions {
-    background: #4a90e2;
+    background: #0B6477;
     color: white;
 }
 
 .permissions:hover {
-    background: #357abd;
+    background: #10849e;
 }
 
 .default {
-    background: #2ecc71;
+    background: #14919B;
     color: white;
 }
 
 .default:hover {
-    background: #27ae60;
+    background: #19b0bb;
 }
 
 .delete {
@@ -490,7 +492,6 @@ export default {
 .modal-input {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
     border-radius: 5px;
     margin-top: 10px;
 }
@@ -498,7 +499,6 @@ export default {
 .modal-select {
     width: 25%;
     padding: 10px;
-    border: 1px solid #ccc;
     border-radius: 5px;
     margin-top: 5px;
 }

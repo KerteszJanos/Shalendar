@@ -8,18 +8,22 @@
         <p v-if="defaultCalendarName"><strong>Default Calendar:</strong> {{ defaultCalendarName }}</p>
     </div>
 
-    <h2>Change Password</h2>
-    <button @click="showPasswordModal = true">Change Password</button>
+    <div class="action-buttons">
+        <h2>Change Password</h2>
+        <button @click="showPasswordModal = true" class="btn changePassword">Change Password</button>
+    </div>
 
-    <h2>Delete Account</h2>
-    <button @click="deleteAccount" class="delete-btn">Delete Account</button>
+    <div class="action-buttons">
+        <h2>Delete Account</h2>
+        <button @click="deleteAccount" class="btn deleteAccount">Delete Account</button>
+    </div>
 
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="successMessage" class="success">{{ successMessage }}</p>
 
     <Modal :show="showPasswordModal" title="Change Password" @close="showPasswordModal = false" @confirm="changePassword">
         <p v-if="PasswordModalErrorMessage" class="error">{{ PasswordModalErrorMessage }}</p>
-        <form @submit.prevent="changePassword">
+        <form @submit.prevent="changePassword" class="modal-content">
             <label for="oldPassword" class="required-label">Old Password:</label>
             <input type="password" id="oldPassword" v-model="oldPassword" required />
 
@@ -179,6 +183,46 @@ export default {
 </script>
 
 <style>
+.action-buttons {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn:hover
+{
+    transform: scale(1.1);
+}
+
+.btn.changePassword
+{
+    background-color: #213A57;
+}
+
+.btn.changePassword:hover
+{
+    background-color: #294b72;
+}
+
+.btn.deleteAccount
+{
+    background-color: #e74c3c;
+}
+.btn.deleteAccount:hover
+{
+    background-color: #fa5240;
+}
+
+
 .profile-container {
     max-width: 600px;
     margin: auto;
@@ -205,23 +249,6 @@ input {
     margin-top: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
-}
-
-button:disabled {
-    background: gray;
-    cursor: not-allowed;
-}
-
-button:hover:not(:disabled) {
-    background: #0056b3;
-}
-
-.delete-btn {
-    background: red;
-}
-
-.delete-btn:hover {
-    background: darkred;
 }
 
 .error {

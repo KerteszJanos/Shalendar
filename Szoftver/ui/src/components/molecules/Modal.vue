@@ -23,7 +23,7 @@ export default defineComponent({
         title: String,
         confirmText: {
             type: String,
-            default: "Mentés"
+            default: "Save"
         }
     },
     emits: ["close", "confirm"],
@@ -129,21 +129,5 @@ export default defineComponent({
 .modal-content input:focus,
 .modal-content textarea:focus {
     border-color: #213A57;
-}
-
-.modal-content select {
-    width: 100%; /* Teljes szélesség */
-    padding: 8px;
-    border: 2px solid #0B6477; /* Saját keretszín */
-    border-radius: 5px; /* Lekerekített sarkok */
-    font-size: 16px;
-    outline: none;
-    transition: border-color 0.3s ease-in-out;
-    background-color: white; /* Alap fehér háttér */
-}
-
-.modal-content select:focus {
-    border-color: #213A57; /* Kijelöléskor sötétebb keretszín */
-    box-shadow: 0 0 5px rgba(33, 58, 87, 0.5); /* Finom kiemelés */
 }
 </style>
