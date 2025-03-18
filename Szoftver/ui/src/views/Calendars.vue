@@ -1,28 +1,42 @@
 <template>
-<div>
+<div class="calendar-page">
     <h2>Your Calendars</h2>
 
-    <p v-if="defaultCalendar" class="default-calendar">Default Calendar: {{ defaultCalendar.name }}</p>
+    <p v-if="defaultCalendar" class="default-calendar">
+        Default Calendar: {{ defaultCalendar.name }}
+    </p>
 
     <button @click="openModal" class="add-calendar-button">+ New Calendar</button>
-
+    <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+    <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     <div v-if="calendars.length > 0" class="calendar-container">
-        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-        <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
 
         <div v-for="calendar in calendars" :key="calendar.id" class="calendar-box" @click="navigateToCalendar(calendar.id)">
-            <svg class="calendar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H5V8h14v13zM7 10h5v5H7z" />
-            </svg>
-            <p class="calendar-name">{{ calendar.name }}</p>
+
+            <div class="calendar-header">
+                <svg class="calendar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H5V8h14v13zM7 10h5v5H7z" />
+                </svg>
+                <p class="calendar-name">{{ calendar.name }}</p>
+            </div>
+
             <p class="calendar-permission">{{ getPermission(calendar.id) }}</p>
 
-            <button @click.stop="openPermissionsModal(calendar.id)" class="show-permissions-button">Calendar permissions</button>
-            <button @click.stop="setDefaultCalendar(calendar.id)" class="set-default-button">Set as Default</button>
-            <button @click.stop="confirmDeleteCalendar(calendar.id)" class="delete-calendar-button">Delete</button>
+            <div class="calendar-actions">
+                <button @click.stop="openPermissionsModal(calendar.id)" class="btn permissions">
+                    Manage
+                </button>
+                <button @click.stop="setDefaultCalendar(calendar.id)" class="btn default">
+                    Set Default
+                </button>
+                <button @click.stop="confirmDeleteCalendar(calendar.id)" class="btn delete">
+                    Delete
+                </button>
+            </div>
         </div>
     </div>
-    <p v-else>No calendars available</p>
+
+    <p v-else class="no-calendars">No calendars available</p>
 
     <Modal :show="showNewCalendarModal" title="Create New Calendar" confirmText="Create" @close="closeNewCalendarModal" @confirm="createCalendar">
         <input type="text" v-model="newCalendarName" placeholder="Enter calendar name" class="modal-input" />
@@ -32,10 +46,12 @@
     <Modal :show="showPermissionsModal" title="Calendar permissions" confirmText="Add" @confirm="addPermission" @close="closePermissionsModal">
         <p v-if="PermissionsErrorMessage" class="error-message">{{ PermissionsErrorMessage }}</p>
         <div v-if="sharedPermissions.length > 0">
-            <ul>
+            <ul class="permissions-list">
                 <li v-for="permission in sharedPermissions" :key="permission.email">
                     {{ permission.email }} - {{ permission.permissionType }}
-                    <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button">Delete</button>
+                    <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button">
+                        Remove
+                    </button>
                 </li>
             </ul>
             <div class="permission-input">
@@ -47,7 +63,7 @@
                 </select>
             </div>
         </div>
-        <p v-else-if="!PermissionsErrorMessage">No permissions set for this calendar.</p>
+        <p v-else>No permissions set for this calendar.</p>
     </Modal>
 </div>
 </template>
@@ -331,113 +347,176 @@ export default {
 </script>
 
 <style scoped>
-.delete-calendar-button {
-    margin-left: 10px;
-    padding: 5px 10px;
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
+.calendar-page {
+    max-width: 1200px;
+    /* Szélesebb, hogy jobban kitöltse a képernyőt */
+    margin: auto;
+    text-align: center;
+    margin-top: 0px;
 }
 
-.delete-calendar-button:hover {
-    background: darkred;
+.default-calendar {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.add-calendar-button {
+    margin-bottom: 15px;
+    padding: 12px 18px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+.add-calendar-button:hover {
+    background: #357abd;
+}
+
+.calendar-container {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(250px, 1fr));
+    /* Szélesebb kártyák */
+    gap: 20px;
+    justify-content: center;
+    padding: 10px;
+}
+
+.calendar-box {
+    background: #f8f8f8;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 4px 4px 14px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: 100%;
+    min-height: 220px;
+    /* Magasabb kártyák */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .permission-input {
     display: flex;
-    gap: 10px;
-    margin-top: 10px;
+    flex-direction: column;
+    align-items: end;
 }
 
-.modal-select {
-    width: 35%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.calendar-box:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-.calendar-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-}
-
-.calendar-box {
+.calendar-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 120px;
-    height: 140px;
-    background: #f3f3f3;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    cursor: pointer;
 }
 
 .calendar-icon {
-    width: 50px;
-    height: 50px;
-    fill: #4A90E2;
+    width: 70px;
+    /* Nagyobb ikon */
+    height: 70px;
+    fill: #4a90e2;
 }
 
 .calendar-name {
-    margin-top: 5px;
-    font-size: 1em;
+    font-size: 1.3em;
     font-weight: bold;
+    margin-top: 10px;
     color: #333;
 }
 
 .calendar-permission {
-    margin-top: 3px;
-    font-size: 0.9em;
-    color: #666;
+    font-size: 1em;
+    color: #555;
+    margin-top: 5px;
     font-style: italic;
 }
 
-.add-calendar-button {
-    margin-bottom: 10px;
-    padding: 10px 15px;
-    background: #4A90E2;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
+.calendar-actions {
+    margin-top: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 12px;
 }
 
-.add-calendar-button:hover {
-    background: #357ABD;
+.btn {
+    padding: 8px 12px;
+    /* Kisebb gombok */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    flex: 1;
+}
+
+.permissions {
+    background: #4a90e2;
+    color: white;
+}
+
+.permissions:hover {
+    background: #357abd;
+}
+
+.default {
+    background: #2ecc71;
+    color: white;
+}
+
+.default:hover {
+    background: #27ae60;
+}
+
+.delete {
+    background: red;
+    color: white;
+}
+
+.delete:hover {
+    background: darkred;
 }
 
 .modal-input {
     width: 100%;
     padding: 10px;
-    margin-top: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    margin-top: 10px;
 }
 
-.error-message {
-    color: red;
+.modal-select {
+    width: 25%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
     margin-top: 5px;
-    font-size: 0.9em;
 }
 
-.success-message {
-    color: green;
-    margin-top: 5px;
-    font-size: 0.9em;
+.permissions-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.permissions-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
 }
 
 .delete-permission-button {
-    margin-left: 10px;
     padding: 5px 10px;
     background: red;
     color: white;
@@ -449,5 +528,33 @@ export default {
 
 .delete-permission-button:hover {
     background: darkred;
+}
+
+.no-calendars {
+    color: #777;
+    font-style: italic;
+    margin-top: 15px;
+}
+
+.error-message {
+    color: red;
+}
+
+.success-message {
+    color: green;
+}
+
+/* 1024px alatti nézetben 2 oszlopos elrendezés */
+@media (max-width: 1024px) {
+    .calendar-container {
+        grid-template-columns: repeat(2, minmax(250px, 1fr));
+    }
+}
+
+/* 600px alatti nézetben 1 oszlopos elrendezés */
+@media (max-width: 600px) {
+    .calendar-container {
+        grid-template-columns: repeat(1, minmax(250px, 1fr));
+    }
 }
 </style>

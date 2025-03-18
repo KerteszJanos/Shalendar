@@ -193,7 +193,8 @@ namespace Shalendar.Controllers
 				.Where(t => _context.Days
 								.Any(d => d.Id == t.ParentId
 										  && d.CalendarId == calendarId
-										  && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0))
+										  && EF.Functions.DateDiffDay(d.Date, selectedDate) == 0)
+								&& (t.CurrentParentType == "ScheduledList" || t.CurrentParentType == "TodoList"))
 				.Select(t => new
 				{
 					t.Id,
@@ -228,7 +229,8 @@ namespace Shalendar.Controllers
 			}
 
 			var tickets = await _context.Tickets
-				.Where(t => t.ParentId == dayId)
+				.Where(t => t.ParentId == dayId
+				   && (t.CurrentParentType == "ScheduledList" || t.CurrentParentType == "TodoList")) // Gave condition for CurrentParentType (Gpt generated)
 				.Select(t => new
 				{
 					t.Id,
