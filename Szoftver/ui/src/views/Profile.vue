@@ -20,10 +20,10 @@
     <Modal :show="showPasswordModal" title="Change Password" @close="showPasswordModal = false" @confirm="changePassword">
         <p v-if="PasswordModalErrorMessage" class="error">{{ PasswordModalErrorMessage }}</p>
         <form @submit.prevent="changePassword">
-            <label for="oldPassword">Old Password:</label>
+            <label for="oldPassword" class="required-label">Old Password:</label>
             <input type="password" id="oldPassword" v-model="oldPassword" required />
 
-            <label for="newPassword">New Password:</label>
+            <label for="newPassword" class="required-label">New Password:</label>
             <input type="password" id="newPassword" v-model="newPassword" required @input="validatePassword" />
 
             <ul class="password-criteria">
@@ -32,7 +32,7 @@
                 <li :class="{ valid: /[0-9]/.test(newPassword) }">✔ At least one number</li>
             </ul>
 
-            <label for="confirmPassword">Confirm New Password:</label>
+            <label for="confirmPassword" class="required-label">Confirm New Password:</label>
             <input type="password" id="confirmPassword" v-model="confirmPassword" required />
         </form>
     </Modal>

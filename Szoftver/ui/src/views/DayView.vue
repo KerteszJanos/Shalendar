@@ -13,7 +13,7 @@
 
     <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="handleAddNewTicket">
         <div class="modal-content">
-            <label for="ticket-name">Ticket Name</label>
+            <label for="ticket-name" class="required-label">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
             <p v-if="nameErrorMessage" class="error">{{ nameErrorMessage }}</p>
 
@@ -31,10 +31,9 @@
             <label for="ticket-end-time">End Time (optional)</label>
             <input id="ticket-end-time" v-model="newTicket.endTime" type="time" />
 
-            <label for="ticket-calendar-list">Select Calendar List</label>
-            <select id="ticket-calendar-list" v-model="newTicket.calendarListId">
-                <option v-for="list in calendarLists" :key="list.id" :value="list.id">{{ list.name }}</option>
-            </select>
+            <label for="ticket-calendar-list" class="required-label">Select Calendar List</label>
+            <DropdownSelect v-model="newTicket.calendarListId" :calendarLists="calendarLists" />
+
             <p v-if="calendarListError" class="error">{{ calendarListError }}</p>
         </div>
     </Modal>
@@ -73,12 +72,14 @@ import {
 import {
     useRouter
 } from "vue-router";
+import DropdownSelect from "@/components/atoms/DropdownSelect.vue"; 
 
 export default {
     components: {
         DayPanel,
         TodoList,
         Modal,
+        DropdownSelect
     },
     setup() {
         const showAddNewTicketModal = ref(false);

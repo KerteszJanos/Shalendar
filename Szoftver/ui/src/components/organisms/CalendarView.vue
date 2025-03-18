@@ -49,9 +49,9 @@
 
     <Modal :show="showTimeModal" title="Ticket Time" confirmText="Mentés" @close="closeTimeModal" @confirm="confirmTimeModal">
         <div class="modal-content">
-            <label for="start-time">Kezdés:</label>
+            <label for="start-time" class="required-label">Start Time:</label>
             <input id="start-time" type="time" v-model="modalStartTime" />
-            <label for="end-time">Befejezés:</label>
+            <label for="end-time" class="required-label">End Time:</label>
             <input id="end-time" type="time" v-model="modalEndTime" />
             <p v-if="modalErrorMessage" class="error">{{ modalErrorMessage }}</p>
         </div>

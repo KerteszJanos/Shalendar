@@ -118,5 +118,21 @@ html, body, #app {
     transition: filter 0.3s ease-in-out;
 }
 
+/*Modals*/
+.required-label {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .required-label::after {
+    content: "*";
+    color: red;
+    font-size: 14px;
+    font-weight: bold;
+    position: absolute;
+    top: 0;
+    right: -10px;
+  }
+  
 
 /** {outline: 1px solid red;}*/

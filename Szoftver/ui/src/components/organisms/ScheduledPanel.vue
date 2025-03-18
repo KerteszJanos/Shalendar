@@ -324,7 +324,7 @@ export default {
     const offset = 25; // Offset for each overlapping ticket
     
     // Only shift left if less than 5 overlapping tickets
-    const leftOffset = overlappingTickets.length < 5 ? index * offset : 0;
+    const leftOffset = overlappingTickets.length < 6 ? index * offset : 0;
 
     return {
         top: `${topPosition + index * offset}px`, // Shift down

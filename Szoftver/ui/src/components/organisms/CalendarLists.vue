@@ -45,7 +45,7 @@
 
     <Modal :show="showAddNewCalendarListModal" title="Add New List" confirmText="Add" @close="showAddNewCalendarListModal = false" @confirm="handleAddNewCalendarList">
         <div class="modal-content">
-            <label for="list-name">List Name</label>
+            <label for="list-name" class="required-label">List Name</label>
             <input id="list-name" v-model="newList.name" placeholder="Enter list name" required />
             <p v-if="newListError" class="error">{{ newListError }}</p>
 
@@ -58,7 +58,7 @@
 
     <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="handleAddNewTicket">
         <div class="modal-content">
-            <label for="ticket-name">Ticket Name</label>
+            <label for="ticket-name" class="required-label">Ticket Name</label>
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
 
             <label for="ticket-description">Description (optional)</label>
@@ -72,7 +72,7 @@
 
     <Modal :show="showEditCalendarListModal" title="Edit List" confirmText="Save" @close="showEditCalendarListModal = false" @confirm="handleUpdateCalendarList">
         <div class="modal-content">
-            <label for="edit-list-name">List Name</label>
+            <label for="edit-list-name" class="required-label">List Name</label>
             <input id="edit-list-name" v-model="editedList.name" placeholder="Enter list name" required />
             <p v-if="editListError" class="error">{{ editListError }}</p>
 
@@ -87,7 +87,7 @@
 
     <Modal :show="showEditTicketModal" title="Edit Ticket" confirmText="Save" @close="showEditTicketModal = false" @confirm="handleUpdateTicket">
         <div class="modal-content">
-            <label for="edit-ticket-name">Ticket Name</label>
+            <label for="edit-ticket-name" class="required-label">Ticket Name</label>
             <input id="edit-ticket-name" v-model="editedTicket.name" placeholder="Enter ticket name" required />
 
             <label for="edit-ticket-description">Description</label>

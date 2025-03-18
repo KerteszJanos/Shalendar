@@ -1,7 +1,7 @@
 <template>
     <Modal :show="show" title="Edit Ticket" confirmText="Save" @close="closeModal" @confirm="saveChanges">
         <div class="modal-content">
-            <label for="edit-ticket-name">Ticket Name</label>
+            <label for="edit-ticket-name" class="required-label">Ticket Name</label>
             <input id="edit-ticket-name" v-model="ticket.name" placeholder="Enter ticket name" required />
             <p v-if="nameError" class="error">{{ nameError }}</p>
     

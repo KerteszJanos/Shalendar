@@ -8,7 +8,7 @@
             No calendars found with owner or write permissions.
         </div>
         <div v-else>
-            <label for="calendar-select">Select Calendar</label>
+            <label for="calendar-select" class="required-label">Select Calendar</label>
             <select id="calendar-select" v-model="selectedCalendar">
                 <option v-for="calendar in calendars" :key="calendar.id" :value="calendar.id">
                     {{ calendar.name }}
