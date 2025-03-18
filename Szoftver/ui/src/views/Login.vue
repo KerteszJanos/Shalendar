@@ -20,10 +20,10 @@
 </div>
 </template>
 
-  
 <script>
 import {
-    ref
+    ref,
+    onMounted
 } from "vue";
 import {
     useRouter
@@ -63,6 +63,12 @@ export default {
             }
         };
 
+        onMounted(() => {
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            localStorage.removeItem("calendarId");
+        });
+
         return {
             email,
             password,
@@ -73,7 +79,6 @@ export default {
 };
 </script>
 
-  
 <style scoped>
 .login-container {
     max-width: 400px;

@@ -189,6 +189,23 @@ export default {
             };
         }
 
+        const scrollToCurrentTime = () => {
+
+            const timeIndicator = document.querySelector(".time-indicator");
+            if (timeIndicator) {
+                const offset = 100; // GPT generated: Extra hely (px) az aktuális idő felett
+                const container = document.querySelector(".time-container"); // GPT generated: Az a szülőelem, amelyben görgetünk
+
+                if (container) {
+                    container.scrollTo({
+                        top: timeIndicator.offsetTop - offset, // GPT generated: Görgetés az időjelző fölé egy kicsivel
+                        behavior: "smooth"
+                    });
+                }
+            }
+
+        };
+
         let intervalId;
         onMounted(async () => {
             intervalId = setInterval(() => {
@@ -222,6 +239,8 @@ export default {
             connection.on("CalendarListDeleted", async () => {
                 fetchTickets();
             });
+
+            scrollToCurrentTime();
         });
 
         onUnmounted(() => {
@@ -279,37 +298,48 @@ export default {
         };
 
         const getTicketStyle = (ticket) => {
-            const startDateTime = `${route.params.date}T${ticket.startTime}`;
-            const endDateTime = `${route.params.date}T${ticket.endTime}`;
-            const start = new Date(startDateTime);
-            const end = new Date(endDateTime);
-            const topPosition = (start.getHours() + start.getMinutes() / 60) * 400;
-            const durationHours = (end - start) / (1000 * 60 * 60);
-            const height = durationHours * 400;
+    const startDateTime = `${route.params.date}T${ticket.startTime}`;
+    const endDateTime = `${route.params.date}T${ticket.endTime}`;
+    const start = new Date(startDateTime);
+    const end = new Date(endDateTime);
+    const topPosition = (start.getHours() + start.getMinutes() / 60) * 400;
+    const durationHours = (end - start) / (1000 * 60 * 60);
+    const height = durationHours * 400;
 
-            // Megnézzük, hogy hány ticket ütközik ugyanabban az időszakban
-            const overlappingTickets = tickets.value.filter(t => {
-                const tStart = new Date(`${route.params.date}T${t.startTime}`);
-                const tEnd = new Date(`${route.params.date}T${t.endTime}`);
-                return (start < tEnd && end > tStart); // Van-e átfedés
-            });
+    // Check overlapping tickets
+    let overlappingTickets = tickets.value.filter(t => {
+        const tStart = new Date(`${route.params.date}T${t.startTime}`);
+        const tEnd = new Date(`${route.params.date}T${t.endTime}`);
+        return (start < tEnd && end > tStart);
+    });
 
-            const index = overlappingTickets.findIndex(t => t.id === ticket.id);
-            const offset = 25; // Minden ticket egy kicsit balra és lefelé tolódik
+    // Sort overlapping tickets by duration (longer first)
+    overlappingTickets = overlappingTickets.sort((a, b) => {
+        const durationA = new Date(`${route.params.date}T${a.endTime}`) - new Date(`${route.params.date}T${a.startTime}`);
+        const durationB = new Date(`${route.params.date}T${b.endTime}`) - new Date(`${route.params.date}T${b.startTime}`);
+        return durationB - durationA;
+    });
 
-            return {
-                top: `${topPosition + index * offset}px`, // Minden ütköző ticket picit lejjebb kerül
-                left: `${index * offset}px`, // Minden ticket egy kicsit balra tolódik
-                height: `${height}px`,
-                backgroundColor: ticket.backgroundColor,
-                position: "absolute",
-                padding: "5px",
-                boxSizing: "border-box",
-                zIndex: index, // Az elöl lévő ticket magasabb rétegben van
-                right: "10px", // Az utolsó ticket nem lóg ki a szülőből
-                width: "auto", // Automatikusan kitölti a rendelkezésre álló helyet
-            };
-        };
+    const index = overlappingTickets.findIndex(t => t.id === ticket.id);
+    const offset = 25; // Offset for each overlapping ticket
+    
+    // Only shift left if less than 5 overlapping tickets
+    const leftOffset = overlappingTickets.length < 5 ? index * offset : 0;
+
+    return {
+        top: `${topPosition + index * offset}px`, // Shift down
+        left: `${leftOffset}px`, // Shift left only if less than 5 tickets overlap
+        height: `${height}px`,
+        backgroundColor: ticket.backgroundColor,
+        position: "absolute",
+        padding: "5px",
+        boxSizing: "border-box",
+        zIndex: index, // Higher index means ticket is on top
+        right: "10px", // Ensure the last ticket does not overflow the parent
+        width: "auto", // Auto width
+    };
+};
+
 
         const formatTime = (timeString) => {
             const dateTimeString = `${route.params.date}T${timeString}`;
