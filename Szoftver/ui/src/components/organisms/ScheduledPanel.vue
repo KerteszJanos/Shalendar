@@ -379,6 +379,7 @@ export default {
     width: auto;
     margin-left: 30px;
     border: 2px solid black;
+    min-width: 90px;
 }
 
 .ticket-item:hover {
@@ -441,12 +442,24 @@ export default {
     position: relative;
     border-radius: 8px;
     margin-top: 20px;
-    scrollbar-width: none;
+}
+.time-container::-webkit-scrollbar {
+    width: 10px; /* Görgetősáv szélessége */
+    height: 10px;
 }
 
-.time-container::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari, Edge */
+.time-container::-webkit-scrollbar-track {
+    background: #e3f2fd; /* Háttérszín */
+    border-radius: 8px;
+}
+
+.time-container::-webkit-scrollbar-thumb {
+    background: #0B6477; /* Görgetősáv színe */
+    border-radius: 8px;
+}
+
+.time-container::-webkit-scrollbar-thumb:hover {
+    background: #213A57; /* Görgetősáv színe hover állapotban */
 }
 
 .time-scrollable {
