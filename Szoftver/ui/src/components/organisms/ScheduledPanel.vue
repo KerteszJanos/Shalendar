@@ -193,12 +193,12 @@ export default {
 
             const timeIndicator = document.querySelector(".time-indicator");
             if (timeIndicator) {
-                const offset = 100; // GPT generated: Extra hely (px) az aktuális idő felett
-                const container = document.querySelector(".time-container"); // GPT generated: Az a szülőelem, amelyben görgetünk
+                const offset = 100;
+                const container = document.querySelector(".time-container");
 
                 if (container) {
                     container.scrollTo({
-                        top: timeIndicator.offsetTop - offset, // GPT generated: Görgetés az időjelző fölé egy kicsivel
+                        top: timeIndicator.offsetTop - offset,
                         behavior: "smooth"
                     });
                 }
@@ -321,19 +321,19 @@ export default {
             });
 
             const index = overlappingTickets.findIndex(t => t.id === ticket.id);
-            const offset = 25; // Offset for each overlapping ticket
+            const offset = 25;
 
             return {
-                top: `${topPosition + index * offset}px`, // Shift down
-                left: `${index * offset}px`, // Shift left only if less than 5 tickets overlap
+                top: `${topPosition + index * offset}px`,
+                left: `${index * offset}px`,
                 height: `${height}px`,
                 backgroundColor: ticket.backgroundColor,
                 position: "absolute",
                 padding: "5px",
                 boxSizing: "border-box",
                 zIndex: index, // Higher index means ticket is on top
-                right: "10px", // Ensure the last ticket does not overflow the parent
-                width: "auto", // Auto width
+                right: "10px",
+                width: "auto",
             };
         };
 
@@ -444,12 +444,12 @@ export default {
     margin-top: 20px;
 }
 .time-container::-webkit-scrollbar {
-    width: 10px; /* Görgetősáv szélessége */
+    width: 10px;
     height: 10px;
 }
 
 .time-container::-webkit-scrollbar-track {
-    background: #e3f2fd; /* Háttérszín */
+    background: #e3f2fd;
     border-radius: 8px;
 }
 
@@ -458,12 +458,12 @@ export default {
 }
 
 .time-container::-webkit-scrollbar-thumb {
-    background: #0B6477; /* Görgetősáv színe */
+    background: #0B6477;
     border-radius: 8px;
 }
 
 .time-container::-webkit-scrollbar-thumb:hover {
-    background: #213A57; /* Görgetősáv színe hover állapotban */
+    background: #213A57;
 }
 
 .time-scrollable {
@@ -510,7 +510,6 @@ export default {
 .time-label {
     position: absolute;
     left: -10px;
-    /* Beállíthatod a kívánt balra tolt értéket */
     padding: 1px 8px 1px 1px;
     clip-path: polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%);
     font-size: 0.8rem;

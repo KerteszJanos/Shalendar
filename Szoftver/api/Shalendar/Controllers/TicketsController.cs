@@ -230,7 +230,7 @@ namespace Shalendar.Controllers
 
 			var tickets = await _context.Tickets
 				.Where(t => t.ParentId == dayId
-				   && (t.CurrentParentType == "ScheduledList" || t.CurrentParentType == "TodoList")) // Gave condition for CurrentParentType (Gpt generated)
+				   && (t.CurrentParentType == "ScheduledList" || t.CurrentParentType == "TodoList"))
 				.Select(t => new
 				{
 					t.Id,

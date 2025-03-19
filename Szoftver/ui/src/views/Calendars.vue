@@ -349,7 +349,6 @@ export default {
 <style scoped>
 .calendar-page {
     max-width: 1200px;
-    /* Szélesebb, hogy jobban kitöltse a képernyőt */
     margin: auto;
     text-align: center;
     margin-top: 0px;
@@ -382,7 +381,6 @@ export default {
 .calendar-container {
     display: grid;
     grid-template-columns: repeat(4, minmax(250px, 1fr));
-    /* Szélesebb kártyák */
     gap: 20px;
     justify-content: center;
     padding: 10px;
@@ -397,7 +395,6 @@ export default {
     transition: transform 0.2s, box-shadow 0.2s;
     width: 100%;
     min-height: 220px;
-    /* Magasabb kártyák */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -423,7 +420,6 @@ export default {
 
 .calendar-icon {
     width: 70px;
-    /* Nagyobb ikon */
     height: 70px;
     fill: #0AD1C8;
 }
@@ -453,7 +449,6 @@ export default {
 
 .btn {
     padding: 8px 12px;
-    /* Kisebb gombok */
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -544,14 +539,12 @@ export default {
     color: green;
 }
 
-/* 1024px alatti nézetben 2 oszlopos elrendezés */
 @media (max-width: 1024px) {
     .calendar-container {
         grid-template-columns: repeat(2, minmax(250px, 1fr));
     }
 }
 
-/* 600px alatti nézetben 1 oszlopos elrendezés */
 @media (max-width: 600px) {
     .calendar-container {
         grid-template-columns: repeat(1, minmax(250px, 1fr));

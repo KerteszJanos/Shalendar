@@ -36,38 +36,33 @@ export default {
             document.body.style.userSelect = "none";
             isResizing = true;
 
-            const isHorizontal = window.innerWidth > 700; // 700px felett vízszintes, alatta függőleges
+            const isHorizontal = window.innerWidth > 700;
 
             const startX = event.clientX;
             const startY = event.clientY;
             const startViewSize = calendarViewSize.value;
             const startListSize = calendarListsSize.value;
 
-            // ✨ Külön min-height értékek százalékban (ha az ablak méretéhez igazítjuk)
-            const minHeightViewRatio = 400 / window.innerHeight * 2; // Pl. min-height: 350px
-            const minHeightListsRatio = 300 / window.innerHeight * 2; // Pl. min-height: 250px
+            const minHeightViewRatio = 400 / window.innerHeight * 2;
+            const minHeightListsRatio = 300 / window.innerHeight * 2;
 
             const onMouseMove = (moveEvent) => {
                 if (!isResizing) return;
 
                 if (isHorizontal) {
-                    // 📌 Vízszintes mozgatás (X tengely)
                     const deltaX = (moveEvent.clientX - startX) / window.innerWidth * 2;
                     const newViewSize = startViewSize + deltaX;
                     const newListSize = startListSize - deltaX;
 
-                    // ✨ Külön min értékek figyelembevétele
                     if (newViewSize >= 0.2 && newListSize >= 0.2) {
                         calendarViewSize.value = newViewSize;
                         calendarListsSize.value = newListSize;
                     }
                 } else {
-                    // 📌 Függőleges mozgatás (Y tengely) külön min-height értékekkel
                     const deltaY = (moveEvent.clientY - startY) / window.innerHeight * 2;
                     const newViewSize = startViewSize + deltaY;
                     const newListSize = startListSize - deltaY;
 
-                    // **Ha a CalendarView mérete kisebb lenne a saját min-height-jánál, ne engedjük tovább csökkenteni**
                     if (newViewSize >= minHeightViewRatio && newListSize >= minHeightListsRatio) {
                         calendarViewSize.value = newViewSize;
                         calendarListsSize.value = newListSize;

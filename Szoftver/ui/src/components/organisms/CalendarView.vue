@@ -590,13 +590,11 @@ export default {
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: none;
-    /* Firefox */
     padding-bottom: 4px;
 }
 
 .ticket-list::-webkit-scrollbar {
     display: none;
-    /* Chrome, Safari, Edge */
 }
 
 .ticket-list:first-child {

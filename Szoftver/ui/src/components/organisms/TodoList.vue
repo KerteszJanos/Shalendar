@@ -304,7 +304,6 @@ export default {
 
 .description::-webkit-scrollbar {
     display: none;
-    /* Chrome, Safari, Edge */
 }
 
 
@@ -334,7 +333,6 @@ export default {
 
 .todo-list::-webkit-scrollbar {
     display: none;
-    /* Chrome, Safari, Edge */
 }
 
 .header {

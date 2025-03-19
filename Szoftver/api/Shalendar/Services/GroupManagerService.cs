@@ -22,7 +22,7 @@ public class GroupManagerService
 
 
 	/// <summary>
-	/// /// Removes a connection ID from the specified group and deletes the group if empty.
+	/// Removes a connection ID from the specified group and deletes the group if empty.
 	/// </summary>
 	public void RemoveConnection(string groupName, string connectionId)
 	{

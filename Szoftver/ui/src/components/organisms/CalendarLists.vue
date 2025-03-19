@@ -613,7 +613,6 @@ export default {
 
 .ticket-list::-webkit-scrollbar {
     display: none;
-    /* Chrome, Safari, Edge */
 }
 
 .add-ticket-button {

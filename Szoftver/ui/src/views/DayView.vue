@@ -445,11 +445,11 @@ export default {
     }
 
     .todoList {
-        order: -1; /* TodoList előre kerül */
+        order: -1;
     }
 
     .dayPanel {
-        order: 1; /* DayPanel hátrébb kerül */
+        order: 1;
     }
 }
 

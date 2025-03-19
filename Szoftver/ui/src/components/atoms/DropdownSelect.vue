@@ -75,9 +75,7 @@ export default {
     position: absolute;
     width: 100%;
     max-height: 150px;
-    /* GPT generated: Limits height to enable scrolling */
     overflow-y: auto;
-    /* GPT generated: Enables scrolling */
     list-style: none;
     margin: 0;
     padding: 0;
