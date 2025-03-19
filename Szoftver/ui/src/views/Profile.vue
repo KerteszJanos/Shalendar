@@ -191,6 +191,7 @@ export default {
     color: #555;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .username
 {
@@ -200,6 +201,7 @@ export default {
     color: #555;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .default-calendar {
@@ -209,6 +211,7 @@ export default {
     color: #555;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .default-calendar:hover::after {

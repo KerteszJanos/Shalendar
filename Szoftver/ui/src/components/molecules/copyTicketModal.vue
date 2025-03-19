@@ -9,17 +9,21 @@
         </div>
         <div v-else>
             <label for="calendar-select" class="required-label">Select Calendar</label>
-            <select id="calendar-select" v-model="selectedCalendar">
-                <option v-for="calendar in calendars" :key="calendar.id" :value="calendar.id">
-                    {{ calendar.name }}
-                </option>
-            </select>
+            <div class="custom-dropdown">
+                <div class="selected-option" @click="toggleDropdown" :title="selectedCalendarName">
+                    {{ selectedCalendarName || "Select Calendar" }}
+                </div>
+                <ul v-if="dropdownOpen" class="options-list">
+                    <li v-for="calendar in calendars" :key="calendar.id" :class="{ 'selected-calendar': selectedCalendar === calendar.id }" @click="selectCalendar(calendar)" :title="calendar.name">
+                        {{ calendar.name }}
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </Modal>
 </template>
 
-    
 <script>
 import {
     ref,
@@ -46,6 +50,8 @@ export default {
     }) {
         const calendars = ref([]);
         const selectedCalendar = ref(null);
+        const selectedCalendarName = ref("");
+        const dropdownOpen = ref(false);
         const errorMessage = ref("");
         const loading = ref(false);
 
@@ -54,6 +60,8 @@ export default {
             (newValue) => {
                 if (newValue) {
                     selectedCalendar.value = null;
+                    selectedCalendarName.value = "";
+                    dropdownOpen.value = false;
                     getAccessibleCalendars();
                 }
             }
@@ -71,6 +79,16 @@ export default {
             } finally {
                 loading.value = false;
             }
+        };
+
+        const toggleDropdown = () => {
+            dropdownOpen.value = !dropdownOpen.value;
+        };
+
+        const selectCalendar = (calendar) => {
+            selectedCalendar.value = calendar.id;
+            selectedCalendarName.value = calendar.name;
+            dropdownOpen.value = false;
         };
 
         const copyTicket = async () => {
@@ -115,6 +133,10 @@ export default {
         return {
             calendars,
             selectedCalendar,
+            selectedCalendarName,
+            dropdownOpen,
+            toggleDropdown,
+            selectCalendar,
             errorMessage,
             loading,
             closeModal,
@@ -124,8 +146,53 @@ export default {
 };
 </script>
 
-    
 <style scoped>
+.custom-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.selected-option {
+    padding: 8px;
+    border: 2px solid #0B6477;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.options-list {
+    position: absolute;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    /* biztosítja, hogy ne takarja más elem */
+}
+
+.options-list li {
+    padding: 8px;
+    cursor: pointer;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.options-list li:hover,
+.options-list .selected-calendar {
+    background-color: #f0f0f0;
+}
+
 .loading {
     font-size: 14px;
     color: gray;

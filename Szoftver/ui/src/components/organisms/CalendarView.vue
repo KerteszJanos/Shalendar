@@ -9,7 +9,7 @@
                 <h2 v-else>Loading...</h2>
                 <div class="header-buttons">
                     <button class="add-button" @click="goToCalendars">+</button>
-                    <button @click.stop="openCopyTicketModal()" class="copy-btn">Copy</button>
+                    <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(calendar.id)" />
                 </div>
             </div>
             <div class="header-divider"></div>
@@ -89,11 +89,15 @@ import {
     connection,
     ensureConnected
 } from "@/services/signalRService";
+import {
+    Copy
+} from "lucide-vue-next";
 
 export default {
     components: {
         Modal,
         CopyTicketModal,
+        Copy
     },
     setup() {
         const currentDate = ref(new Date());
@@ -566,6 +570,14 @@ export default {
 </script>
 
 <style scoped>
+.icon.copy-icon {
+    color: #213A57;
+    margin-top: 5px;
+    margin-right: 2px;
+    height: 25px;
+    width: 25px;
+}
+
 .calendar-name {
     margin: 0;
     font-size: 16px;
@@ -642,7 +654,7 @@ export default {
     position: relative;
 }
 
-.ticket:hover{
+.ticket:hover {
     width: 100%;
 }
 

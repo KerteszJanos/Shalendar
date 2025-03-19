@@ -1,10 +1,10 @@
 <template>
 <div class="dropdown">
-    <div class="dropdown-selected tooltip" @click="toggleDropdown" :style="{ backgroundColor: selectedColor }" :title="selectedName">
+    <div class="dropdown-selected" @click="toggleDropdown" :style="{ backgroundColor: selectedColor }" :title="selectedName">
         {{ selectedName || "Select a calendar" }}
     </div>
     <ul v-if="isOpen" class="dropdown-list">
-        <li v-for="list in calendarLists" :key="list.id" @click="selectItem(list)" :style="{ backgroundColor: list.color }" class="tooltip" :title="list.name">
+        <li v-for="list in calendarLists" :key="list.id" @click="selectItem(list)" :style="{ backgroundColor: list.color }" :title="list.name">
             {{ list.name }}
         </li>
     </ul>
@@ -71,6 +71,7 @@ export default {
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .dropdown-list {
@@ -94,6 +95,7 @@ export default {
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .dropdown-list li:hover {

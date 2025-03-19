@@ -2,7 +2,7 @@
 <div class="calendar-page">
     <h2>Your Calendars</h2>
 
-    <p v-if="defaultCalendar" class="default-calendar " :title="defaultCalendar.name">
+    <p v-if="defaultCalendar" class="default-calendar" :title="defaultCalendar.name">
         Default Calendar: {{ defaultCalendar.name }}
     </p>
 
@@ -361,6 +361,7 @@ export default {
     color: #555;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .add-calendar-button {
