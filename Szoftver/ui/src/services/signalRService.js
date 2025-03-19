@@ -24,7 +24,7 @@ const startConnection = async () => {
     try {
         await connection.start();
     } catch (err) {
-        console.error("❌ SignalR Connection Error: ", err);
+        console.error("SignalR Connection Error: ", err);
         setTimeout(startConnection, 5000);
     } finally {
         isStarting = false;

@@ -17,7 +17,7 @@ html, body, #app {
     margin-bottom: 5px;
     overflow: hidden;
     border-radius: 5px;
-    width: 200px;
+    width: 100%;
     will-change: transform;
 }
 

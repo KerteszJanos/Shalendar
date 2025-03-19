@@ -183,7 +183,7 @@ namespace Shalendar.Controllers
 				{
 					Name = "Default List",
 					CalendarId = calendar.Id,
-					Color = "#CCCCCC"
+					Color = "#45DFB1"
 				};
 
 				_context.CalendarPermissions.Add(ownerPermission);

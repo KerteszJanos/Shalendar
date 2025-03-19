@@ -14,4 +14,4 @@ export const colorShade = (col, amt) => {
     const bb = (b.length < 2 ? '0' : '') + b
   
     return `#${rr}${gg}${bb}`
-  }
+}
