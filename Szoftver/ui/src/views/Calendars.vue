@@ -47,12 +47,21 @@
         <p v-if="PermissionsErrorMessage" class="error-message">{{ PermissionsErrorMessage }}</p>
         <div v-if="sharedPermissions.length > 0">
             <ul class="permissions-list">
-                <li v-for="permission in sharedPermissions" :key="permission.email">
-                    {{ permission.email }} - {{ permission.permissionType }}
-                    <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button">
-                        Remove
-                    </button>
+                <li v-for="permission in sharedPermissions" :key="permission.email" :title="permission.email" class="permission-item">
+                    <span class="permission-email">{{ permission.email }}</span>
+                    <div class="permission-actions">
+                        <select v-if="permission.email !== currentUserEmail" v-model="permission.permissionType" @change="updatePermission(permission.email, permission.permissionType)" class="permission-dropdown">
+                            <option value="read">Read</option>
+                            <option value="write">Write</option>
+                            <option value="owner">Owner</option>
+                        </select>
+                        <span v-else>{{ permission.permissionType }}</span>
+                        <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button">
+                            Remove
+                        </button>
+                    </div>
                 </li>
+
             </ul>
             <div class="permission-input modal-content">
                 <input type="email" v-model="newPermissionEmail" placeholder="Enter email" class="modal-input" />
@@ -313,6 +322,31 @@ export default {
             }
         };
 
+        const updatePermission = async (email, newPermission) => {
+            if (!selectedCalendarId.value || !email || !newPermission) {
+                setErrorMessage(PermissionsErrorMessage, "Invalid input: Calendar ID, email, or permission is missing.");
+                console.error("Invalid input: Calendar ID, email, or permission is missing.");
+                return;
+            }
+
+            try {
+                await api.post(`/api/Calendars/${selectedCalendarId.value}/permissions/${email}/${newPermission}`);
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        setErrorMessage(PermissionsErrorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                        console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    } else {
+                        setErrorMessage(PermissionsErrorMessage, "Error updating permission: " + (error.response.data?.message || "Unknown error."));
+                        console.error("Error updating permission.", error);
+                    }
+                } else {
+                    setErrorMessage(PermissionsErrorMessage, "Network error or server is unreachable.");
+                    console.error("Network error or server is unreachable.", error);
+                }
+            }
+        };
+
         onMounted(fetchCalendars);
 
         return {
@@ -341,12 +375,49 @@ export default {
             setDefaultCalendar,
             successMessage,
             confirmDeleteCalendar,
+            updatePermission
         };
     }
 };
 </script>
 
 <style scoped>
+.permission-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.permission-email {
+    flex-grow: 1;
+    text-align: left;
+    font-weight: 500;
+    color: #333;
+}
+
+.permission-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.permission-email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.permission-dropdown {
+    margin-left: 10px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
 .calendar-page {
     max-width: 1200px;
     margin: auto;

@@ -11,7 +11,7 @@
     <div class="lists-content" v-if="calendarLists.length > 0">
         <div v-for="list in calendarLists" :key="list.id" class="list-item" :style="{ backgroundColor: colorShade(list.color, -20) || '#CCCCCC' }">
             <div class="list-header">
-                <p class="list-title " :title="list.name">{{ list.name }}</p>
+                <p class="list-title" :title="list.name">{{ list.name }}</p>
                 <button class="edit-list-button" @click="openEditListModal(list)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
                     Edit
                 </button>

@@ -300,7 +300,7 @@ export default {
     -webkit-box-orient: vertical;
     display: box;
     line-clamp: 5;
-    overflow: auto;
+    overflow: hidden;
     text-overflow: ellipsis;
     word-wrap: break-word;
     scrollbar-width: none;
