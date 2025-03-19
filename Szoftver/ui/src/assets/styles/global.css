@@ -1,3 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500&family=Roboto:wght@300;400&display=swap');
+
+body, button, .btn, select {
+    font-family: 'Quicksand', sans-serif;
+    color: black;
+    font-size: 14px;
+    padding: 0px;
+}
+
+h1, h2, h3
+{
+    font-family: 'Montserrat', sans-serif;
+    color: black;
+    padding: 0px;
+}
+
 html, body, #app {
     height: 100%;
     width: 100%;
@@ -8,6 +24,7 @@ html, body, #app {
 * {
     box-sizing: border-box;
 }
+
 
 /*Global ticket style*/
 .ticket-item {

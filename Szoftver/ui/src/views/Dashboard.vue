@@ -142,15 +142,15 @@ export default {
 }
 
 .resizer {
-    width: 5px;
+    width: 3px;
     cursor: ew-resize;
-    background-color: #ccc;
+    background-color: #A0A0A0;
     transition: background-color 0.2s;
     flex-shrink: 0;
 }
 
 .resizer:hover {
-    background-color: #999;
+    background-color: #6e6e6e;
 }
 
 @media (max-width: 700px) {

@@ -557,7 +557,7 @@ export default {
 .lists-container {
     width: 100%;
     height: 100%;
-    background: #c8e6c9;
+    background: #d5f9ea;
     padding: 20px;
     border-radius: 0px 10px 10px 0px;
     display: flex;
@@ -584,6 +584,29 @@ export default {
     height: 100%;
     max-height: 100%;
     will-change: transform;
+}
+
+.lists-content::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.lists-content::-webkit-scrollbar-track {
+    background: #d5f9ea;
+    border-radius: 8px;
+}
+
+.lists-content::-webkit-scrollbar-corner {
+    background: #d5f9ea;
+}
+
+.lists-content::-webkit-scrollbar-thumb {
+    background: #0B6477;
+    border-radius: 8px;
+}
+
+.lists-content::-webkit-scrollbar-thumb:hover {
+    background: #213A57;
 }
 
 .list-item {
@@ -703,7 +726,6 @@ label {
     .lists-container {
         width: 100%;
         height: 100%;
-        background: #c8e6c9;
         padding: 20px;
         border-radius: 0 0 10px 10px;
         display: flex;

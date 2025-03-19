@@ -376,7 +376,7 @@ export default {
     min-width: 30%;
     border: 1px solid #ccc;
     border-radius: 5px;
-    background: #c8e6c9;
+    background: #d5f9ea;
 }
 
 .nav-btn {
