@@ -8,7 +8,7 @@
                 <div class="ticket-item" draggable="true" @click="openEditTicketModalFromDayView(element)" :style="{ backgroundColor: element.backgroundColor || '#CCCCCC' }">
 
                     <div class="ticket-header">
-                        <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
+                        <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" :id="'checkbox-' + element.id"/>
                         <p class="ticket-name " :title="element.name"><strong>{{ element.name }}</strong></p>
                     </div>
 
@@ -167,7 +167,11 @@ export default {
         const toggleCompletion = async (ticket) => {
             try {
                 await toggleTicketCompletion(ticket.id, !ticket.isCompleted, errorMessage);
-                ticket.isCompleted = !ticket.isCompleted;
+                if (errorMessage.value) {
+                    document.getElementById(`checkbox-${ticket.id}`).checked = ticket.isCompleted;
+                } else {
+                    ticket.isCompleted = !ticket.isCompleted;
+                }
             } catch (error) {
                 console.error("Failed to update ticket status:", error);
             }

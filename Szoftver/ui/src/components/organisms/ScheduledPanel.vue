@@ -19,7 +19,7 @@
                 <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item" :style="getTicketStyle(ticket)" @click="openEditTicketModalFromDayView(ticket)">
 
                     <div class="ticket-header">
-                        <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" />
+                        <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" :id="'checkbox-' + ticket.id"/>
                         <strong class="ticket-name " :title="ticket.name">{{ ticket.name }}</strong>
                     </div>
                     <div class="ticket-time">
@@ -175,7 +175,11 @@ export default {
         const toggleCompletion = async (ticket) => {
             try {
                 await toggleTicketCompletion(ticket.id, !ticket.isCompleted, errorMessage);
-                ticket.isCompleted = !ticket.isCompleted;
+                if (errorMessage.value) {
+                    document.getElementById(`checkbox-${ticket.id}`).checked = ticket.isCompleted;
+                } else {
+                    ticket.isCompleted = !ticket.isCompleted;
+                }
             } catch (error) {
                 console.error("Failed to update ticket status:", error);
             }

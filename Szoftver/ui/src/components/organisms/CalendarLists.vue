@@ -21,7 +21,7 @@
                     <template #item="{ element }">
                         <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
                             <div class="ticket-header">
-                                <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
+                                <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" :id="'checkbox-' + element.id" />
                                 <p class="ticket-name " :title="element.name"><strong>{{ element.name }}</strong></p>
                             </div>
                             <div class="ticket-info">
@@ -149,7 +149,9 @@ import {
     Trash2,
     FileText
 } from "lucide-vue-next";
-import { getPriorityColor } from "@/components/atoms/getPriorityColor";
+import {
+    getPriorityColor
+} from "@/components/atoms/getPriorityColor";
 
 export default {
     components: {
@@ -222,7 +224,11 @@ export default {
         const toggleCompletion = async (ticket) => {
             try {
                 await toggleTicketCompletion(ticket.id, !ticket.isCompleted, errorMessage);
-                ticket.isCompleted = !ticket.isCompleted;
+                if (errorMessage.value) {
+                    document.getElementById(`checkbox-${ticket.id}`).checked = ticket.isCompleted;
+                } else {
+                    ticket.isCompleted = !ticket.isCompleted;
+                }
             } catch (error) {
                 console.error("Failed to update ticket status:", error);
             }
@@ -545,9 +551,7 @@ export default {
 </script>
 
 <style scoped>
-
-.list-title
-{
+.list-title {
     max-width: 100%;
     margin: 0;
     font-size: 16px;
@@ -557,7 +561,6 @@ export default {
     text-overflow: ellipsis;
     text-align: left;
 }
-
 
 .list-header {
     display: flex;
