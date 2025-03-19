@@ -4,7 +4,6 @@ body, button, .btn, select {
     font-family: 'Quicksand', sans-serif;
     color: black;
     font-size: 14px;
-    padding: 0px;
 }
 
 h1, h2, h3
@@ -25,7 +24,6 @@ html, body, #app {
     box-sizing: border-box;
 }
 
-
 /*Global ticket style*/
 .ticket-item {
     position: relative;
@@ -35,6 +33,7 @@ html, body, #app {
     overflow: hidden;
     border-radius: 5px;
     width: 100%;
+    max-width: 100%;
     will-change: transform;
 }
 
@@ -54,6 +53,7 @@ html, body, #app {
 }
 
 .ticket-name {
+    max-width: 100%;
     margin: 0;
     font-size: 16px;
     cursor: pointer;

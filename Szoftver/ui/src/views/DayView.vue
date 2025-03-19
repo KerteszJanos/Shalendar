@@ -179,6 +179,10 @@ export default {
         };
 
         const handleAddNewTicket = async () => {
+            nameErrorMessage.value = "";
+            calendarListError.value = "";
+            timeError.value = "";
+
             if (!newTicket.value.calendarListId) {
                 setErrorMessage(calendarListError, "Please select a calendar list before adding a ticket.");
                 return;

@@ -3,9 +3,9 @@
     <h1>Profile</h1>
 
     <div v-if="user">
-        <p><strong>Username:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p v-if="defaultCalendarName"><strong>Default Calendar:</strong> {{ defaultCalendarName }}</p>
+        <p class="username " :title="user.username"><strong>Username:</strong> {{ user.username }}</p>
+        <p class="email " :title="user.email"><strong>Email:</strong> {{ user.email }}</p>
+        <p v-if="defaultCalendarName" class="default-calendar " :title="defaultCalendarName" ><strong>Default Calendar:</strong> {{ defaultCalendarName }}</p>
     </div>
 
     <div class="action-buttons">
@@ -183,6 +183,49 @@ export default {
 </script>
 
 <style>
+.email
+{
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.username
+{
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.default-calendar {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.default-calendar:hover::after {
+    content: attr(data-fulltext);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 100;
+    white-space: normal;
+    width: max-content;
+    max-width: 250px;
+}
+
 .action-buttons {
     text-align: center;
     margin-top: 20px;

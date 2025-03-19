@@ -9,7 +9,7 @@
 
                     <div class="ticket-header">
                         <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
-                        <p class="ticket-name"><strong>{{ element.name }}</strong></p>
+                        <p class="ticket-name " :title="element.name"><strong>{{ element.name }}</strong></p>
                     </div>
 
                     <div class="ticket-description" v-if="element.description">
@@ -17,7 +17,7 @@
                     </div>
 
                     <div class="ticket-info">
-                        <span v-if="element.description" class="description-icon" :style="{ color: colorShade(element.backgroundColor, -50) || '#CCCCCC' }">
+                        <span v-if="element.description" class="description-icon " :style="{ color: colorShade(element.backgroundColor, -50) || '#CCCCCC' }" :title="element.description">
                             <FileText />
                         </span>
                         <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }">

@@ -11,7 +11,7 @@
     <div class="lists-content" v-if="calendarLists.length > 0">
         <div v-for="list in calendarLists" :key="list.id" class="list-item" :style="{ backgroundColor: colorShade(list.color, -20) || '#CCCCCC' }">
             <div class="list-header">
-                <p class="list-title">{{ list.name }}</p>
+                <p class="list-title " :title="list.name">{{ list.name }}</p>
                 <button class="edit-list-button" @click="openEditListModal(list)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
                     Edit
                 </button>
@@ -22,10 +22,10 @@
                         <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
                             <div class="ticket-header">
                                 <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" />
-                                <p class="ticket-name"><strong>{{ element.name }}</strong></p>
+                                <p class="ticket-name " :title="element.name"><strong>{{ element.name }}</strong></p>
                             </div>
                             <div class="ticket-info">
-                                <span v-if="element.description" class="description-icon" :style="{ color: colorShade(list.color, -50) || '#CCCCCC' }">
+                                <span v-if="element.description" class="description-icon " :style="{ color: colorShade(list.color, -50) || '#CCCCCC' }" :title="element.description">
                                     <FileText /></span>
                                 <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }">{{ element.priority }}</span>
                             </div>
@@ -545,6 +545,20 @@ export default {
 </script>
 
 <style scoped>
+
+.list-title
+{
+    max-width: 100%;
+    margin: 0;
+    font-size: 16px;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+
 .list-header {
     display: flex;
     justify-content: space-between;
@@ -612,7 +626,7 @@ export default {
 .list-item {
     padding: 10px;
     border-radius: 5px;
-    min-width: 220px;
+    width: 220px;
     flex-shrink: 0;
     text-align: center;
     display: flex;

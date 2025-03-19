@@ -113,6 +113,7 @@ export default {
 </script>
 
 <style scoped>
+
 .dashboard {
     display: flex;
     flex-direction: column;

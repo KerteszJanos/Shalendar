@@ -3,7 +3,9 @@
     <div class="calendar-container">
         <div class="calendar-header">
             <div class="header-top">
-                <b class="calendar-name" v-if="calendar.name">{{ calendar.name }}</b>
+                <b class="calendar-name " v-if="calendar.name" :title="calendar.name">
+                    {{ calendar.name }}
+                </b>
                 <h2 v-else>Loading...</h2>
                 <div class="header-buttons">
                     <button class="add-button" @click="goToCalendars">+</button>
@@ -33,12 +35,12 @@
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
                     <div class="ticket-list">
-                        <div v-for="(ticket, index) in day.scheduleTickets" :key="ticket.name + '-' + index" class="ticket" :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }">
+                        <div v-for="(ticket, index) in day.scheduleTickets" :key="ticket.name + '-' + index" class="ticket " :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }" :title="ticket.name">
                             {{ ticket.name }}
                         </div>
                     </div>
                     <div class="ticket-list">
-                        <div v-for="(ticket, index) in day.todoTickets" :key="ticket.name + '-' + index" class="ticket" :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }">
+                        <div v-for="(ticket, index) in day.todoTickets" :key="ticket.name + '-' + index" class="ticket " :class="{ 'completed-ticket': ticket.isCompleted }" :style="{ backgroundColor: ticket.color }" :title="ticket.name">
                             {{ ticket.name }}
                         </div>
                     </div>
@@ -565,13 +567,19 @@ export default {
 
 <style scoped>
 .calendar-name {
-    font-size: 20px;
+    margin: 0;
+    font-size: 16px;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    min-width: 0;
 }
 
 .today {
     border: 3px solid #80ED99 !important;
 }
-
 
 .ticket-lists-container {
     display: flex;
@@ -634,6 +642,14 @@ export default {
     position: relative;
 }
 
+.ticket:hover{
+    width: 100%;
+}
+
+.ticket:hover::after {
+    display: none;
+}
+
 .ticket::after {
     content: "";
     position: absolute;
@@ -653,6 +669,7 @@ export default {
     height: 100%;
     box-sizing: border-box;
     min-height: 300px;
+    min-width: 300px;
 }
 
 .calendar-container {
@@ -662,11 +679,10 @@ export default {
     width: 100%;
     padding: 18px;
     overflow: hidden;
-    min-width: 330px;
+    min-width: 0;
     min-height: 300px;
     background: #e3f2fd;
 }
-
 
 .calendar-header {
     display: flex;
@@ -678,6 +694,7 @@ export default {
     border-radius: 5px;
     width: 100%;
     border: 1px solid black;
+    min-width: 0;
 }
 
 .header-top {
@@ -685,6 +702,8 @@ export default {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .header-buttons {
@@ -832,6 +851,6 @@ export default {
         padding: 20px;
         border-radius: 10px 10px 0 0;
     }
-    
+
 }
 </style>

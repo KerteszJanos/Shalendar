@@ -20,7 +20,7 @@
 
                     <div class="ticket-header">
                         <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" />
-                        <strong class="ticket-name">{{ ticket.name }}</strong>
+                        <strong class="ticket-name " :title="ticket.name">{{ ticket.name }}</strong>
                     </div>
                     <div class="ticket-time">
                         <p v-if="ticket.startTime && ticket.endTime" class="ticket-time-text">
@@ -29,7 +29,7 @@
                     </div>
                     <div class="ticket-footer">
                         <div class="ticket-info">
-                            <span v-if="ticket.description" class="description-icon" :style="{ color: colorShade(ticket.backgroundColor, -50) || '#CCCCCC' }">
+                            <span v-if="ticket.description" class="description-icon " :style="{ color: colorShade(ticket.backgroundColor, -50) || '#CCCCCC' }" :title="ticket.description">
                                 <FileText />
                             </span>
                             <span v-if="ticket.priority" class="priority" :style="{ backgroundColor: getPriorityColor(ticket.priority) }">

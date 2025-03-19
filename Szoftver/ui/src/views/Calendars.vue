@@ -2,7 +2,7 @@
 <div class="calendar-page">
     <h2>Your Calendars</h2>
 
-    <p v-if="defaultCalendar" class="default-calendar">
+    <p v-if="defaultCalendar" class="default-calendar " :title="defaultCalendar.name">
         Default Calendar: {{ defaultCalendar.name }}
     </p>
 
@@ -17,7 +17,7 @@
                 <svg class="calendar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H5V8h14v13zM7 10h5v5H7z" />
                 </svg>
-                <p class="calendar-name">{{ calendar.name }}</p>
+                <p class="calendar-name" :title="calendar.name">{{ calendar.name }}</p>
             </div>
 
             <p class="calendar-permission">{{ getPermission(calendar.id) }}</p>
@@ -359,6 +359,8 @@ export default {
     font-weight: bold;
     margin-bottom: 10px;
     color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .add-calendar-button {
@@ -425,10 +427,32 @@ export default {
 }
 
 .calendar-name {
-    font-size: 1.3em;
+    font-size: 16px;
     font-weight: bold;
-    margin-top: 10px;
     color: #333;
+    max-width: 100%;
+    margin: 0;
+    cursor: pointer;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.calendar-name:hover::after {
+    content: attr(data-fulltext);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 100;
+    white-space: normal;
+    width: max-content;
+    max-width: 250px;
 }
 
 .calendar-permission {
