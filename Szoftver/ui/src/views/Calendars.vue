@@ -629,7 +629,7 @@ export default {
     list-style-type: none;
     padding: 0;
     overflow: auto;
-    max-height: 50px;
+    max-height: 250px;
 }
 
 .permissions-list li {
