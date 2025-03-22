@@ -211,7 +211,7 @@ namespace Shalendar.Tests.Controllers
 			context.CalendarLists.Add(new CalendarList
 			{
 				Id = 1,
-				Name = "Default Calendar List", // Gpt generated - Javítva, Name hozzáadva
+				Name = "Default Calendar List",
 				Color = "#FFFFFF"
 			});
 
@@ -397,7 +397,7 @@ namespace Shalendar.Tests.Controllers
 			{
 				Name = "Day View Ticket",
 				CurrentParentType = "ScheduledList",
-				ParentId = 99 // nem létező Day
+				ParentId = 99
 			};
 
 			var result = await controller.CreateTicket(ticket);
@@ -529,7 +529,7 @@ namespace Shalendar.Tests.Controllers
 		{
 			var options = new DbContextOptionsBuilder<ShalendarDbContext>()
 				.UseInMemoryDatabase(Guid.NewGuid().ToString())
-				.ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)) // Gpt generated - javítva
+				.ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
 			.Options;
 
 
@@ -556,7 +556,7 @@ namespace Shalendar.Tests.Controllers
 		{
 			var options = new DbContextOptionsBuilder<ShalendarDbContext>()
 				.UseInMemoryDatabase(Guid.NewGuid().ToString())
-				.ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)) // Gpt generated - javítva
+				.ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
 			.Options;
 
 			using var context = new ShalendarDbContext(options);
@@ -612,7 +612,7 @@ namespace Shalendar.Tests.Controllers
 		{
 			var options = new DbContextOptionsBuilder<ShalendarDbContext>()
 				.UseInMemoryDatabase(Guid.NewGuid().ToString())
-				.ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)) // Gpt generated - javítva
+				.ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
 			.Options;
 
 			using var context = new ShalendarDbContext(options);
@@ -633,7 +633,7 @@ namespace Shalendar.Tests.Controllers
 				.ReturnsAsync(true);
 
 			mockGroupManager.Setup(g => g.IsUserAloneInGroup(calendarId.ToString()))
-				.Returns(true); // Nincs SignalR hívás, mert egyedül van a felhasználó
+				.Returns(true);
 
 			var dto = new ScheduleTicketDto
 			{
@@ -708,7 +708,6 @@ namespace Shalendar.Tests.Controllers
 
 			var (controller, mockJwtHelper, mockCopyTicketHelper, _, mockGroupManager, mockHubContext) = CreateTicketsController(context);
 
-			// Javítva: Két külön jogosultsági ellenőrzés
 			mockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "read"))
 				.ReturnsAsync(true);
 			mockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "write", It.IsAny<int>()))
@@ -743,7 +742,6 @@ namespace Shalendar.Tests.Controllers
 
 			var (controller, mockJwtHelper, mockCopyTicketHelper, _, mockGroupManager, mockHubContext) = CreateTicketsController(context);
 
-			// Javított jogosultság-ellenőrzések
 			mockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "read"))
 				.ReturnsAsync(true);
 			mockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "write", It.IsAny<int>()))
@@ -1124,7 +1122,7 @@ namespace Shalendar.Tests.Controllers
 			var ticket = new Ticket
 			{
 				Id = 1,
-				Name = "Test ticket", // Gpt generated
+				Name = "Test ticket",
 				CurrentParentType = "ScheduledList",
 				ParentId = day.Id,
 				IsCompleted = false
@@ -1165,8 +1163,8 @@ namespace Shalendar.Tests.Controllers
 			var ticket = new Ticket
 			{
 				Id = 1,
-				Name = "Test ticket", // Gpt generated
-				CurrentParentType = "ScheduledList", // Gpt generated
+				Name = "Test ticket",
+				CurrentParentType = "ScheduledList",
 				ParentId = 1
 			};
 			context.Tickets.Add(ticket);
@@ -1214,8 +1212,8 @@ namespace Shalendar.Tests.Controllers
 			var ticket = new Ticket
 			{
 				Id = 1,
-				Name = "Test ticket", // Gpt generated
-				CurrentParentType = "ScheduledList", // Gpt generated
+				Name = "Test ticket",
+				CurrentParentType = "ScheduledList",
 				ParentId = 1
 			};
 			context.Days.Add(oldDay);

@@ -1,5 +1,4 @@
-﻿// Gpt generated
-using Xunit;
+﻿using Xunit;
 using Moq;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -245,7 +244,6 @@ namespace Shalendar.Tests.Controllers
 
 			var (controller, _, _, _, _, _) = CreateCalendarsController(context);
 
-			// user claim not set
 			var result = await controller.GetUserAccessibleCalendars();
 
 			Assert.IsType<BadRequestResult>(result.Result);
@@ -553,7 +551,6 @@ namespace Shalendar.Tests.Controllers
 
 			var (controller, _, deleteHelper, _, _, _) = CreateCalendarsController(context);
 
-			// No user claim set
 			var result = await controller.DeleteCalendar(99);
 
 			var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);

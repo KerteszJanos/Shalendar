@@ -145,7 +145,7 @@ namespace Shalendar.Tests.Controllers
 			context.Days.AddRange(
 				new Day { Id = 1, CalendarId = 1, Date = new DateTime(2024, 01, 02) },
 				new Day { Id = 2, CalendarId = 1, Date = new DateTime(2024, 01, 04) },
-				new Day { Id = 3, CalendarId = 2, Date = new DateTime(2024, 01, 03) } // should not match
+				new Day { Id = 3, CalendarId = 2, Date = new DateTime(2024, 01, 03) }
 			);
 			await context.SaveChangesAsync();
 
