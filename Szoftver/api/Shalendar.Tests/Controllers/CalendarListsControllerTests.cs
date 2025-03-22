@@ -14,13 +14,42 @@ using System;
 using System.Linq;
 using Shalendar.Functions.Interfaces;
 using Shalendar.Services.Interfaces;
-using Shalendar.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Shalendar.Tests.Controllers
 {
-	public class CalendarListsControllerTests : ControllerTestBase
+	public class CalendarListsControllerTests
 	{
+		private (CalendarListsController controller,
+				 Mock<IJwtHelper> jwtHelper,
+				 Mock<IGetCalendarIdHelper> calendarIdHelper,
+				 Mock<IGroupManagerService> groupManager,
+				 Mock<IHubContext<CalendarHub>> hubContext)
+			CreateCalendarListsController(ShalendarDbContext context)
+		{
+			var mockJwtHelper = new Mock<IJwtHelper>();
+			var mockCalendarIdHelper = new Mock<IGetCalendarIdHelper>();
+			var mockGroupManager = new Mock<IGroupManagerService>();
+			var mockHubContext = new Mock<IHubContext<CalendarHub>>();
+
+			var controller = new CalendarListsController(
+				context,
+				mockJwtHelper.Object,
+				mockCalendarIdHelper.Object,
+				mockGroupManager.Object,
+				mockHubContext.Object
+			);
+
+			controller.ControllerContext = new ControllerContext
+			{
+				HttpContext = new DefaultHttpContext()
+			};
+
+			return (controller, mockJwtHelper, mockCalendarIdHelper, mockGroupManager, mockHubContext);
+		}
+
+		#region Gets
+
 		[Fact]
 		public async Task GetCalendarListsByCalendarId_ShouldReturn403_WhenNoPermission()
 		{
@@ -31,11 +60,12 @@ namespace Shalendar.Tests.Controllers
 				.Options;
 
 			using var context = new ShalendarDbContext(options);
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
 
-			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "read"))
-						  .ReturnsAsync(false);
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
+
+			MockJwtHelper
+				.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "read"))
+				.ReturnsAsync(false);
 
 			// Act
 			var result = await controller.GetCalendarListsByCalendarId(calendarId);
@@ -44,6 +74,7 @@ namespace Shalendar.Tests.Controllers
 			var objectResult = Assert.IsType<ObjectResult>(result.Result);
 			objectResult.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
 		}
+
 
 		[Fact]
 		public async Task GetCalendarListsByCalendarId_ShouldReturnLists_WhenPermissionGranted()
@@ -66,8 +97,7 @@ namespace Shalendar.Tests.Controllers
 
 			context.SaveChanges();
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "read"))
 						  .ReturnsAsync(true);
@@ -80,6 +110,12 @@ namespace Shalendar.Tests.Controllers
 			var list = Assert.IsAssignableFrom<IEnumerable<object>>(okResult.Value);
 			list.Should().HaveCount(1);
 		}
+
+		#endregion
+
+
+
+		#region Posts
 
 		[Fact]
 		public async Task PostCalendarList_ShouldCreateList_WhenPermissionGrantedAndCalendarExists()
@@ -103,8 +139,7 @@ namespace Shalendar.Tests.Controllers
 				CalendarId = calendarId
 			};
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId))
 						  .ReturnsAsync(true);
@@ -149,8 +184,7 @@ namespace Shalendar.Tests.Controllers
 				CalendarId = 123
 			};
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId))
 								  .Returns(false);
@@ -182,8 +216,7 @@ namespace Shalendar.Tests.Controllers
 				CalendarId = calendarId
 			};
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId))
 						  .ReturnsAsync(false);
@@ -219,8 +252,7 @@ namespace Shalendar.Tests.Controllers
 				CalendarId = calendarId
 			};
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId))
 						  .ReturnsAsync(true);
@@ -236,6 +268,12 @@ namespace Shalendar.Tests.Controllers
 			badRequest.Value.Should().Be("The specified CalendarId does not exist.");
 		}
 
+		#endregion
+
+
+
+		#region Puts
+
 		[Fact]
 		public async Task UpdateCalendarList_ShouldReturnBadRequest_WhenHeaderMissing()
 		{
@@ -249,8 +287,7 @@ namespace Shalendar.Tests.Controllers
 
 			var updatedList = new CalendarList { Id = 1, Name = "Updated", Color = "red", CalendarId = 1 };
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(false);
 
@@ -273,8 +310,7 @@ namespace Shalendar.Tests.Controllers
 
 			var updatedList = new CalendarList { Id = 1, Name = "Updated", Color = "red", CalendarId = calendarId };
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(true);
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId)).ReturnsAsync(false);
@@ -299,8 +335,7 @@ namespace Shalendar.Tests.Controllers
 
 			var updatedList = new CalendarList { Id = 99, Name = "Updated", Color = "red", CalendarId = calendarId };
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(true);
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId)).ReturnsAsync(true);
@@ -324,8 +359,7 @@ namespace Shalendar.Tests.Controllers
 
 			var updatedList = new CalendarList { Id = 1, Name = "Updated", Color = "red", CalendarId = calendarId };
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(true);
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId)).ReturnsAsync(true);
@@ -352,8 +386,7 @@ namespace Shalendar.Tests.Controllers
 
 			var updatedList = new CalendarList { Id = 1, Name = "Updated", Color = "red", CalendarId = calendarId };
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(true);
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId)).ReturnsAsync(true);
@@ -369,6 +402,12 @@ namespace Shalendar.Tests.Controllers
 			fromDb.Color.Should().Be("red");
 		}
 
+		#endregion
+
+
+
+		#region Deletes
+
 		[Fact]
 		public async Task DeleteCalendarList_ShouldReturnBadRequest_WhenHeaderMissing()
 		{
@@ -378,8 +417,7 @@ namespace Shalendar.Tests.Controllers
 				.UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
 			using var context = new ShalendarDbContext(options);
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(false);
 
@@ -398,8 +436,7 @@ namespace Shalendar.Tests.Controllers
 				.UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
 			using var context = new ShalendarDbContext(options);
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(true);
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId)).ReturnsAsync(false);
@@ -420,8 +457,7 @@ namespace Shalendar.Tests.Controllers
 				.UseInMemoryDatabase(Guid.NewGuid().ToString()).ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)).Options;
 			using var context = new ShalendarDbContext(options);
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context); ;
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(true);
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId)).ReturnsAsync(true);
@@ -447,8 +483,7 @@ namespace Shalendar.Tests.Controllers
 			context.Tickets.Add(new Ticket { Id = 1, CalendarListId = listId, Name = "Ticket", CurrentParentType = "CalendarList", ParentId = listId });
 			await context.SaveChangesAsync();
 
-			var controller = CreateController(context, (ctx, jwt, cal, grp, hub) =>
-				new CalendarListsController(ctx, jwt, cal, grp, hub));
+			var (controller, MockJwtHelper, MockGetCalendarIdHelper, MockGroupManager, MockHubContext) = CreateCalendarListsController(context);
 
 			MockGetCalendarIdHelper.Setup(h => h.TryGetCalendarId(It.IsAny<HttpContext>(), out calendarId)).Returns(true);
 			MockJwtHelper.Setup(j => j.HasCalendarPermission(It.IsAny<HttpContext>(), "owner", calendarId)).ReturnsAsync(true);
@@ -460,5 +495,7 @@ namespace Shalendar.Tests.Controllers
 			context.CalendarLists.Any(cl => cl.Id == listId).Should().BeFalse();
 			context.Tickets.Any().Should().BeFalse();
 		}
+
+		#endregion
 	}
 }

@@ -20,12 +20,12 @@ namespace Shalendar.Controllers
 	{
 		private readonly ShalendarDbContext _context;
 		private readonly IJwtHelper _jwtHelper;
-		private readonly DeleteCalendarHelper _deleteCalendarHelper;
+		private readonly IDeleteCalendarHelper _deleteCalendarHelper;
 
 		private readonly IConfiguration _configuration;
 
 
-		public UsersController(ShalendarDbContext context, IJwtHelper jwtHelper, IConfiguration configuration, DeleteCalendarHelper deleteCalendarHelper)
+		public UsersController(ShalendarDbContext context, IJwtHelper jwtHelper, IConfiguration configuration, IDeleteCalendarHelper deleteCalendarHelper)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;

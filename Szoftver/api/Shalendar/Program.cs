@@ -31,10 +31,10 @@ namespace Shalendar
 			builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 
 			// Add Delete Calendar Helper to DI container
-			builder.Services.AddScoped<DeleteCalendarHelper>();
+			builder.Services.AddScoped<IDeleteCalendarHelper, DeleteCalendarHelper>();
 
 			// Add Copy Ticket Helper to DI container
-			builder.Services.AddScoped<CopyTicketHelper>();
+			builder.Services.AddScoped<ICopyTicketHelper, CopyTicketHelper>();
 
 			// Add Get CalendarId Helper to DI container
 			builder.Services.AddScoped<IGetCalendarIdHelper, GetCalendarIdHelper>();

@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
+using Shalendar.Functions.Interfaces;
 using Shalendar.Models;
 using Shalendar.Services.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Shalendar.Functions
 {
-	public class DeleteCalendarHelper
+	public class DeleteCalendarHelper : IDeleteCalendarHelper
 	{
 		private readonly ShalendarDbContext _context;
 		private readonly IGroupManagerService _groupManager;

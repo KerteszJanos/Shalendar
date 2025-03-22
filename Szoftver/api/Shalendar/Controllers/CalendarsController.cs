@@ -25,13 +25,13 @@ namespace Shalendar.Controllers
 	{
 		private readonly ShalendarDbContext _context;
 		private readonly IJwtHelper _jwtHelper;
-		private readonly DeleteCalendarHelper _deleteCalendarHelper;
-		private readonly CopyTicketHelper _copyTicketHelper;
+		private readonly IDeleteCalendarHelper _deleteCalendarHelper;
+		private readonly ICopyTicketHelper _copyTicketHelper;
 
 		private readonly IGroupManagerService _groupManager;
 		private readonly IHubContext<CalendarHub> _calendarHub;
 
-		public CalendarsController(ShalendarDbContext context, IJwtHelper jwtHelper, DeleteCalendarHelper deleteCalendarHelper, CopyTicketHelper copyTicketHelper, IGroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
+		public CalendarsController(ShalendarDbContext context, IJwtHelper jwtHelper, IDeleteCalendarHelper deleteCalendarHelper, ICopyTicketHelper copyTicketHelper, IGroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;

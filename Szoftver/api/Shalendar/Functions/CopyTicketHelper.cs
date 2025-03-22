@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
+using Shalendar.Functions.Interfaces;
 using Shalendar.Models;
 using System;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Shalendar.Functions
 {
-	public class CopyTicketHelper
+	public class CopyTicketHelper : ICopyTicketHelper
 	{
 		/// <summary>
 		/// Copies a ticket to a specified calendar and date, ensuring the corresponding calendar list and day exist, while preventing duplicate tickets.
