@@ -449,7 +449,7 @@ export default {
 }
 
 .calendar-page {
-    max-width: 1200px;
+    max-width: 100%;
     margin: auto;
     text-align: center;
     margin-top: 0px;
@@ -463,6 +463,7 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 100%;
 }
 
 .add-calendar-button {
@@ -627,6 +628,8 @@ export default {
 .permissions-list {
     list-style-type: none;
     padding: 0;
+    overflow: auto;
+    max-height: 50px;
 }
 
 .permissions-list li {
