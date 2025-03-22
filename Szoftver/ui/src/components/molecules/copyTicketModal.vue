@@ -190,6 +190,8 @@ export default {
     max-height: 200px;
     overflow-y: auto;
     z-index: 1000;
+    overflow-x: auto;
+    max-height: 200px;
     /* biztosítja, hogy ne takarja más elem */
 }
 

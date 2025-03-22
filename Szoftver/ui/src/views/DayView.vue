@@ -30,6 +30,10 @@
             <input id="ticket-name" v-model="newTicket.name" placeholder="Enter ticket name" required />
             <p v-if="nameErrorMessage" class="error">{{ nameErrorMessage }}</p>
 
+            <label for="ticket-calendar-list" class="required-label">Select Calendar List</label>
+            <DropdownSelect v-model="newTicket.calendarListId" :calendarLists="calendarLists" />
+            <p v-if="calendarListError" class="error">{{ calendarListError }}</p>
+            
             <label for="ticket-description">Description (optional)</label>
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
 
@@ -43,11 +47,6 @@
 
             <label for="ticket-end-time">End Time (optional)</label>
             <input id="ticket-end-time" v-model="newTicket.endTime" type="time" />
-
-            <label for="ticket-calendar-list" class="required-label">Select Calendar List</label>
-            <DropdownSelect v-model="newTicket.calendarListId" :calendarLists="calendarLists" />
-
-            <p v-if="calendarListError" class="error">{{ calendarListError }}</p>
         </div>
     </Modal>
 </div>
@@ -99,6 +98,7 @@ export default {
         // Constants	         		   |
         // --------------------------------- 
         const route = useRoute();
+        const router = useRouter();
 
         // ---------------------------------
         // Reactive state		           |
