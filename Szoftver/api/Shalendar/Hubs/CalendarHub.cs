@@ -13,7 +13,7 @@ public class CalendarHub : Hub
 	}
 
 	/// <summary>
-	/// /// Handles client connection events and invokes the base connection logic.
+	/// Handles client connection events and invokes the base connection logic.
 	/// </summary>
 	public override async Task OnConnectedAsync()
 	{
