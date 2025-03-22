@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Shalendar.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
 
 public class CalendarHub : Hub
 {
-	private readonly GroupManagerService _groupManager;
+	private readonly IGroupManagerService _groupManager;
 
-	public CalendarHub(GroupManagerService groupManager)
+	public CalendarHub(IGroupManagerService groupManager)
 	{
 		_groupManager = groupManager;
 	}

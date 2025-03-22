@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
+using Shalendar.Functions.Interfaces;
 
-public class JwtHelper
+public class JwtHelper : IJwtHelper
 {
 	private readonly ShalendarDbContext _context;
 

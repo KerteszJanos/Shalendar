@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
+using Shalendar.Functions.Interfaces;
 using Shalendar.Models;
 using Shalendar.Models.Dtos;
 
@@ -18,9 +19,9 @@ namespace Shalendar.Controllers
 	public class DaysController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
-		private readonly JwtHelper _jwtHelper;
+		private readonly IJwtHelper _jwtHelper;
 
-		public DaysController(ShalendarDbContext context, JwtHelper jwtHelper)
+		public DaysController(ShalendarDbContext context, IJwtHelper jwtHelper)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;

@@ -1,6 +1,8 @@
-﻿namespace Shalendar.Functions
+﻿using Shalendar.Functions.Interfaces;
+
+namespace Shalendar.Functions
 {
-	public class GetCalendarIdHelper
+	public class GetCalendarIdHelper : IGetCalendarIdHelper
 	{
 		/// <summary>
 		/// Attempts to retrieve and parse the "X-Calendar-Id" header as an integer.

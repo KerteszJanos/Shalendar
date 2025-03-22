@@ -11,7 +11,9 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Functions;
+using Shalendar.Functions.Interfaces;
 using Shalendar.Models;
+using Shalendar.Services.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Shalendar.Controllers
@@ -22,14 +24,14 @@ namespace Shalendar.Controllers
 	public class CalendarsController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
-		private readonly JwtHelper _jwtHelper;
+		private readonly IJwtHelper _jwtHelper;
 		private readonly DeleteCalendarHelper _deleteCalendarHelper;
 		private readonly CopyTicketHelper _copyTicketHelper;
 
-		private readonly GroupManagerService _groupManager;
+		private readonly IGroupManagerService _groupManager;
 		private readonly IHubContext<CalendarHub> _calendarHub;
 
-		public CalendarsController(ShalendarDbContext context, JwtHelper jwtHelper, DeleteCalendarHelper deleteCalendarHelper, CopyTicketHelper copyTicketHelper, GroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
+		public CalendarsController(ShalendarDbContext context, IJwtHelper jwtHelper, DeleteCalendarHelper deleteCalendarHelper, CopyTicketHelper copyTicketHelper, IGroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;

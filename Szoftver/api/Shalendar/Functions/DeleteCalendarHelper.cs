@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Models;
+using Shalendar.Services.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Shalendar.Functions
@@ -12,10 +13,10 @@ namespace Shalendar.Functions
 	public class DeleteCalendarHelper
 	{
 		private readonly ShalendarDbContext _context;
-		private readonly GroupManagerService _groupManager;
+		private readonly IGroupManagerService _groupManager;
 		private readonly IHubContext<CalendarHub> _calendarHub;
 
-		public DeleteCalendarHelper(ShalendarDbContext context, GroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
+		public DeleteCalendarHelper(ShalendarDbContext context, IGroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
 		{
 			_context = context;
 			_groupManager = groupManager;

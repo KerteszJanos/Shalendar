@@ -13,6 +13,8 @@ using System.Security.Claims;
 using Shalendar.Functions;
 using Microsoft.AspNetCore.SignalR;
 using System.Net.Sockets;
+using Shalendar.Functions.Interfaces;
+using Shalendar.Services.Interfaces;
 
 namespace Shalendar.Controllers
 {
@@ -23,14 +25,14 @@ namespace Shalendar.Controllers
 	{
 		private readonly ShalendarDbContext _context;
 
-		private readonly JwtHelper _jwtHelper;
-		private readonly GetCalendarIdHelper _getCalendarIdHelper;
+		private readonly IJwtHelper _jwtHelper;
+		private readonly IGetCalendarIdHelper _getCalendarIdHelper;
 
 		private readonly IHubContext<CalendarHub> _calendarHub;
 
-		private readonly GroupManagerService _groupManager;
+		private readonly IGroupManagerService _groupManager;
 
-		public CalendarListsController(ShalendarDbContext context, JwtHelper jwtHelper, GetCalendarIdHelper getCalendarIdHelper, GroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
+		public CalendarListsController(ShalendarDbContext context, IJwtHelper jwtHelper, IGetCalendarIdHelper getCalendarIdHelper, IGroupManagerService groupManager, IHubContext<CalendarHub> calendarHub)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;

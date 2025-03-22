@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shalendar", "Shalendar.csproj", "{82EB46E4-EA4F-446F-A805-FF5A9133CC4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shalendar", "Shalendar.csproj", "{82EB46E4-EA4F-446F-A805-FF5A9133CC4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shalendar.Tests", "..\Shalendar.Tests\Shalendar.Tests.csproj", "{234CB6EC-099C-4B75-A3C3-00BEB373571C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{82EB46E4-EA4F-446F-A805-FF5A9133CC4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82EB46E4-EA4F-446F-A805-FF5A9133CC4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82EB46E4-EA4F-446F-A805-FF5A9133CC4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{234CB6EC-099C-4B75-A3C3-00BEB373571C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{234CB6EC-099C-4B75-A3C3-00BEB373571C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{234CB6EC-099C-4B75-A3C3-00BEB373571C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{234CB6EC-099C-4B75-A3C3-00BEB373571C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

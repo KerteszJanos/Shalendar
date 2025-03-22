@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shalendar.Contexts;
 using Shalendar.Functions;
+using Shalendar.Functions.Interfaces;
+using Shalendar.Services.Interfaces;
 using System.Text;
 
 namespace Shalendar
@@ -26,7 +28,7 @@ namespace Shalendar
 			builder.Services.AddSignalR();
 
 			// Add JWT Helper to DI container
-			builder.Services.AddScoped<JwtHelper>();
+			builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 
 			// Add Delete Calendar Helper to DI container
 			builder.Services.AddScoped<DeleteCalendarHelper>();
@@ -35,10 +37,10 @@ namespace Shalendar
 			builder.Services.AddScoped<CopyTicketHelper>();
 
 			// Add Get CalendarId Helper to DI container
-			builder.Services.AddScoped<GetCalendarIdHelper>();
+			builder.Services.AddScoped<IGetCalendarIdHelper, GetCalendarIdHelper>();
 
 			// Add Group Manager Service to DI container
-			builder.Services.AddSingleton<GroupManagerService>();
+			builder.Services.AddSingleton<IGroupManagerService, GroupManagerService>();
 
 			//Add database context (SQL Server)
 			builder.Services.AddDbContext<ShalendarDbContext>(options =>

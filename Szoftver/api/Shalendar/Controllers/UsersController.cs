@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shalendar.Contexts;
 using Shalendar.Functions;
+using Shalendar.Functions.Interfaces;
 using Shalendar.Models;
 using Shalendar.Models.Dtos;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,13 +19,13 @@ namespace Shalendar.Controllers
 	public class UsersController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
-		private readonly JwtHelper _jwtHelper;
+		private readonly IJwtHelper _jwtHelper;
 		private readonly DeleteCalendarHelper _deleteCalendarHelper;
 
 		private readonly IConfiguration _configuration;
 
 
-		public UsersController(ShalendarDbContext context,JwtHelper jwtHelper, IConfiguration configuration, DeleteCalendarHelper deleteCalendarHelper)
+		public UsersController(ShalendarDbContext context, IJwtHelper jwtHelper, IConfiguration configuration, DeleteCalendarHelper deleteCalendarHelper)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;

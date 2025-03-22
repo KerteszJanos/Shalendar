@@ -1,8 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using Shalendar.Services.Interfaces;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GroupManagerService
+public class GroupManagerService : IGroupManagerService
 {
 	private readonly ConcurrentDictionary<string, HashSet<string>> _groupConnections = new();
 

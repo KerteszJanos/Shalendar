@@ -12,8 +12,10 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Shalendar.Contexts;
 using Shalendar.Functions;
+using Shalendar.Functions.Interfaces;
 using Shalendar.Models;
 using Shalendar.Models.Dtos;
+using Shalendar.Services.Interfaces;
 
 namespace Shalendar.Controllers
 {
@@ -23,15 +25,15 @@ namespace Shalendar.Controllers
 	public class TicketsController : ControllerBase
 	{
 		private readonly ShalendarDbContext _context;
-		private readonly JwtHelper _jwtHelper;
+		private readonly IJwtHelper _jwtHelper;
 		private readonly CopyTicketHelper _copyTicketHelper;
-		private readonly GetCalendarIdHelper _getCalendarIdHelper;
+		private readonly IGetCalendarIdHelper _getCalendarIdHelper;
 
-		private readonly GroupManagerService _groupManager;
+		private readonly IGroupManagerService _groupManager;
 		private readonly IHubContext<CalendarHub> _calendarHub;
 
 
-		public TicketsController(ShalendarDbContext context, JwtHelper jwtHelper, CopyTicketHelper copyTicketHelper, IHubContext<CalendarHub> calendarHub, GroupManagerService groupManager, GetCalendarIdHelper getCalendarIdHelper)
+		public TicketsController(ShalendarDbContext context, IJwtHelper jwtHelper, CopyTicketHelper copyTicketHelper, IHubContext<CalendarHub> calendarHub, IGroupManagerService groupManager, IGetCalendarIdHelper getCalendarIdHelper)
 		{
 			_context = context;
 			_jwtHelper = jwtHelper;
