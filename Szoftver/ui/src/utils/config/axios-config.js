@@ -2,6 +2,9 @@ import axios from "axios";
 import { API_BASE_URL } from "@/utils/config/config";
 import { useLogout } from "@/utils/LogoutHandler";
 
+// Axios instance configured with base URL, auth token, and calendar ID headers for all API requests.
+// Automatically handles 401 Unauthorized responses by logging the user out using the shared logout logic.
+
 const api = axios.create({
     baseURL: API_BASE_URL
 });

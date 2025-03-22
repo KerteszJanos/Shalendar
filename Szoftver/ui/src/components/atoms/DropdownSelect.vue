@@ -1,3 +1,8 @@
+<!--
+Custom dropdown component to select a calendar list by name and color.
+Displays the selected list with background color and name.
+-->
+
 <template>
 <div class="dropdown">
     <div class="dropdown-selected" @click="toggleDropdown" :style="{ backgroundColor: selectedColor }" :title="selectedName">
@@ -11,7 +16,6 @@
 </div>
 </template>
 
-  
 <script>
 import {
     ref,
@@ -30,9 +34,15 @@ export default {
     setup(props, {
         emit
     }) {
+        // ---------------------------------
+        // Reactive state                  |
+        // ---------------------------------
         const isOpen = ref(false);
         const selectedItem = ref(null);
 
+        // ---------------------------------
+        // Methods		                   |
+        // ---------------------------------
         const toggleDropdown = () => {
             isOpen.value = !isOpen.value;
         };
@@ -55,7 +65,6 @@ export default {
 };
 </script>
 
-  
 <style scoped>
 .dropdown {
     position: relative;

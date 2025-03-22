@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useRouter } from "vue-router";
 
+// Custom composable for handling user logout logic in a Vue application.
 export function useLogout() {
     const router = useRouter();
 

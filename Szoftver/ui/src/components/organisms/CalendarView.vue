@@ -1,3 +1,21 @@
+<!--
+  This component represents the left side of the dashboard view.
+
+  It is responsible for:
+  - Displaying the monthly calendar grid with proper date alignment and styling.
+  - Fetching and showing the calendar's scheduled and unscheduled (todo) tickets for each day.
+  - Providing navigation between months.
+  - Allowing the user to click a day to view it in detail.
+  - Supporting drag-and-drop functionality for assigning tickets to specific days.
+    - On drop, tickets can be scheduled directly or with custom time selection via modal.
+  - Handling ticket-related operations like:
+    - Scheduling tickets with or without time.
+    - Real-time updates via SignalR events to keep the view in sync.
+  - Displaying the calendar name, opening calendar list view, and copying tickets between calendars.
+
+  The component plays a key role in visualizing how tickets are distributed throughout the month.
+-->
+
 <template>
 <div class="calendar-layout">
     <div class="calendar-container">
@@ -49,7 +67,7 @@
         </div>
     </div>
 
-    <Modal :show="showTimeModal" title="Ticket Time" confirmText="Mentés" @close="closeTimeModal" @confirm="confirmTimeModal">
+    <Modal :show="showTimeModal" title="Ticket Time" confirmText="Save" @close="closeTimeModal" @confirm="confirmTimeModal">
         <div class="modal-content">
             <label for="start-time" class="required-label">Start Time:</label>
             <input id="start-time" type="time" v-model="modalStartTime" />
@@ -100,26 +118,11 @@ export default {
         Copy
     },
     setup() {
-        const currentDate = ref(new Date());
-        const currentDay = ref("");
-        const calendar = ref({
-            id: null,
-            name: ""
-        });
-        const errorMessage = ref("");
+        // ---------------------------------
+        // Constants	  		           |
+        // --------------------------------- 
         const router = useRouter();
-
-        const showTimeModal = ref(false);
-        const modalStartTime = ref("");
-        const modalEndTime = ref("");
-        const modalErrorMessage = ref("");
-        const dropTicketData = ref(null);
-        const dropDate = ref("");
-        const daysInMonth = ref([]);
-        const showCopyTicketModal = ref(false);
-        const selectedTicketId = ref(null);
-        const gridRowStyle = ref("repeat(6, minmax(0, 1fr))");
-
+        const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
         const dayViewEvents = [
             "TicketScheduled",
             "TicketCopiedInCalendar",
@@ -132,21 +135,55 @@ export default {
             "TicketDeletedInDayView",
         ];
 
+        // ---------------------------------
+        // Reactive state		           |
+        // ---------------------------------
+        const currentDate = ref(new Date());
+        const currentDay = ref("");
+        const errorMessage = ref("");
+        const showTimeModal = ref(false);
+        const modalStartTime = ref("");
+        const modalEndTime = ref("");
+        const modalErrorMessage = ref("");
+        const dropTicketData = ref(null);
+        const dropDate = ref("");
+        const daysInMonth = ref([]);
+        const showCopyTicketModal = ref(false);
+        const selectedTicketId = ref(null);
         const calendarId = ref(localStorage.getItem("calendarId"));
-
-        const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
+        const gridRowStyle = ref("repeat(6, minmax(0, 1fr))");
+        const calendar = ref({
+            id: null,
+            name: ""
+        });
+        // Non-reactive computed variable
         const formattedMonth = computed(() => {
             return currentDate.value.toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
             });
         });
-
+        // ---------------------------------
+        // Methods			               |
+        // ---------------------------------
+        // --------------
+        // Modals	    |
+        // --------------
         const openCopyTicketModal = () => {
             showCopyTicketModal.value = true;
         };
 
+        const closeTimeModal = () => {
+            showTimeModal.value = false;
+            modalStartTime.value = "";
+            modalEndTime.value = "";
+            modalErrorMessage.value = "";
+            localStorage.removeItem("draggedTicket");
+        };
+
+        // --------------
+        // Core actions	|
+        // --------------
         const fetchTicketsForDate = async (date, dayId = null) => {
             try {
                 let endpoint = dayId ?
@@ -294,16 +331,6 @@ export default {
             updateGridRowStyle();
         };
 
-        const updateGridRowStyle = () => {
-            gridRowStyle.value = Math.ceil(daysInMonth.value.length / 7) < 6 ?
-                "repeat(5, minmax(0, 1fr))" :
-                "repeat(6, minmax(0, 1fr))";
-        };
-
-        const isToday = (date) => {
-            return date === currentDay.value;
-        };
-
         const goToDay = (date) => {
             router.push(`/day/${date}`);
         };
@@ -325,47 +352,6 @@ export default {
                     setErrorMessage(errorMessage, "Failed to load calendar.");
                 }
             }
-        };
-
-        const prevMonth = () => {
-            currentDate.value = new Date(
-                currentDate.value.getFullYear(),
-                currentDate.value.getMonth() - 1,
-                1
-            );
-        };
-
-        const nextMonth = () => {
-            currentDate.value = new Date(
-                currentDate.value.getFullYear(),
-                currentDate.value.getMonth() + 1,
-                1
-            );
-        };
-
-        const validateTimeFields = (startTime, endTime) => {
-            if (!startTime || !endTime) {
-                return "Both start and end times are required.";
-            }
-
-            const [startHours, startMinutes] = startTime.split(":").map(Number);
-            const [endHours, endMinutes] = endTime.split(":").map(Number);
-
-            if (
-                isNaN(startHours) || isNaN(startMinutes) ||
-                isNaN(endHours) || isNaN(endMinutes)
-            ) {
-                return "Invalid time format.";
-            }
-
-            const startTotalMinutes = startHours * 60 + startMinutes;
-            const endTotalMinutes = endHours * 60 + endMinutes;
-
-            if (startTotalMinutes >= endTotalMinutes - 9) {
-                return "The start time must be at least 10 minutes earlier than the end time.";
-            }
-
-            return null; // No errors
         };
 
         const onTicketDrop = async (event, date) => {
@@ -430,14 +416,6 @@ export default {
             }
         };
 
-        const closeTimeModal = () => {
-            showTimeModal.value = false;
-            modalStartTime.value = "";
-            modalEndTime.value = "";
-            modalErrorMessage.value = "";
-            localStorage.removeItem("draggedTicket");
-        };
-
         const confirmTimeModal = async () => {
             const validationError = validateTimeFields(modalStartTime.value, modalEndTime.value);
             if (validationError) {
@@ -488,6 +466,64 @@ export default {
             }, millisTillMidnight);
         };
 
+        // --------------
+        // Helpers	    |
+        // --------------
+        // Determines whether to use a 5-row or 6-row grid layout in the calendar view,
+        // based on the total number of displayed days (including padding from previous and next months).
+        // This ensures the calendar grid adapts to the month's structure and maintains proper visual alignment.
+        const updateGridRowStyle = () => {
+            gridRowStyle.value = Math.ceil(daysInMonth.value.length / 7) < 6 ?
+                "repeat(5, minmax(0, 1fr))" :
+                "repeat(6, minmax(0, 1fr))";
+        };
+
+        const isToday = (date) => {
+            return date === currentDay.value;
+        };
+
+        const prevMonth = () => {
+            currentDate.value = new Date(
+                currentDate.value.getFullYear(),
+                currentDate.value.getMonth() - 1,
+                1
+            );
+        };
+
+        const nextMonth = () => {
+            currentDate.value = new Date(
+                currentDate.value.getFullYear(),
+                currentDate.value.getMonth() + 1,
+                1
+            );
+        };
+
+        // Validates that start and end times are present, correctly formatted, and at least 10 minutes apart.
+        const validateTimeFields = (startTime, endTime) => {
+            if (!startTime || !endTime) {
+                return "Both start and end times are required.";
+            }
+
+            const [startHours, startMinutes] = startTime.split(":").map(Number);
+            const [endHours, endMinutes] = endTime.split(":").map(Number);
+
+            if (
+                isNaN(startHours) || isNaN(startMinutes) ||
+                isNaN(endHours) || isNaN(endMinutes)
+            ) {
+                return "Invalid time format.";
+            }
+
+            const startTotalMinutes = startHours * 60 + startMinutes;
+            const endTotalMinutes = endHours * 60 + endMinutes;
+
+            if (startTotalMinutes >= endTotalMinutes - 14) {
+                return "The start time must be at least 15 minutes earlier than the end time.";
+            }
+
+            return null; // No errors
+        };
+
         const getLocalDateString = () => {
             const now = new Date();
             return now.getFullYear() + '-' +
@@ -495,8 +531,9 @@ export default {
                 String(now.getDate()).padStart(2, '0');
         };
 
-        currentDay.value = getLocalDateString();
-
+        // ---------------------------------
+        // Lifecycle hooks		           |
+        // ---------------------------------
         watchEffect(() => {
             if (calendar.value.id) {
                 fetchCalendarDays();
@@ -504,6 +541,7 @@ export default {
         });
 
         onMounted(async () => {
+            currentDay.value = getLocalDateString();
             fetchCalendar();
             fetchCalendarDays();
             updateCurrentDayAtMidnight();

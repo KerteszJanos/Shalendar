@@ -1,3 +1,7 @@
+<!--
+  Parent modal component used by all modals; provides title, confirm/cancel buttons, and click-outside-to-close behavior.
+-->
+
 <template>
 <div v-if="show" class="modal-overlay" @mousedown="startClick" @mouseup="endClick">
     <div class="modal" ref="modalRef" @click.stop>
@@ -30,9 +34,16 @@ export default defineComponent({
     setup(props, {
         emit
     }) {
+
+        // ---------------------------------
+        // Reactive state                  |
+        // ---------------------------------
         const modalRef = ref(null);
         const isClickInside = ref(false);
 
+        // ---------------------------------
+        // Methods                         |
+        // ---------------------------------
         const startClick = (event) => {
             if (modalRef.value && modalRef.value.contains(event.target)) {
                 isClickInside.value = true;

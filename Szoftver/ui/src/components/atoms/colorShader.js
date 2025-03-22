@@ -1,3 +1,4 @@
+// Returns a hex color lightened or darkened by the given amount.
 export const colorShade = (col, amt) => {
     col = col.replace(/^#/, '')
     if (col.length === 3) col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2]

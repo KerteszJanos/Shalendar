@@ -1,3 +1,10 @@
+<!--
+  - Authenticates user via email and password.
+  - Stores token and user data on success.
+  - Redirects to dashboard.
+  - Displays error on failure.
+-->
+
 <template>
 <div class="login-container">
     <h2>Login</h2>
@@ -38,11 +45,23 @@ import {
 
 export default {
     setup() {
+        // ---------------------------------
+        // Constants	          		   |
+        // --------------------------------- 
+        const router = useRouter();
+
+        // ---------------------------------
+        // Reactive state		           |
+        // ---------------------------------
         const email = ref("");
         const password = ref("");
         const errorMessage = ref("");
-        const router = useRouter();
-
+        // ---------------------------------
+        // Methods		            	   |
+        // ---------------------------------
+        // --------------
+        // Core actions	|
+        // --------------
         const loginUser = async () => {
             try {
                 const response = await axios.post(`${API_BASE_URL}/api/Users/login`, {
@@ -63,6 +82,9 @@ export default {
             }
         };
 
+        // ---------------------------------
+        // Lifecycle hooks		   |
+        // ---------------------------------
         onMounted(() => {
             localStorage.removeItem("user");
             localStorage.removeItem("token");

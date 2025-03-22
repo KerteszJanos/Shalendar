@@ -1,3 +1,4 @@
+// Returns a color code based on the given priority level.
 export const getPriorityColor = (priority) => {
     if (priority === 9) return "#2E7D32";
     if (priority === 8) return "#4CAF50";

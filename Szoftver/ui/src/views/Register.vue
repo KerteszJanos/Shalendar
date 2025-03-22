@@ -1,3 +1,9 @@
+<!--
+  - Collects username, email, and password input.
+  - Validates password strength and match.
+  - Submits data to the API and redirects to login on success.
+-->
+
 <template>
 <div class="register-container">
     <h2>Registration</h2>
@@ -50,21 +56,26 @@ import {
 
 export default {
     setup() {
+        // ---------------------------------
+        // Constants	        		   |
+        // --------------------------------- 
+        const router = useRouter();
+
+        // ---------------------------------
+        // Reactive state		           |
+        // ---------------------------------
         const username = ref("");
         const email = ref("");
         const password = ref("");
         const passwordAgain = ref("");
         const errorMessage = ref("");
-        const router = useRouter();
 
-        const validatePassword = () => {
-            return (
-                password.value.length >= 8 &&
-                /[A-Z]/.test(password.value) &&
-                /[0-9]/.test(password.value)
-            );
-        };
-
+        // ---------------------------------
+        // Methods		            	   |
+        // ---------------------------------
+        // --------------
+        // Core actions	|
+        // --------------
         const registerUser = async () => {
             errorMessage.value = "";
 
@@ -96,6 +107,17 @@ export default {
                     console.error("Error registering user:", error);
                 }
             }
+        };
+
+        // --------------
+        // Helpers	    |
+        // --------------
+        const validatePassword = () => {
+            return (
+                password.value.length >= 8 &&
+                /[A-Z]/.test(password.value) &&
+                /[0-9]/.test(password.value)
+            );
         };
 
         return {

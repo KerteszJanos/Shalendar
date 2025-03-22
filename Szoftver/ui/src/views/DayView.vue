@@ -1,3 +1,16 @@
+<!--
+  This is the main DayView layout component.
+
+  Features:
+  - Contains left and right navigation buttons to change the selected day.
+  - Central content includes two panels:
+    - DayPanel: scheduled tickets (time-bound tasks).
+    - TodoList: unscheduled tickets (floating tasks).
+  - Includes drag-and-drop ticket support between days via nav buttons.
+  - Handles modal logic for creating new tickets with optional start/end times and other details.
+  - Automatically fetches, deletes or creates the appropriate day record if needed.
+-->
+
 <template>
 <div class="container">
     <button class="nav-btn left" @click="goToPreviousDay" @dragover.prevent @drop="handleDrop('previous')">&#9665;</button>
@@ -82,16 +95,15 @@ export default {
         DropdownSelect
     },
     setup() {
-        const showAddNewTicketModal = ref(false);
-        const newTicket = ref({
-            name: "",
-            description: "",
-            priority: null,
-            startTime: "",
-            endTime: "",
-            calendarListId: null,
-        });
+        // ---------------------------------
+        // Constants	         		   |
+        // --------------------------------- 
         const route = useRoute();
+
+        // ---------------------------------
+        // Reactive state		           |
+        // ---------------------------------
+        const showAddNewTicketModal = ref(false);
         const currentDayId = ref(null);
         const calendarId = ref(localStorage.getItem("calendarId"));
         const calendarLists = ref([]);
@@ -100,8 +112,24 @@ export default {
         const priorityErrorMessage = ref("");
         const calendarListError = ref("");
         const timeError = ref("");
-        const router = useRouter();
-
+        const newTicket = ref({
+            name: "",
+            description: "",
+            priority: null,
+            startTime: "",
+            endTime: "",
+            calendarListId: null,
+        });
+        // Non-reactive computed variable
+        const currentDate = computed(() => {
+            return route.params.date ? new Date(route.params.date) : new Date();
+        });
+        // ---------------------------------
+        // Methods			               |
+        // ---------------------------------
+        // --------------
+        // Modals   	|
+        // --------------
         const openAddTicketModal = () => {
             nameErrorMessage.value = "";
             priorityErrorMessage.value = "";
@@ -158,10 +186,6 @@ export default {
             localStorage.removeItem("draggedTicket");
         };
 
-        const currentDate = computed(() => {
-            return route.params.date ? new Date(route.params.date) : new Date();
-        });
-
         const goToPreviousDay = () => {
             const previousDate = new Date(currentDate.value);
             previousDate.setDate(previousDate.getDate() - 1);
@@ -208,6 +232,7 @@ export default {
                 }
             }
 
+            // If the day does not exist yet in the database, create it so the ticket has a valid parent reference.
             if (!currentDayId.value) {
                 currentDayId.value = await createDay(route.params.date, calendarId.value);
             }
@@ -278,9 +303,6 @@ export default {
             }
         };
 
-        fetchDayId();
-        fetchCalendarLists();
-
         const createDay = async (date, calendarId) => {
             try {
                 const response = await api.post("/api/Days/create", {
@@ -300,15 +322,23 @@ export default {
             }
         };
 
-        watch(() => route.params.date, async () => {
-            await fetchDayId();
-        });
-
+        // --------------
+        // Helpers	    |
+        // --------------
         const handleDayDeletion = () => {
             currentDayId.value = null;
         };
 
+        // ---------------------------------
+        // Lifecycle hooks		           |
+        // ---------------------------------
+        watch(() => route.params.date, async () => {
+            await fetchDayId();
+        });
+
         onMounted(() => {
+            fetchDayId();
+            fetchCalendarLists();
             emitter.on("successfulDayDelete", handleDayDeletion);
         });
 

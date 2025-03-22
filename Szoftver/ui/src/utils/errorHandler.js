@@ -1,3 +1,4 @@
+//Handles timed display of error messages by setting and auto-clearing them.
 export const setErrorMessage = (() => {
     //A WeakMap allows associating data with object keys while automatically removing entries when the referenced objects are garbage-collected, thereby preventing memory leaks.
     const timeoutMap = new WeakMap();

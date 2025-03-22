@@ -1,6 +1,7 @@
 import api from "@/utils/config/axios-config";
 import { setErrorMessage } from "@/utils/errorHandler";
 
+// Updates ticket order based on their position and handles errors.
 export const updateTicketOrder = async (input, errorMessage) => {
     let ticketsArray = input.tickets ? input.tickets : input;
 

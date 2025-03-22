@@ -1,3 +1,9 @@
+<!--
+  - Displays user data and default calendar.
+  - Allows changing password with validation.
+  - Enables account deletion with confirmation.
+-->
+
 <template>
 <div class="profile-container">
     <h1>Profile</h1>
@@ -62,6 +68,14 @@ export default {
         Modal
     },
     setup() {
+        // ---------------------------------
+        // Constants	          		   |
+        // --------------------------------- 
+        const router = useRouter();
+
+        // ---------------------------------
+        // Reactive state	        	   |
+        // ---------------------------------
         const user = ref(null);
         const oldPassword = ref("");
         const newPassword = ref("");
@@ -69,11 +83,16 @@ export default {
         const errorMessage = ref("");
         const successMessage = ref("");
         const isPasswordValid = ref(false);
-        const router = useRouter();
         const defaultCalendarName = ref("");
         const showPasswordModal = ref(false);
         const PasswordModalErrorMessage = ref(false);
 
+        // ---------------------------------
+        // Methods		            	   |
+        // ---------------------------------
+        // --------------
+        // Core actions	|
+        // --------------
         const fetchUser = async () => {
             errorMessage.value = "";
             try {
@@ -103,13 +122,6 @@ export default {
                     console.error("Error fetching default calendar:", error);
                 }
             }
-        };
-
-        const validatePassword = () => {
-            isPasswordValid.value =
-                newPassword.value.length >= 8 &&
-                /[A-Z]/.test(newPassword.value) &&
-                /[0-9]/.test(newPassword.value);
         };
 
         const changePassword = async () => {
@@ -161,6 +173,19 @@ export default {
             }
         };
 
+        // --------------
+        // Helpers  	|
+        // --------------
+        const validatePassword = () => {
+            isPasswordValid.value =
+                newPassword.value.length >= 8 &&
+                /[A-Z]/.test(newPassword.value) &&
+                /[0-9]/.test(newPassword.value);
+        };
+
+        // ---------------------------------
+        // Lifecycle hooks		           |
+        // ---------------------------------
         onMounted(fetchUser);
 
         return {

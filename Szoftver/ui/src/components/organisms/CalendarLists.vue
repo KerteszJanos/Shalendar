@@ -1,3 +1,19 @@
+<!--
+  This component is the right-side section of the dashboard.
+
+  It is responsible for:
+  - Displaying the calendar lists associated with the selected calendar.
+  - Managing ticket-related operations within each list:
+    - Viewing, adding, editing, deleting, copying, and reordering tickets.
+    - Toggling completion status.
+  - Managing the lists themselves:
+    - Creating, editing (name and color), and deleting lists.
+  - Handling UI interactions like modals and drag-and-drop (via vuedraggable).
+  - Listening to real-time updates via SignalR to keep data in sync across clients.
+
+  This component is central to the user's interaction with unscheduled tasks.
+-->  
+
 <template>
 <div class="lists-container">
     <div class="header">
@@ -163,6 +179,27 @@ export default {
         FileText
     },
     setup() {
+        // ---------------------------------
+        // Constants	  		           |
+        // --------------------------------- 
+        const calendarListEvents = [
+            "TicketCreatedInCalendarLists",
+            "TicketScheduled",
+            "TicketCopiedInCalendarLists",
+            "TicketReorderedInCalendarLists",
+            "TicketUpdatedInCalendarLists",
+            "TicketCompletedUpdatedInCalendarLists",
+            "TicketDeletedInCalendarLists",
+            "TicketMovedBackToCalendar",
+            "CalendarListCreated",
+            "CalendarListUpdated",
+            "CalendarListDeleted",
+            "CalendarCopied"
+        ];
+
+        // ---------------------------------
+        // Reactive state		           |
+        // ---------------------------------
         const calendarLists = ref([]);
         const loading = ref(true);
         const errorMessage = ref("");
@@ -174,6 +211,7 @@ export default {
         const newListError = ref("");
         const editListError = ref("");
         const editTicketError = ref("");
+        const showEditCalendarListModal = ref(false);
         const calendarId = ref(localStorage.getItem("calendarId"));
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
@@ -194,33 +232,64 @@ export default {
             endTime: "",
             priority: null,
         });
-        const showEditCalendarListModal = ref(false);
         const editedList = ref({
             id: null,
             name: "",
             color: "#CCCCCC"
         });
 
-        const calendarListEvents = [
-            "TicketCreatedInCalendarLists",
-            "TicketScheduled",
-            "TicketCopiedInCalendarLists",
-            "TicketReorderedInCalendarLists",
-            "TicketUpdatedInCalendarLists",
-            "TicketCompletedUpdatedInCalendarLists",
-            "TicketDeletedInCalendarLists",
-            "TicketMovedBackToCalendar",
-            "CalendarListCreated",
-            "CalendarListUpdated",
-            "CalendarListDeleted",
-            "CalendarCopied"
-        ];
-
+        // ---------------------------------
+        // Methods		                   |
+        // ---------------------------------
+        // --------------
+        // Modals       |
+        // --------------
         const openCopyTicketModal = (ticketId) => {
             selectedTicketId.value = ticketId;
             showCopyTicketModal.value = true;
         };
 
+        const openEditTicketModal = (ticket) => {
+            editTicketError.value = "";
+
+            editedTicket.value = {
+                ...ticket
+            };
+            showEditTicketModal.value = true;
+        };
+
+        const openEditListModal = (list) => {
+            editedList.value = {
+                ...list
+            };
+            showEditCalendarListModal.value = true;
+        };
+
+        const openAddNewCalendarListModal = () => {
+            newList.value = {
+                name: "",
+                color: "#CCCCCC"
+            };
+            showAddNewCalendarListModal.value = true;
+        };
+
+        const openAddNewTicketModal = (listId) => {
+            newTicketError.value = "";
+
+            selectedListId.value = listId;
+            newTicket.value = {
+                name: "",
+                description: "",
+                startTime: "",
+                endTime: "",
+                priority: null,
+            };
+            showAddNewTicketModal.value = true;
+        };
+
+        // --------------
+        // Core actions	|
+        // --------------
         const toggleCompletion = async (ticket) => {
             try {
                 await toggleTicketCompletion(ticket.id, !ticket.isCompleted, errorMessage);
@@ -232,15 +301,6 @@ export default {
             } catch (error) {
                 console.error("Failed to update ticket status:", error);
             }
-        };
-
-        const openEditTicketModal = (ticket) => {
-            editTicketError.value = "";
-
-            editedTicket.value = {
-                ...ticket
-            };
-            showEditTicketModal.value = true;
         };
 
         const handleUpdateTicket = async () => {
@@ -284,19 +344,6 @@ export default {
                     setErrorMessage(editTicketError, "Failed to update ticket.");
                 }
             }
-        };
-
-        const confirmDeleteCalendarList = () => {
-            if (confirm("Are you sure you want to delete this list? All associated tickets will also be deleted.")) {
-                deleteCalendarList();
-            }
-        };
-
-        const openEditListModal = (list) => {
-            editedList.value = {
-                ...list
-            };
-            showEditCalendarListModal.value = true;
         };
 
         const handleUpdateCalendarList = async () => {
@@ -375,14 +422,6 @@ export default {
             }
         };
 
-        const openAddNewCalendarListModal = () => {
-            newList.value = {
-                name: "",
-                color: "#CCCCCC"
-            };
-            showAddNewCalendarListModal.value = true;
-        };
-
         const handleAddNewCalendarList = async () => {
             newListError.value = "";
 
@@ -416,20 +455,6 @@ export default {
             }
         };
 
-        const openAddNewTicketModal = (listId) => {
-            newTicketError.value = "";
-
-            selectedListId.value = listId;
-            newTicket.value = {
-                name: "",
-                description: "",
-                startTime: "",
-                endTime: "",
-                priority: null,
-            };
-            showAddNewTicketModal.value = true;
-        };
-
         const handleAddNewTicket = async () => {
             await addNewTicket({
                     name: newTicket.value.name,
@@ -458,12 +483,41 @@ export default {
 
         const handleDelete = async (ticketId, list) => {
             await deleteTicket(ticketId, list, errorMessage);
-        }
+        };
 
+        // --------------
+        // Helpers      |
+        // --------------
+        // Returns a localized date string (e.g. MM/DD/YYYY) from a given ISO date string.
         const formatDate = (dateString) => {
             if (!dateString) return "";
             return new Date(dateString).toLocaleDateString();
         };
+
+        const confirmDeleteCalendarList = () => {
+            if (confirm("Are you sure you want to delete this list? All associated tickets will also be deleted.")) {
+                deleteCalendarList();
+            }
+        };
+
+        // ---------------------------------
+        // Lifecycle hooks		           |
+        // ---------------------------------
+        watch(showAddNewCalendarListModal, (newValue) => {
+            if (!newValue) newListError.value = "";
+        });
+
+        watch(showAddNewTicketModal, (newValue) => {
+            if (!newValue) newTicketError.value = "";
+        });
+
+        watch(showEditCalendarListModal, (newValue) => {
+            if (!newValue) editListError.value = "";
+        });
+
+        watch(showEditTicketModal, (newValue) => {
+            if (!newValue) editTicketError.value = "";
+        });
 
         onMounted(async () => {
             fetchCalendarLists();
@@ -491,22 +545,6 @@ export default {
             if (calendarId.value) {
                 connection.invoke("LeaveGroup", calendarId.value);
             }
-        });
-
-        watch(showAddNewCalendarListModal, (newValue) => {
-            if (!newValue) newListError.value = "";
-        });
-
-        watch(showAddNewTicketModal, (newValue) => {
-            if (!newValue) newTicketError.value = "";
-        });
-
-        watch(showEditCalendarListModal, (newValue) => {
-            if (!newValue) editListError.value = "";
-        });
-
-        watch(showEditTicketModal, (newValue) => {
-            if (!newValue) editTicketError.value = "";
         });
 
         return {

@@ -8,6 +8,9 @@ import DayView from '../views/DayView.vue';
 import Calendars from '../views/Calendars.vue';
 import { jwtDecode } from "jwt-decode";
 
+// Vue Router setup with route definitions and authentication guard logic
+
+// Define route paths and assign authentication requirements via meta fields
 const routes = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: Login, meta: { guest: true } },
@@ -24,6 +27,7 @@ const router = createRouter({
   routes,
 });
 
+// Global navigation guard to protect routes based on authentication
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("token");
   let isAuthenticated = false;
@@ -33,6 +37,7 @@ router.beforeEach((to, from, next) => {
       const decoded = jwtDecode(token);
       const now = Date.now() / 1000;
 
+      // If token is expired, remove auth data and redirect to login
       if (decoded.exp && decoded.exp < now) {
         console.warn("Token expired, logging out...");
         localStorage.removeItem("token");
@@ -42,20 +47,24 @@ router.beforeEach((to, from, next) => {
 
       isAuthenticated = true;
     } catch (error) {
+      // If token cannot be parsed, treat as unauthenticated
       console.error("Error when decrypting token:", error);
       localStorage.removeItem("token");
       localStorage.removeItem("user");
     }
   }
 
+  // Prevent authenticated users from accessing guest-only pages
   if (to.meta.guest && isAuthenticated) {
     return next('/dashboard');
   }
 
+  // Prevent unauthenticated users from accessing protected routes
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next('/login');
   }
 
+  // Continue navigation if all guard checks passed
   next();
 });
 

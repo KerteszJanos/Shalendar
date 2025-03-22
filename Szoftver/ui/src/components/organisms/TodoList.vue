@@ -1,3 +1,20 @@
+<!--
+  This component is the right side of the DayView screen.
+
+  Responsibilities:
+  - Displays a list of tickets that are not assigned to specific time intervals, but still scheduled for the current day.
+  - Enables:
+    - Reordering via drag-and-drop
+    - Editing ticket details
+    - Marking tickets as completed
+    - Copying tickets to another calendar or date
+    - Sending tickets back to their original calendar list
+    - Deleting tickets
+  - Tickets are sorted by their current position and displayed with priority and description indicators.
+  - Listens for real-time updates through SignalR to keep the list in sync.
+  - Designed to complement the left DayView component, which handles time-based tickets.
+-->
+
 <template>
 <div class="container">
     <div class="header">{{ formattedDate }}</div>
@@ -107,20 +124,10 @@ export default {
         RotateCwSquare
     },
     setup() {
+        // ---------------------------------
+        // Constants	  	        	   |
+        // --------------------------------- 
         const route = useRoute();
-        const tickets = ref([]);
-        const errorMessage = ref("");
-        const calendarId = ref(localStorage.getItem("calendarId"));
-        const showEditTicketModalFromDayView = ref(false);
-        const showCopyTicketModal = ref(false);
-        const selectedTicketId = ref(null);
-        const editedTicket = ref({
-            id: null,
-            name: "",
-            description: "",
-            priority: null
-        });
-
         const calendarListEvents = [
             "TicketCreatedInDayView",
             "TicketScheduled",
@@ -133,15 +140,37 @@ export default {
             "TicketDeletedInDayView"
         ];
 
-        const cleanDescription = (desc) => {
-            return desc.replace(/\n/g, "<br>");
-        };
-
-        const onDragStart = (event) => {
-            const ticket = event.item.__draggable_context.element;
-            localStorage.setItem("draggedTicket", JSON.stringify(ticket));
-        };
-
+        // ---------------------------------
+        // Reactive state	        	   |
+        // ---------------------------------
+        const tickets = ref([]);
+        const errorMessage = ref("");
+        const calendarId = ref(localStorage.getItem("calendarId"));
+        const showEditTicketModalFromDayView = ref(false);
+        const showCopyTicketModal = ref(false);
+        const selectedTicketId = ref(null);
+        const editedTicket = ref({
+            id: null,
+            name: "",
+            description: "",
+            priority: null
+        });
+        // Non-reactive computed variable
+        const formattedDate = computed(() => {
+            const date = new Date(route.params.date);
+            date.setDate(date.getDate());
+            return date.toLocaleDateString("hu-HU", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+        });
+        // ---------------------------------
+        // Methods	        		       |
+        // ---------------------------------
+        // --------------
+        // Modals	    |
+        // --------------
         const openCopyTicketModal = (ticketId) => {
             selectedTicketId.value = ticketId;
             showCopyTicketModal.value = true;
@@ -154,16 +183,9 @@ export default {
             showEditTicketModalFromDayView.value = true;
         };
 
-        const formattedDate = computed(() => {
-            const date = new Date(route.params.date);
-            date.setDate(date.getDate());
-            return date.toLocaleDateString("hu-HU", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            });
-        });
-
+        // --------------
+        // Core actions	|
+        // --------------
         const toggleCompletion = async (ticket) => {
             try {
                 await toggleTicketCompletion(ticket.id, !ticket.isCompleted, errorMessage);
@@ -217,9 +239,27 @@ export default {
             }
         };
 
+        const onDragStart = (event) => {
+            const ticket = event.item.__draggable_context.element;
+            localStorage.setItem("draggedTicket", JSON.stringify(ticket));
+        };
+
         const onDragEnd = async () => {
             await updateTicketOrder(tickets.value, errorMessage);
         };
+
+        // --------------
+        // Helpers  	|
+        // --------------
+        // Replaces newline characters with <br> tags to properly format multiline descriptions in HTML.
+        const cleanDescription = (desc) => {
+            return desc.replace(/\n/g, "<br>");
+        };
+
+        // ---------------------------------
+        // Lifecycle hooks	        	   |
+        // ---------------------------------
+        watch(() => route.params.date, fetchTickets);
 
         onMounted(async () => {
             fetchTickets();
@@ -263,8 +303,6 @@ export default {
             emitter.off("newTicketCreatedWithoutTime", fetchTickets);
             emitter.off("ticketDateChanged", fetchTickets);
         });
-
-        watch(() => route.params.date, fetchTickets);
 
         return {
             tickets,

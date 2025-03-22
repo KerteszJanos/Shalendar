@@ -2,6 +2,7 @@ import api from "@/utils/config/axios-config";
 import { updateTicketOrder } from "@/components/atoms/updateTicketOrder";
 import { setErrorMessage } from "@/utils/errorHandler";
 
+// Deletes a ticket, updates the list, and handles errors.
 export const deleteTicket = async (ticketId, listOrTickets, errorMessage) => {
     try {
         await api.delete(`/api/tickets/${ticketId}`);

@@ -1,3 +1,22 @@
+<!--
+  This component is the left side of the DayView screen.
+
+  Responsibilities:
+  - Displays a full 24-hour vertical timeline with markers every 15 minutes.
+  - Shows all tickets that are scheduled to specific times on a given day.
+  - Dynamically positions and sizes ticket elements based on their start and end times.
+  - Handles:
+    - Ticket completion toggle
+    - Editing scheduled tickets
+    - Deleting or sending tickets back to calendar lists
+    - Copying tickets to another calendar or date
+  - Draws a live time indicator that updates every minute and auto-scrolls to the current time when the components opened.
+  - Fetches ticket data from the backend and listens for real-time updates via SignalR.
+  - Visually adjusts overlapping tickets using vertical offsetting.
+
+  This component is critical for users to manage and visualize their time-specific tasks on a selected day.
+-->
+
 <template>
 <div class="container">
     <div class="day-view">
@@ -19,7 +38,7 @@
                 <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item" :style="getTicketStyle(ticket)" @click="openEditTicketModalFromDayView(ticket)">
 
                     <div class="ticket-header">
-                        <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" :id="'checkbox-' + ticket.id"/>
+                        <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" :id="'checkbox-' + ticket.id" />
                         <strong class="ticket-name " :title="ticket.name">{{ ticket.name }}</strong>
                     </div>
                     <div class="ticket-time">
@@ -112,20 +131,10 @@ export default {
         RotateCwSquare
     },
     setup() {
+        // ---------------------------------
+        // Constants        		   |
+        // --------------------------------- 
         const route = useRoute();
-        const tickets = ref([]);
-        const errorMessage = ref("");
-        const calendarId = ref(localStorage.getItem("calendarId"));
-        const showEditTicketModalFromDayView = ref(false);
-        const showCopyTicketModal = ref(false);
-        const selectedTicketId = ref(null);
-        const editedTicket = ref({
-            id: null,
-            name: "",
-            description: "",
-            priority: null
-        });
-
         const calendarListEvents = [
             "TicketCreatedInDayView",
             "TicketScheduled",
@@ -138,6 +147,41 @@ export default {
             "TicketDeletedInDayView",
         ];
 
+        // ---------------------------------    
+        // Reactive state       		   |
+        // ---------------------------------
+        const tickets = ref([]);
+        const errorMessage = ref("");
+        const calendarId = ref(localStorage.getItem("calendarId"));
+        const showEditTicketModalFromDayView = ref(false);
+        const showCopyTicketModal = ref(false);
+        const selectedTicketId = ref(null);
+        const currentTime = ref(getCurrentTime());
+        const timeIndicatorStyle = ref(getTimeIndicatorStyle());
+        const editedTicket = ref({
+            id: null,
+            name: "",
+            description: "",
+            priority: null
+        });
+        // Non-reactive internal variable
+        let intervalId;
+        // Non-reactive computed variable
+        const formattedDate = computed(() => {
+            const date = new Date(route.params.date);
+            date.setDate(date.getDate());
+            return date.toLocaleDateString("hu-HU", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+        });
+        // ---------------------------------
+        // Methods		               |
+        // ---------------------------------
+        // --------------
+        // Modals   	|
+        // --------------
         const openCopyTicketModal = (ticketId) => {
             selectedTicketId.value = ticketId;
             showCopyTicketModal.value = true;
@@ -150,28 +194,9 @@ export default {
             showEditTicketModalFromDayView.value = true;
         };
 
-        const formattedDate = computed(() => {
-            const date = new Date(route.params.date);
-            date.setDate(date.getDate());
-            return date.toLocaleDateString("hu-HU", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            });
-        });
-
-        const currentTime = ref(getCurrentTime());
-
-        function getCurrentTime() {
-            const now = new Date();
-            return now.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        }
-
-        const timeIndicatorStyle = ref(getTimeIndicatorStyle());
-
+        // --------------
+        // Core actions	|
+        // --------------
         const toggleCompletion = async (ticket) => {
             try {
                 await toggleTicketCompletion(ticket.id, !ticket.isCompleted, errorMessage);
@@ -185,13 +210,112 @@ export default {
             }
         };
 
+        const fetchTickets = async () => {
+            const selectedDate = route.params.date;
+            errorMessage.value = "";
+            try {
+                const response = await api.get(
+                    `/api/Tickets/scheduled/${selectedDate}/${calendarId.value}`
+                );
+                tickets.value = response.data.map((ticket) => ({
+                    ...ticket,
+                    backgroundColor: ticket.color || "#ffffff",
+                }));
+            } catch (error) {
+                if (error.response && error.response.status === 403) {
+                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
+                } else {
+                    setErrorMessage(errorMessage, "Error loading tickets.");
+                    console.error("Error loading tickets:", error);
+                }
+            }
+        };
+
+        const handleDelete = async (ticketId) => {
+            await deleteTicket(ticketId, tickets.value, errorMessage);
+            if (!errorMessage.value) {
+                await fetchTickets();
+                await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            }
+        };
+
+        const handleSendBack = async (ticketId) => {
+            await sendBackToCalendarList(ticketId, errorMessage);
+            if (!errorMessage.value) {
+                await fetchTickets();
+                await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
+            }
+        };
+
+        // Returns the inline style object for a ticket based on its start/end time and overlap with others.
+        const getTicketStyle = (ticket) => {
+            const startDateTime = `${route.params.date}T${ticket.startTime}`;
+            const endDateTime = `${route.params.date}T${ticket.endTime}`;
+            const start = new Date(startDateTime);
+            const end = new Date(endDateTime);
+            const topPosition = (start.getHours() + start.getMinutes() / 60) * 400;
+            const durationHours = (end - start) / (1000 * 60 * 60);
+            const height = durationHours * 400;
+
+            // Check overlapping tickets
+            let overlappingTickets = tickets.value.filter(t => {
+                const tStart = new Date(`${route.params.date}T${t.startTime}`);
+                const tEnd = new Date(`${route.params.date}T${t.endTime}`);
+                return (start < tEnd && end > tStart);
+            });
+
+            // Sort overlapping tickets by duration (longer first)
+            overlappingTickets = overlappingTickets.sort((a, b) => {
+                const durationA = new Date(`${route.params.date}T${a.endTime}`) - new Date(`${route.params.date}T${a.startTime}`);
+                const durationB = new Date(`${route.params.date}T${b.endTime}`) - new Date(`${route.params.date}T${b.startTime}`);
+                return durationB - durationA;
+            });
+
+            const index = overlappingTickets.findIndex(t => t.id === ticket.id);
+            const offset = 25;
+
+            return {
+                top: `${topPosition + index * offset}px`,
+                left: `${index * offset}px`,
+                height: `${height}px`,
+                backgroundColor: ticket.backgroundColor,
+                position: "absolute",
+                padding: "5px",
+                boxSizing: "border-box",
+                zIndex: index, // Higher index means ticket is on top
+                right: "10px",
+                width: "auto",
+            };
+        };
+
+        // --------------
+        // Helpers	    |
+        // --------------
+        const formatTime = (timeString) => {
+            const dateTimeString = `${route.params.date}T${timeString}`;
+            const date = new Date(dateTimeString);
+            return date.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        };
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        };
+
         function getTimeIndicatorStyle() {
             const now = new Date();
             const topPx = (now.getHours() + now.getMinutes() / 60) * 400;
             return {
                 top: `${topPx}px`
             };
-        }
+        };
 
         const scrollToCurrentTime = () => {
 
@@ -209,8 +333,12 @@ export default {
             }
 
         };
+        
+        // ---------------------------------
+        // Lifecycle hooks		           |
+        // ---------------------------------
+        watch(() => route.params.date, fetchTickets);
 
-        let intervalId;
         onMounted(async () => {
             intervalId = setInterval(() => {
                 currentTime.value = getCurrentTime();
@@ -262,95 +390,6 @@ export default {
                 connection.invoke("LeaveGroup", calendarId.value);
             }
         });
-
-        const fetchTickets = async () => {
-            const selectedDate = route.params.date;
-            errorMessage.value = "";
-            try {
-                const response = await api.get(
-                    `/api/Tickets/scheduled/${selectedDate}/${calendarId.value}`
-                );
-                tickets.value = response.data.map((ticket) => ({
-                    ...ticket,
-                    backgroundColor: ticket.color || "#ffffff",
-                }));
-            } catch (error) {
-                if (error.response && error.response.status === 403) {
-                    setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
-                    console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
-                } else {
-                    setErrorMessage(errorMessage, "Error loading tickets.");
-                    console.error("Error loading tickets:", error);
-                }
-            }
-        };
-
-        const handleDelete = async (ticketId) => {
-            await deleteTicket(ticketId, tickets.value, errorMessage);
-            if (!errorMessage.value) {
-                await fetchTickets();
-                await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
-            }
-        };
-
-        const handleSendBack = async (ticketId) => {
-            await sendBackToCalendarList(ticketId, errorMessage);
-            if (!errorMessage.value) {
-                await fetchTickets();
-                await tryDeleteDay(calendarId.value, route.params.date, tickets.value.length);
-            }
-        };
-
-        const getTicketStyle = (ticket) => {
-            const startDateTime = `${route.params.date}T${ticket.startTime}`;
-            const endDateTime = `${route.params.date}T${ticket.endTime}`;
-            const start = new Date(startDateTime);
-            const end = new Date(endDateTime);
-            const topPosition = (start.getHours() + start.getMinutes() / 60) * 400;
-            const durationHours = (end - start) / (1000 * 60 * 60);
-            const height = durationHours * 400;
-
-            // Check overlapping tickets
-            let overlappingTickets = tickets.value.filter(t => {
-                const tStart = new Date(`${route.params.date}T${t.startTime}`);
-                const tEnd = new Date(`${route.params.date}T${t.endTime}`);
-                return (start < tEnd && end > tStart);
-            });
-
-            // Sort overlapping tickets by duration (longer first)
-            overlappingTickets = overlappingTickets.sort((a, b) => {
-                const durationA = new Date(`${route.params.date}T${a.endTime}`) - new Date(`${route.params.date}T${a.startTime}`);
-                const durationB = new Date(`${route.params.date}T${b.endTime}`) - new Date(`${route.params.date}T${b.startTime}`);
-                return durationB - durationA;
-            });
-
-            const index = overlappingTickets.findIndex(t => t.id === ticket.id);
-            const offset = 25;
-
-            return {
-                top: `${topPosition + index * offset}px`,
-                left: `${index * offset}px`,
-                height: `${height}px`,
-                backgroundColor: ticket.backgroundColor,
-                position: "absolute",
-                padding: "5px",
-                boxSizing: "border-box",
-                zIndex: index, // Higher index means ticket is on top
-                right: "10px",
-                width: "auto",
-            };
-        };
-
-        const formatTime = (timeString) => {
-            const dateTimeString = `${route.params.date}T${timeString}`;
-            const date = new Date(dateTimeString);
-            return date.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        };
-
-        watch(() => route.params.date, fetchTickets);
 
         return {
             formattedDate,

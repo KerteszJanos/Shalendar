@@ -1,6 +1,7 @@
 import api from "@/utils/config/axios-config";
 import { setErrorMessage } from "@/utils/errorHandler";
 
+// Sends a ticket back to the calendar list and handles errors.
 export const sendBackToCalendarList = async (ticketId, errorMessage) => {
     if (!ticketId) {
         console.error('Hibás ticketId:', ticketId);

@@ -1,3 +1,8 @@
+<!--
+  Modal for copying a ticket (or all tickets) to another calendar.
+  Loads accessible calendars and lets the user select one via custom dropdown.
+-->
+
 <template>
 <Modal :show="show" title="Copy Ticket to Calendar" confirmText="Copy" @close="closeModal" @confirm="copyTicket">
     <div class="modal-content">
@@ -48,6 +53,9 @@ export default {
     setup(props, {
         emit
     }) {
+        // ---------------------------------
+        // Reactive state		           |
+        // ---------------------------------
         const calendars = ref([]);
         const selectedCalendar = ref(null);
         const selectedCalendarName = ref("");
@@ -55,18 +63,9 @@ export default {
         const errorMessage = ref("");
         const loading = ref(false);
 
-        watch(
-            () => props.show,
-            (newValue) => {
-                if (newValue) {
-                    selectedCalendar.value = null;
-                    selectedCalendarName.value = "";
-                    dropdownOpen.value = false;
-                    getAccessibleCalendars();
-                }
-            }
-        );
-
+        // ---------------------------------
+        // Methods                         |
+        // ---------------------------------
         const getAccessibleCalendars = async () => {
             loading.value = true;
             errorMessage.value = "";
@@ -129,6 +128,21 @@ export default {
         const closeModal = () => {
             emit("update:show", false);
         };
+
+        // ---------------------------------
+        // Lifecycle hooks		           |
+        // ---------------------------------
+        watch(
+            () => props.show,
+            (newValue) => {
+                if (newValue) {
+                    selectedCalendar.value = null;
+                    selectedCalendarName.value = "";
+                    dropdownOpen.value = false;
+                    getAccessibleCalendars();
+                }
+            }
+        );
 
         return {
             calendars,

@@ -1,3 +1,13 @@
+<!--
+  This component is the main container for the dashboard view.
+
+  It includes:
+  - The CalendarView (left) and CalendarLists (right) components.
+  - A draggable resizer for adjusting the width (or height on small screens) of the two panels.
+  - Error handling for missing default calendar setup.
+  - Responsive layout: switches to vertical layout on small screens (< 700px).
+-->
+
 <template>
 <div class="dashboard" v-if="isMounted">
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -26,43 +36,60 @@ export default {
         CalendarLists,
     },
     setup() {
+        // ---------------------------------
+        // Reactive state       		   |
+        // ---------------------------------
         const errorMessage = ref("");
         const isMounted = ref(false);
         const calendarViewSize = ref(1.3);
         const calendarListsSize = ref(0.7);
+        // Non-reactive internal variable
         let isResizing = false;
 
+        // ---------------------------------
+        // Methods		               |
+        // ---------------------------------
+        // --------------
+        // Core actions	|
+        // --------------
+        // Handles drag-based resizing between calendar view and list panel, adjusting their flex sizes dynamically depending on screen orientation.
         const startResizing = (event) => {
-            document.body.style.userSelect = "none";
+            document.body.style.userSelect = "none"; // Disable text selection during drag
             isResizing = true;
 
-            const isHorizontal = window.innerWidth > 700;
+            const isHorizontal = window.innerWidth > 700; // Check if layout is horizontal (desktop) or vertical (mobile)
 
+            // Store initial positions and sizes
             const startX = event.clientX;
             const startY = event.clientY;
             const startViewSize = calendarViewSize.value;
             const startListSize = calendarListsSize.value;
 
-            const minHeightViewRatio = 400 / window.innerHeight * 2;
-            const minHeightListsRatio = 300 / window.innerHeight * 2;
+            // Define minimum flex ratios to prevent collapsing panels
+            const minHeightViewRatio = (400 / window.innerHeight) * 2;
+            const minHeightListsRatio = (300 / window.innerHeight) * 2;
 
             const onMouseMove = (moveEvent) => {
                 if (!isResizing) return;
 
                 if (isHorizontal) {
-                    const deltaX = (moveEvent.clientX - startX) / window.innerWidth * 2;
+                    // Calculate horizontal delta and update sizes accordingly
+                    const deltaX = ((moveEvent.clientX - startX) / window.innerWidth) * 2;
                     const newViewSize = startViewSize + deltaX;
                     const newListSize = startListSize - deltaX;
 
+                    // Prevent shrinking below minimum threshold
                     if (newViewSize >= 0.2 && newListSize >= 0.2) {
                         calendarViewSize.value = newViewSize;
                         calendarListsSize.value = newListSize;
                     }
                 } else {
-                    const deltaY = (moveEvent.clientY - startY) / window.innerHeight * 2;
+                    // Calculate vertical delta and update sizes accordingly
+                    const deltaY = ((moveEvent.clientY - startY) / window.innerHeight) * 2;
                     const newViewSize = startViewSize + deltaY;
                     const newListSize = startListSize - deltaY;
 
+                    // Prevent shrinking below calculated min height ratios
                     if (newViewSize >= minHeightViewRatio && newListSize >= minHeightListsRatio) {
                         calendarViewSize.value = newViewSize;
                         calendarListsSize.value = newListSize;
@@ -71,16 +98,20 @@ export default {
             };
 
             const onMouseUp = () => {
-                document.body.style.userSelect = "";
+                document.body.style.userSelect = ""; // Re-enable text selection
                 isResizing = false;
                 window.removeEventListener("mousemove", onMouseMove);
                 window.removeEventListener("mouseup", onMouseUp);
             };
 
+            // Listen to mouse move and release globally during drag
             window.addEventListener("mousemove", onMouseMove);
             window.addEventListener("mouseup", onMouseUp);
         };
 
+        // ---------------------------------
+        // Lifecycle hooks		   |
+        // ---------------------------------
         onMounted(() => {
             try {
                 const user = JSON.parse(localStorage.getItem("user"));
@@ -113,7 +144,6 @@ export default {
 </script>
 
 <style scoped>
-
 .dashboard {
     display: flex;
     flex-direction: column;

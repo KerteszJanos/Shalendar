@@ -44,22 +44,38 @@ export default {
         LucideLogOut,
     },
     setup() {
+        // ---------------------------------
+        // Constants	          		   |
+        // --------------------------------- 
         const {
             logout
         } = useLogout();
+
+        // ---------------------------------
+        // Reactive state       		   |
+        // ---------------------------------
         const isLoggedIn = ref(!!localStorage.getItem("token"));
 
+        // ---------------------------------
+        // Methods		            	   |
+        // ---------------------------------
+        // --------------
+        // Core actions	|
+        // --------------
         const checkLoginStatus = () => {
             isLoggedIn.value = !!localStorage.getItem("token");
         };
 
-        watchEffect(() => {
-            checkLoginStatus();
-        });
-
         const handleStorageChange = () => {
             checkLoginStatus();
         };
+        
+        // ---------------------------------
+        // Lifecycle hooks		           |
+        // ---------------------------------
+        watchEffect(() => {
+            checkLoginStatus();
+        });
 
         onMounted(() => {
             checkLoginStatus();

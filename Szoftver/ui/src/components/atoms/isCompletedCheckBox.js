@@ -1,6 +1,7 @@
 import api from "@/utils/config/axios-config";
 import { setErrorMessage } from "@/utils/errorHandler";
 
+// Toggles the completed state of a ticket and handles errors.
 export async function toggleTicketCompletion(ticketId, newState, errorMessage)
 {
     try {

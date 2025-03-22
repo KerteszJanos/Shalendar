@@ -1,3 +1,14 @@
+<!--
+  This component displays the user's available calendars.
+
+  Features:
+  - Shows a list of all calendars the user has access to.
+  - Allows calendar creation, deletion, and setting a default calendar.
+  - Displays permissions and lets owners manage them (add, update, delete).
+  - Navigates to the selected calendar’s dashboard.
+  - Supports feedback messages (success and error handling).
+-->
+
 <template>
 <div class="calendar-page">
     <h2>Your Calendars</h2>
@@ -99,23 +110,11 @@ export default {
         Modal
     },
     setup() {
-        const permissions = ref([]);
-        const calendars = ref([]);
-        const showNewCalendarModal = ref(false);
-        const newCalendarName = ref("");
-        const errorMessage = ref(null);
-        const successMessage = ref("");
-        const NewCalendarErrorMessage = ref(null);
-        const PermissionsErrorMessage = ref(null);
-        const defaultCalendar = ref(null);
+        // ---------------------------------
+        // Constants	  		           |
+        // --------------------------------- 
         const defaultCalendarId = JSON.parse(localStorage.getItem("user"))?.defaultCalendarId || null;
-        const showPermissionsModal = ref(false);
-        const sharedPermissions = ref([]);
-        const newPermissionEmail = ref("");
-        const newPermissionType = ref("read");
-        const selectedCalendarId = ref(null);
         const currentUserEmail = JSON.parse(localStorage.getItem("user"))?.email || "";
-        const router = useRouter();
         const userId = (() => {
             const userData = localStorage.getItem("user");
             if (!userData) {
@@ -127,7 +126,57 @@ export default {
             const user = JSON.parse(userData);
             return user.userId || null;
         })();
+        const router = useRouter();
 
+        // ---------------------------------
+        // Reactive state	        	   |
+        // ---------------------------------
+        const permissions = ref([]);
+        const calendars = ref([]);
+        const showNewCalendarModal = ref(false);
+        const newCalendarName = ref("");
+        const errorMessage = ref(null);
+        const successMessage = ref("");
+        const NewCalendarErrorMessage = ref(null);
+        const PermissionsErrorMessage = ref(null);
+        const defaultCalendar = ref(null);
+        const showPermissionsModal = ref(false);
+        const sharedPermissions = ref([]);
+        const newPermissionEmail = ref("");
+        const newPermissionType = ref("read");
+        const selectedCalendarId = ref(null);
+
+        // ---------------------------------
+        // Methods			               |
+        // ---------------------------------
+        // --------------
+        // Modals   	|
+        // --------------
+        const openPermissionsModal = async (calendarId) => {
+            PermissionsErrorMessage.value = "";
+            selectedCalendarId.value = calendarId;
+            showPermissionsModal.value = true;
+            await fetchPermissions(calendarId);
+        };
+
+        const closePermissionsModal = () => {
+            showPermissionsModal.value = false;
+            sharedPermissions.value = [];
+        };
+        
+        const openModal = () => {
+            showNewCalendarModal.value = true;
+            newCalendarName.value = "";
+            NewCalendarErrorMessage.value = "";
+        };
+
+        const closeNewCalendarModal = () => {
+            showNewCalendarModal.value = false;
+        };
+
+        // --------------
+        // Core actions	|
+        // --------------
         const confirmDeleteCalendar = async (calendarId) => {
             if (!confirm("Warning: Deleting this calendar will remove your access. If you are the last owner, all associated content (e.g., tickets) will also be deleted. Do you want to proceed?")) {
                 return;
@@ -224,16 +273,6 @@ export default {
             return permission ? permission.permissionType : "Unknown";
         };
 
-        const openModal = () => {
-            showNewCalendarModal.value = true;
-            newCalendarName.value = "";
-            NewCalendarErrorMessage.value = "";
-        };
-
-        const closeNewCalendarModal = () => {
-            showNewCalendarModal.value = false;
-        };
-
         const createCalendar = async () => {
             setErrorMessage(NewCalendarErrorMessage, validateNameField(newCalendarName.value));
             if (NewCalendarErrorMessage.value) {
@@ -258,18 +297,6 @@ export default {
                 setErrorMessage(NewCalendarErrorMessage, "Failed to create calendar.");
                 console.error("Error creating calendar:", error);
             }
-        };
-
-        const openPermissionsModal = async (calendarId) => {
-            PermissionsErrorMessage.value = "";
-            selectedCalendarId.value = calendarId;
-            showPermissionsModal.value = true;
-            await fetchPermissions(calendarId);
-        };
-
-        const closePermissionsModal = () => {
-            showPermissionsModal.value = false;
-            sharedPermissions.value = [];
         };
 
         const fetchPermissions = async (calendarId) => {
@@ -346,7 +373,10 @@ export default {
                 }
             }
         };
-
+        
+        // ---------------------------------
+        // Lifecycle hooks		           |
+        // ---------------------------------
         onMounted(fetchCalendars);
 
         return {

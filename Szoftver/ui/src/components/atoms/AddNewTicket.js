@@ -3,6 +3,7 @@ import { updateTicketOrder } from "@/components/atoms/updateTicketOrder";
 import { validateNameField, validatePriorityField } from "@/components/atoms/ValidateModalInputFields";
 import { setErrorMessage } from "@/utils/errorHandler";
 
+// Adds a new ticket, updates the list, and handles validation and errors.
 export const addNewTicket = async (ticketData, selectedListId, calendarLists, showAddNewTicketModal, errorMessage) => {
     const nameValidationError = validateNameField(ticketData.name);
     if (nameValidationError) {

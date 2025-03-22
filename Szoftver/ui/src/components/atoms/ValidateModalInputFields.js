@@ -1,3 +1,4 @@
+// Validates the ticket name field: not empty and max 255 characters.
 export function validateNameField(name) {
     if (!name || name.trim() === "") {
         return "The name cannot be empty.";
@@ -8,6 +9,7 @@ export function validateNameField(name) {
     return null;
 }
 
+// Validates that both times are set or empty, and start is at least 15 mins before end.
 export function validateTimeFieldsBothRequiredOrEmpty(startTime, endTime) {
     if (!startTime && !endTime) {
         return null;
@@ -37,6 +39,7 @@ export function validateTimeFieldsBothRequiredOrEmpty(startTime, endTime) {
     return null;
 };
 
+// Validates the priority value: must be between 0 and 9.
 export function validatePriorityField(priority) {
     if (priority < 0) {
         return "The priority must be at least 1. (or 0 to leave it empty)";
