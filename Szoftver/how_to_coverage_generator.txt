@@ -1,0 +1,11 @@
+C:\Users\Jani\Desktop\ELTE\6_felev\Szakdoga\Shalendar\Szoftver\api\Shalendar.Tests>:
+
+dotnet test --collect:"XPlat Code Coverage"
+
+Létrehoz itt egy testresults mappát: 
+"Shalendar.Tests\TestResults\guid\coverage.cobertura.xml"
+
+reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coveragereport
+
+Létrehozza itt a coverage:
+"C:\Users\Jani\Desktop\ELTE\6_felev\Szakdoga\Shalendar\Szoftver\api\Shalendar.Tests\coveragereport\index.html"
