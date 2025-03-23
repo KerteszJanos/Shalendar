@@ -268,12 +268,12 @@ namespace Shalendar.Controllers
 
 
 
-		#region private methods
+		#region Helper methods
 
 		/// <summary>
 		/// Generates a JWT token for the given user, embedding their email, ID, and calendar permissions as claims.
 		/// </summary>
-		private string GenerateJwtToken(User user)
+		public string GenerateJwtToken(User user)
 		{
 			var jwtSettings = _configuration.GetSection("JwtSettings");
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
@@ -312,7 +312,7 @@ namespace Shalendar.Controllers
 		/// <summary>
 		/// Validates the given password, ensuring it is at least 8 characters long and contains at least one uppercase letter and one number.
 		/// </summary>
-		private string? ValidatePassword(string password)
+		public string? ValidatePassword(string password)
 		{
 			if (string.IsNullOrEmpty(password) || password.Length < 8)
 				return "Password must be at least 8 characters long.";

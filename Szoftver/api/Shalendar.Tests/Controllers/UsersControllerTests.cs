@@ -13,6 +13,8 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Shalendar.Models.Dtos;
 using Shalendar.Models;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Shalendar.Tests.Controllers
 {
@@ -149,6 +151,59 @@ namespace Shalendar.Tests.Controllers
 			var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
 			Assert.Equal("An account with this email already exists.", badRequest.Value);
 		}
+
+		[Fact]
+		public async Task PostUser_ShouldReturnBadRequest_WhenPasswordInvalid()
+		{
+			var options = new DbContextOptionsBuilder<ShalendarDbContext>()
+				.UseInMemoryDatabase(Guid.NewGuid().ToString())
+				.Options;
+
+			using var context = new ShalendarDbContext(options);
+			var (controller, _, _, _) = CreateUsersController(context);
+
+			var user = new User
+			{
+				Username = "invalidpwuser",
+				Email = "pwtest@example.com",
+				PasswordHash = "123"
+			};
+
+			var result = await controller.PostUser(user);
+
+			var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+			Assert.Contains("Password must be", badRequest.Value.ToString());
+		}
+
+		[Fact]
+		public async Task PostUser_ShouldCreateUser_WhenValidInput()
+		{
+			var options = new DbContextOptionsBuilder<ShalendarDbContext>()
+				.UseInMemoryDatabase(Guid.NewGuid().ToString())
+				.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+				.Options;
+
+
+			using var context = new ShalendarDbContext(options);
+			var (controller, _, _, _) = CreateUsersController(context);
+
+			var user = new User
+			{
+				Username = "newuser",
+				Email = "new@example.com",
+				PasswordHash = "StrongPassword123!"
+			};
+
+			var result = await controller.PostUser(user);
+
+			Assert.IsType<OkResult>(result.Result);
+
+			Assert.Single(context.Users);
+			Assert.Single(context.Calendars);
+			Assert.Single(context.CalendarLists);
+			Assert.Single(context.CalendarPermissions);
+		}
+
 
 		[Fact]
 		public async Task LoginUser_ShouldReturnUnauthorized_WhenEmailNotRegistered()
@@ -467,5 +522,86 @@ namespace Shalendar.Tests.Controllers
 
 		#endregion
 
+		#region Helper methods
+
+		[Theory]
+		[InlineData(null, "Password must be at least 8 characters long.")]
+		[InlineData("", "Password must be at least 8 characters long.")]
+		[InlineData("short1A", "Password must be at least 8 characters long.")]
+		[InlineData("lowercase1", "Password must contain at least one uppercase letter.")]
+		[InlineData("NOLOWERCASE", "Password must contain at least one number.")]
+		[InlineData("ValidPass1", null)]
+		public void ValidatePassword_ShouldReturnExpectedMessage(string password, string expectedMessage)
+		{
+			var options = new DbContextOptionsBuilder<ShalendarDbContext>()
+				.UseInMemoryDatabase(Guid.NewGuid().ToString())
+				.Options;
+
+			using var context = new ShalendarDbContext(options);
+			var (controller, _, _, _) = CreateUsersController(context);
+
+			var result = controller.ValidatePassword(password);
+
+			Assert.Equal(expectedMessage, result);
+		}
+
+		[Fact]
+		public void GenerateJwtToken_ShouldReturnValidJwtWithClaims()
+		{
+			// Arrange
+			var options = new DbContextOptionsBuilder<ShalendarDbContext>()
+				.UseInMemoryDatabase(Guid.NewGuid().ToString())
+				.Options;
+
+			using var context = new ShalendarDbContext(options);
+
+			var user = new User
+			{
+				Id = 1,
+				Email = "test@example.com",
+				Username = "testuser"
+			};
+
+			context.Users.Add(user);
+			context.CalendarPermissions.AddRange(
+				new CalendarPermission { CalendarId = 1, UserId = 1, PermissionType = "read" },
+				new CalendarPermission { CalendarId = 2, UserId = 1, PermissionType = "owner" }
+			);
+			context.SaveChanges();
+
+			var (controller, _, mockConfiguration, _) = CreateUsersController(context);
+
+			var jwtSection = new Mock<IConfigurationSection>();
+			jwtSection.Setup(s => s[It.IsAny<string>()]).Returns((string key) =>
+			{
+				return key switch
+				{
+					"SecretKey" => "superlongsecretkeythatisatleast32chars",
+					"Issuer" => "ShalendarIssuer",
+					"Audience" => "ShalendarAudience",
+					"ExpirationInMinutes" => "60",
+					_ => null
+				};
+			});
+
+			mockConfiguration.Setup(c => c.GetSection("JwtSettings")).Returns(jwtSection.Object);
+
+			// Act
+			var token = controller.GenerateJwtToken(user);
+
+			// Assert
+			Assert.False(string.IsNullOrWhiteSpace(token));
+
+			var handler = new JwtSecurityTokenHandler();
+			var parsed = handler.ReadJwtToken(token);
+
+			Assert.Contains(parsed.Claims, c => c.Type == JwtRegisteredClaimNames.Email && c.Value == user.Email);
+			Assert.Contains(parsed.Claims, c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == user.Id.ToString());
+			Assert.Contains(parsed.Claims, c => c.Type == "CalendarPermission" && c.Value == "1:read");
+			Assert.Contains(parsed.Claims, c => c.Type == "CalendarPermission" && c.Value == "2:owner");
+		}
+
+
+		#endregion
 	}
 }

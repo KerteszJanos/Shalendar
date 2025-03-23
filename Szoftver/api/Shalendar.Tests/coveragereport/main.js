@@ -221,18 +221,18 @@ var assemblies = [
   {
     "name": "Shalendar",
     "classes": [
-      { "name": "CalendarHub", "rp": "Shalendar_CalendarHub.html", "cl": 0, "ucl": 22, "cal": 22, "tl": 56, "cb": 0, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "GroupManagerService", "rp": "Shalendar_GroupManagerService.html", "cl": 0, "ucl": 29, "cal": 29, "tl": 60, "cb": 0, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "JwtHelper", "rp": "Shalendar_JwtHelper.html", "cl": 0, "ucl": 48, "cal": 48, "tl": 92, "cb": 0, "tb": 36, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "CalendarHub", "rp": "Shalendar_CalendarHub.html", "cl": 22, "ucl": 0, "cal": 22, "tl": 56, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "GroupManagerService", "rp": "Shalendar_GroupManagerService.html", "cl": 29, "ucl": 0, "cal": 29, "tl": 60, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "JwtHelper", "rp": "Shalendar_JwtHelper.html", "cl": 44, "ucl": 4, "cal": 48, "tl": 92, "cb": 32, "tb": 36, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Shalendar.Contexts.ShalendarDbContext", "rp": "Shalendar_ShalendarDbContext.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 20, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Shalendar.Controllers.CalendarListsController", "rp": "Shalendar_CalendarListsController.html", "cl": 123, "ucl": 16, "cal": 139, "tl": 258, "cb": 29, "tb": 32, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Shalendar.Controllers.CalendarsController", "rp": "Shalendar_CalendarsController.html", "cl": 185, "ucl": 33, "cal": 218, "tl": 388, "cb": 47, "tb": 56, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Shalendar.Controllers.DaysController", "rp": "Shalendar_DaysController.html", "cl": 76, "ucl": 0, "cal": 76, "tl": 167, "cb": 22, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Shalendar.Controllers.TicketsController", "rp": "Shalendar_TicketsController.html", "cl": 404, "ucl": 145, "cal": 549, "tl": 837, "cb": 127, "tb": 160, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Shalendar.Controllers.UsersController", "rp": "Shalendar_UsersController.html", "cl": 85, "ucl": 96, "cal": 181, "tl": 334, "cb": 26, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Shalendar.Functions.CopyTicketHelper", "rp": "Shalendar_CopyTicketHelper.html", "cl": 0, "ucl": 70, "cal": 70, "tl": 103, "cb": 0, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Shalendar.Functions.DeleteCalendarHelper", "rp": "Shalendar_DeleteCalendarHelper.html", "cl": 0, "ucl": 64, "cal": 64, "tl": 115, "cb": 0, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Shalendar.Functions.GetCalendarIdHelper", "rp": "Shalendar_GetCalendarIdHelper.html", "cl": 0, "ucl": 8, "cal": 8, "tl": 21, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Shalendar.Controllers.UsersController", "rp": "Shalendar_UsersController.html", "cl": 158, "ucl": 23, "cal": 181, "tl": 334, "cb": 41, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Shalendar.Functions.CopyTicketHelper", "rp": "Shalendar_CopyTicketHelper.html", "cl": 51, "ucl": 19, "cal": 70, "tl": 103, "cb": 13, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Shalendar.Functions.DeleteCalendarHelper", "rp": "Shalendar_DeleteCalendarHelper.html", "cl": 60, "ucl": 4, "cal": 64, "tl": 115, "cb": 14, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Shalendar.Functions.GetCalendarIdHelper", "rp": "Shalendar_GetCalendarIdHelper.html", "cl": 8, "ucl": 0, "cal": 8, "tl": 21, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Shalendar.Models.Calendar", "rp": "Shalendar_Calendar.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 14, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Shalendar.Models.CalendarList", "rp": "Shalendar_CalendarList.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 20, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Shalendar.Models.CalendarPermission", "rp": "Shalendar_CalendarPermission.html", "cl": 3, "ucl": 1, "cal": 4, "tl": 19, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -260,46 +260,10 @@ var riskHotspotMetrics = [
 
 var riskHotspots = [
   {
-    "assembly": "Shalendar", "class": "JwtHelper", "reportPath": "Shalendar_JwtHelper.html", "methodName": "HasCalendarPermission()", "methodShortName": "HasCalendarPermission()", "fileIndex": 0, "line": 23,
-    "metrics": [
-      { "value": 420, "exceeded": true },
-      { "value": 20, "exceeded": true },
-    ]},
-  {
-    "assembly": "Shalendar", "class": "JwtHelper", "reportPath": "Shalendar_JwtHelper.html", "methodName": "HasCalendarPermission()", "methodShortName": "HasCalendarPermission()", "fileIndex": 0, "line": 63,
-    "metrics": [
-      { "value": 272, "exceeded": true },
-      { "value": 16, "exceeded": true },
-    ]},
-  {
-    "assembly": "Shalendar", "class": "Shalendar.Functions.CopyTicketHelper", "reportPath": "Shalendar_CopyTicketHelper.html", "methodName": "CopyTicketAsync()", "methodShortName": "CopyTicketAsync()", "fileIndex": 0, "line": 17,
-    "metrics": [
-      { "value": 272, "exceeded": true },
-      { "value": 16, "exceeded": true },
-    ]},
-  {
-    "assembly": "Shalendar", "class": "Shalendar.Controllers.UsersController", "reportPath": "Shalendar_UsersController.html", "methodName": "ValidatePassword(System.String)", "methodShortName": "ValidatePassword(...)", "fileIndex": 0, "line": 316,
-    "metrics": [
-      { "value": 72, "exceeded": true },
-      { "value": 8, "exceeded": false },
-    ]},
-  {
-    "assembly": "Shalendar", "class": "Shalendar.Functions.DeleteCalendarHelper", "reportPath": "Shalendar_DeleteCalendarHelper.html", "methodName": "DeleteCalendar()", "methodShortName": "DeleteCalendar()", "fileIndex": 0, "line": 64,
-    "metrics": [
-      { "value": 72, "exceeded": true },
-      { "value": 8, "exceeded": false },
-    ]},
-  {
     "assembly": "Shalendar", "class": "Shalendar.Controllers.CalendarsController", "reportPath": "Shalendar_CalendarsController.html", "methodName": "CopyAllTickets()", "methodShortName": "CopyAllTickets()", "fileIndex": 0, "line": 255,
     "metrics": [
       { "value": 54, "exceeded": true },
       { "value": 16, "exceeded": true },
-    ]},
-  {
-    "assembly": "Shalendar", "class": "Shalendar.Functions.DeleteCalendarHelper", "reportPath": "Shalendar_DeleteCalendarHelper.html", "methodName": "ShouldDeleteCalendar()", "methodShortName": "ShouldDeleteCalendar()", "fileIndex": 0, "line": 31,
-    "metrics": [
-      { "value": 42, "exceeded": true },
-      { "value": 6, "exceeded": false },
     ]},
   {
     "assembly": "Shalendar", "class": "Shalendar.Controllers.TicketsController", "reportPath": "Shalendar_TicketsController.html", "methodName": "UpdateTicket()", "methodShortName": "UpdateTicket()", "fileIndex": 0, "line": 575,
@@ -314,15 +278,33 @@ var riskHotspots = [
       { "value": 26, "exceeded": true },
     ]},
   {
+    "assembly": "Shalendar", "class": "JwtHelper", "reportPath": "Shalendar_JwtHelper.html", "methodName": "HasCalendarPermission()", "methodShortName": "HasCalendarPermission()", "fileIndex": 0, "line": 23,
+    "metrics": [
+      { "value": 20, "exceeded": false },
+      { "value": 20, "exceeded": true },
+    ]},
+  {
     "assembly": "Shalendar", "class": "Shalendar.Controllers.TicketsController", "reportPath": "Shalendar_TicketsController.html", "methodName": "ScheduleTicket()", "methodShortName": "ScheduleTicket()", "fileIndex": 0, "line": 314,
     "metrics": [
       { "value": 20, "exceeded": false },
       { "value": 20, "exceeded": true },
     ]},
   {
+    "assembly": "Shalendar", "class": "JwtHelper", "reportPath": "Shalendar_JwtHelper.html", "methodName": "HasCalendarPermission()", "methodShortName": "HasCalendarPermission()", "fileIndex": 0, "line": 63,
+    "metrics": [
+      { "value": 18, "exceeded": false },
+      { "value": 16, "exceeded": true },
+    ]},
+  {
     "assembly": "Shalendar", "class": "Shalendar.Controllers.TicketsController", "reportPath": "Shalendar_TicketsController.html", "methodName": "ChangeTicketDate()", "methodShortName": "ChangeTicketDate()", "fileIndex": 0, "line": 709,
     "metrics": [
       { "value": 17, "exceeded": false },
+      { "value": 16, "exceeded": true },
+    ]},
+  {
+    "assembly": "Shalendar", "class": "Shalendar.Functions.CopyTicketHelper", "reportPath": "Shalendar_CopyTicketHelper.html", "methodName": "CopyTicketAsync()", "methodShortName": "CopyTicketAsync()", "fileIndex": 0, "line": 17,
+    "metrics": [
+      { "value": 21, "exceeded": false },
       { "value": 16, "exceeded": true },
     ]},
 ];
