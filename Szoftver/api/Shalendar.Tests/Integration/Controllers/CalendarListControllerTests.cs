@@ -337,7 +337,6 @@ namespace Shalendar.Tests.Integration.Controllers
 			// Assert
 			Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-			// Use fresh DbContext to verify update
 			using var verifyScope = _factory.Services.CreateScope();
 			var verifyContext = verifyScope.ServiceProvider.GetRequiredService<Shalendar.Contexts.ShalendarDbContext>();
 			var updatedEntity = await verifyContext.CalendarLists.FindAsync(list.Id);
@@ -428,7 +427,6 @@ namespace Shalendar.Tests.Integration.Controllers
 			context.CalendarLists.Add(list);
 			await context.SaveChangesAsync();
 
-			// GPT generated: create a ticket associated with the calendar list
 			var ticket = new Ticket
 			{
 				Name = "Test Ticket",
@@ -465,7 +463,7 @@ namespace Shalendar.Tests.Integration.Controllers
 			Assert.Null(deletedList);
 
 			var deletedTicket = await verifyContext.Tickets.FindAsync(ticket.Id);
-			Assert.Null(deletedTicket); // GPT generated: ensure ticket was also deleted
+			Assert.Null(deletedTicket);
 		}
 
 		#endregion

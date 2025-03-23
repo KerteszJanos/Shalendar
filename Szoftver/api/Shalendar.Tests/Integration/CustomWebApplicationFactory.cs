@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics; // GPT generated: required for InMemoryEventId
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shalendar.Contexts;
@@ -41,7 +41,6 @@ namespace Shalendar.Tests.Integration
 
 				services.AddDbContext<ShalendarDbContext>(options =>
 				{
-					// GPT generated: suppress in-memory transaction warning to prevent exception during tests
 					options.UseInMemoryDatabase(InMemoryDbName)
 						.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 				});

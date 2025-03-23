@@ -1,6 +1,4 @@
-﻿// Gpt generated: Updated JWT generator with consistent key for test environment
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,7 +12,6 @@ namespace Shalendar.Tests.Integration.Helpers
 	{
 		public static string GenerateToken(User user, IEnumerable<CalendarPermission> permissions)
 		{
-			// Gpt generated: Ensure key is at least 256 bits (32 chars) and matches test config override
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySuperSecretKeyForJwtAuth123!TEST1234"));
 			var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
