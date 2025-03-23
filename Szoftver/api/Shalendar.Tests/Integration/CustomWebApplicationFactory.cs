@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics; // GPT generated: required for InMemoryEventId
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shalendar.Contexts;
@@ -16,11 +17,11 @@ namespace Shalendar.Tests.Integration
 			builder.ConfigureAppConfiguration((context, configBuilder) =>
 			{
 				var testSettings = new Dictionary<string, string>
-			{
-				{ "JwtSettings:Issuer", "ShalendarIssuer" },
-				{ "JwtSettings:Audience", "ShalendarAudience" },
-				{ "JwtSettings:SecretKey", "MySuperSecretKeyForJwtAuth123!TEST1234" }
-			};
+				{
+					{ "JwtSettings:Issuer", "ShalendarIssuer" },
+					{ "JwtSettings:Audience", "ShalendarAudience" },
+					{ "JwtSettings:SecretKey", "MySuperSecretKeyForJwtAuth123!TEST1234" }
+				};
 
 				configBuilder.AddInMemoryCollection(testSettings);
 			});
@@ -40,7 +41,9 @@ namespace Shalendar.Tests.Integration
 
 				services.AddDbContext<ShalendarDbContext>(options =>
 				{
-					options.UseInMemoryDatabase(InMemoryDbName);
+					// GPT generated: suppress in-memory transaction warning to prevent exception during tests
+					options.UseInMemoryDatabase(InMemoryDbName)
+						.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 				});
 			});
 		}

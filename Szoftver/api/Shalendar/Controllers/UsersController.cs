@@ -273,6 +273,7 @@ namespace Shalendar.Controllers
 		/// <summary>
 		/// Generates a JWT token for the given user, embedding their email, ID, and calendar permissions as claims.
 		/// </summary>
+		[NonAction]
 		public string GenerateJwtToken(User user)
 		{
 			var jwtSettings = _configuration.GetSection("JwtSettings");
@@ -312,6 +313,7 @@ namespace Shalendar.Controllers
 		/// <summary>
 		/// Validates the given password, ensuring it is at least 8 characters long and contains at least one uppercase letter and one number.
 		/// </summary>
+		[NonAction]
 		public string? ValidatePassword(string password)
 		{
 			if (string.IsNullOrEmpty(password) || password.Length < 8)
