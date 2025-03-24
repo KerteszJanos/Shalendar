@@ -1,0 +1,2 @@
+A vs elvileg induláskor frissíti a nugeteket, ha nem akkor futtaassuk:
+Visual Studio-ban: Tools → NuGet Package Manager → Package Manager Console, és ott: Restore-Shalendar
