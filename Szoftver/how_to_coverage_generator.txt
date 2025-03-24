@@ -1,3 +1,18 @@
+Csak unit:
+dotnet test --collect:"XPlat Code Coverage" --filter "FullyQualifiedName~Shalendar.Tests.Unit"
+
+
+reportgenerator -reports:Shalendar.Tests/TestResults/**/coverage.cobertura.xml -targetdir:Shalendar.Tests/coveragereport/unit
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Csak integration:
+dotnet test Shalendar.Tests/Integration --collect:"XPlat Code Coverage"
+
+reportgenerator -reports:Shalendar.Tests/Integration/TestResults/**/coverage.cobertura.xml -targetdir:Shalendar.Tests/coveragereport/integration
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Overall:
 C:\Users\Jani\Desktop\ELTE\6_felev\Szakdoga\Shalendar\Szoftver\api\Shalendar.Tests>:
 
 dotnet test --collect:"XPlat Code Coverage"
