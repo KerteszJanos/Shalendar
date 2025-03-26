@@ -50,5 +50,6 @@ CREATE TABLE Tickets (
     CalendarListId INT,
     CurrentParentType VARCHAR(50),
     ParentId INT,
+    IsCompleted BIT NOT NULL DEFAULT 0,
     FOREIGN KEY (CalendarListId) REFERENCES CalendarLists(Id)
 );
