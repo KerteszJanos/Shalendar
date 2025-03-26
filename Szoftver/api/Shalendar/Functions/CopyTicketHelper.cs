@@ -61,13 +61,17 @@ namespace Shalendar.Functions
 						targetParentId = targetDay.Id;
 					}
 
-					var existingTicket = await context.Tickets
-						.FirstOrDefaultAsync(t => t.Name == ticket.Name &&
-												  t.CalendarListId == targetCalendarList.Id &&
-												  t.ParentId == targetParentId &&
-												  t.Priority == ticket.Priority &&
-												  t.Description == ticket.Description &&
-												  t.IsCompleted == ticket.IsCompleted);
+					var candidateTickets = await context.Tickets
+						.Where(t => t.Name == ticket.Name &&
+							   t.CalendarListId == targetCalendarList.Id &&
+							   t.ParentId == targetParentId &&
+							   t.Priority == ticket.Priority &&
+							   t.IsCompleted == ticket.IsCompleted)
+						.ToListAsync();
+
+					var existingTicket = candidateTickets
+						.FirstOrDefault(t => (t.Description ?? "") == (ticket.Description ?? ""));
+
 
 					if (existingTicket == null)
 					{
