@@ -64,7 +64,10 @@ namespace Shalendar.Functions
 					var existingTicket = await context.Tickets
 						.FirstOrDefaultAsync(t => t.Name == ticket.Name &&
 												  t.CalendarListId == targetCalendarList.Id &&
-												  t.ParentId == targetParentId);
+												  t.ParentId == targetParentId &&
+												  t.Priority == ticket.Priority &&
+												  t.Description == ticket.Description &&
+												  t.IsCompleted == ticket.IsCompleted);
 
 					if (existingTicket == null)
 					{
