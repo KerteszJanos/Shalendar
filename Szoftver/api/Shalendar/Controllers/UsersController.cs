@@ -40,7 +40,7 @@ namespace Shalendar.Controllers
 		[Authorize]
 		public async Task<ActionResult<User>> GetCurrentUser()
 		{
-			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 			var user = await _context.Users.FindAsync(userId);
 
 			if (user == null)
@@ -64,7 +64,6 @@ namespace Shalendar.Controllers
 		#region Posts
 
 		// POST: api/Users
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
 		public async Task<ActionResult<User>> PostUser(User user)
 		{
@@ -174,7 +173,7 @@ namespace Shalendar.Controllers
 		[Authorize]
 		public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
 		{
-			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 			var user = await _context.Users.FindAsync(userId);
 
 			if (user == null)
@@ -208,7 +207,7 @@ namespace Shalendar.Controllers
 		[Authorize]
 		public async Task<IActionResult> SetDefaultCalendar(int calendarId)
 		{
-			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+			var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 			var user = await _context.Users.FindAsync(userId);
 
 			if (user == null)
@@ -277,7 +276,7 @@ namespace Shalendar.Controllers
 		public string GenerateJwtToken(User user)
 		{
 			var jwtSettings = _configuration.GetSection("JwtSettings");
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
+			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
 			var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 			var userPermissions = _context.CalendarPermissions

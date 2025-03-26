@@ -456,7 +456,6 @@ namespace Shalendar.Tests.Integration.Controllers
 			}
 			Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-			// Use fresh DbContext to verify deletion
 			using var verifyScope = _factory.Services.CreateScope();
 			var verifyContext = verifyScope.ServiceProvider.GetRequiredService<Shalendar.Contexts.ShalendarDbContext>();
 			var deletedList = await verifyContext.CalendarLists.FindAsync(list.Id);
