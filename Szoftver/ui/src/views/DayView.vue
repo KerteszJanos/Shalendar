@@ -13,7 +13,15 @@
 
 <template>
 <div class="container">
-    <button class="nav-btn left" @click="goToPreviousDay" @dragover.prevent @drop="handleDrop('previous')">&#9665;</button>
+    <button
+  class="nav-btn left"
+  @click="goToPreviousDay"
+  @dragover.prevent
+  @drop="handleDrop('previous')"
+  :disabled="isHandlingDrop"
+>
+  &#9665;
+</button>
     <div class="content">
         <button class="add-ticket-btn" @click="openAddTicketModal">+</button>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
@@ -22,7 +30,15 @@
             <TodoList class="todoList" />
         </div>
     </div>
-    <button class="nav-btn right" @click="goToNextDay" @dragover.prevent @drop="handleDrop('next')">&#9655;</button>
+    <button
+  class="nav-btn right"
+  @click="goToNextDay"
+  @dragover.prevent
+  @drop="handleDrop('next')"
+  :disabled="isHandlingDrop"
+>
+  &#9655;
+</button>
 
     <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="handleAddNewTicket">
         <div class="modal-content">
@@ -111,6 +127,7 @@ export default {
         const nameErrorMessage = ref("");
         const priorityErrorMessage = ref("");
         const calendarListError = ref("");
+        const isHandlingDrop = ref(false);
         const timeError = ref("");
         const newTicket = ref({
             name: "",
@@ -167,24 +184,36 @@ export default {
         };
 
         const handleDrop = async (direction) => {
-            const storedTicket = localStorage.getItem("draggedTicket");
-            if (!storedTicket) return;
+    if (isHandlingDrop.value) return;
+    isHandlingDrop.value = true;
 
-            const draggedTicket = JSON.parse(storedTicket);
+    const storedTicket = localStorage.getItem("draggedTicket");
+    if (!storedTicket) {
+        isHandlingDrop.value = false;
+        return;
+    }
 
-            let newDate = new Date(route.params.date);
-            if (direction === 'previous') {
-                newDate.setDate(newDate.getDate() - 1);
-            } else if (direction === 'next') {
-                newDate.setDate(newDate.getDate() + 1);
-            }
+    const draggedTicket = JSON.parse(storedTicket);
 
-            const formattedDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
+    let newDate = new Date(route.params.date);
+    if (direction === 'previous') {
+        newDate.setDate(newDate.getDate() - 1);
+    } else if (direction === 'next') {
+        newDate.setDate(newDate.getDate() + 1);
+    }
 
-            await changeTicketDate(draggedTicket.id, formattedDate);
+    const formattedDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
 
-            localStorage.removeItem("draggedTicket");
-        };
+    try {
+        await changeTicketDate(draggedTicket.id, formattedDate);
+    } catch (error) {
+        console.error("Hiba a drop közben:", error);
+    }
+
+    localStorage.removeItem("draggedTicket");
+    isHandlingDrop.value = false;
+};
+
 
         const goToPreviousDay = () => {
             const previousDate = new Date(currentDate.value);
@@ -368,13 +397,26 @@ export default {
             currentDate,
             handleDrop,
             priorityErrorMessage,
-            openAddTicketModal
+            openAddTicketModal,
+            isHandlingDrop
         };
     },
 };
 </script>
 
 <style scoped>
+.nav-btn:disabled {
+    background-color: #213A57;
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 1;
+    transition: none;
+}
+
+.nav-btn:disabled:hover {
+    background-color: #213A57;
+}
+
 .container {
     display: flex;
     height: 100%;
