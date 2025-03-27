@@ -33,7 +33,7 @@
             <label for="ticket-calendar-list" class="required-label">Select Calendar List</label>
             <DropdownSelect v-model="newTicket.calendarListId" :calendarLists="calendarLists" />
             <p v-if="calendarListError" class="error">{{ calendarListError }}</p>
-            
+
             <label for="ticket-description">Description (optional)</label>
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
 
@@ -84,7 +84,7 @@ import {
 import {
     useRouter
 } from "vue-router";
-import DropdownSelect from "@/components/atoms/DropdownSelect.vue"; 
+import DropdownSelect from "@/components/atoms/DropdownSelect.vue";
 
 export default {
     components: {
@@ -95,7 +95,7 @@ export default {
     },
     setup() {
         // ---------------------------------
-        // Constants	         		   |
+        // Constants		               |
         // --------------------------------- 
         const route = useRoute();
         const router = useRouter();
@@ -125,7 +125,7 @@ export default {
             return route.params.date ? new Date(route.params.date) : new Date();
         });
         // ---------------------------------
-        // Methods			               |
+        // Methods		                   |
         // ---------------------------------
         // --------------
         // Modals   	|
@@ -179,7 +179,7 @@ export default {
                 newDate.setDate(newDate.getDate() + 1);
             }
 
-            const formattedDate = newDate.toISOString().split("T")[0];
+            const formattedDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
 
             await changeTicketDate(draggedTicket.id, formattedDate);
 
@@ -189,16 +189,22 @@ export default {
         const goToPreviousDay = () => {
             const previousDate = new Date(currentDate.value);
             previousDate.setDate(previousDate.getDate() - 1);
+
+            const formattedDate = `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, '0')}-${String(previousDate.getDate()).padStart(2, '0')}`;
+
             router.push({
-                path: `/day/${previousDate.toISOString().split("T")[0]}`
+                path: `/day/${formattedDate}`
             });
         };
 
         const goToNextDay = () => {
             const nextDate = new Date(currentDate.value);
             nextDate.setDate(nextDate.getDate() + 1);
+
+            const formattedDate = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
+
             router.push({
-                path: `/day/${nextDate.toISOString().split("T")[0]}`
+                path: `/day/${formattedDate}`
             });
         };
 
@@ -486,6 +492,4 @@ export default {
         order: 1;
     }
 }
-
-
 </style>

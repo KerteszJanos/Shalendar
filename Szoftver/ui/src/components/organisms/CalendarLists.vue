@@ -223,7 +223,7 @@ export default {
         });
         const newList = ref({
             name: "",
-            color: "#CCCCCC",
+            color: "#31CB9D",
         });
         const newTicket = ref({
             name: "",
@@ -268,7 +268,7 @@ export default {
         const openAddNewCalendarListModal = () => {
             newList.value = {
                 name: "",
-                color: "#CCCCCC"
+                color: "#31CB9D"
             };
             showAddNewCalendarListModal.value = true;
         };
