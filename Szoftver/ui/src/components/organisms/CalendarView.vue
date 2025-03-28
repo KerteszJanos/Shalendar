@@ -231,6 +231,7 @@ export default {
             if (!calendar.value.id) return;
 
             const fetchId = ++latestFetchId.value;
+            daysInMonth.value = [];
             
             const year = currentDate.value.getFullYear();
             const month = currentDate.value.getMonth();
