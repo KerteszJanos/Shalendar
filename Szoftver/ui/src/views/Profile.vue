@@ -277,6 +277,7 @@ export default {
 .btn.changePassword
 {
     background-color: #213A57;
+    color: white;
 }
 
 .btn.changePassword:hover
