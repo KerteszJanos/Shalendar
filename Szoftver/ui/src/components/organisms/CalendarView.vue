@@ -48,7 +48,13 @@
                 {{ day }}
             </div>
         </div>
-        <div class="calendar-grid" :style="{ gridTemplateRows: gridRowStyle }">
+        <div v-if="showSpinner" class="calendar-grid loading-grid">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <span>Loading days...</span>
+            </div>
+        </div>
+        <div v-else class="calendar-grid" :style="{ gridTemplateRows: gridRowStyle }">
             <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth, 'today': isToday(day.date)}" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
@@ -140,6 +146,7 @@ export default {
         // ---------------------------------
         const currentDate = ref(new Date());
         const currentDay = ref("");
+        const isLoading = ref(false);
         const errorMessage = ref("");
         const latestFetchId = ref(0);
         const showTimeModal = ref(false);
@@ -147,6 +154,7 @@ export default {
         const modalEndTime = ref("");
         const modalErrorMessage = ref("");
         const dropTicketData = ref(null);
+        const showSpinner = ref(false);
         const dropDate = ref("");
         const daysInMonth = ref([]);
         const showCopyTicketModal = ref(false);
@@ -231,8 +239,17 @@ export default {
             if (!calendar.value.id) return;
 
             const fetchId = ++latestFetchId.value;
+            isLoading.value = true;
+            showSpinner.value = false;
+
+            setTimeout(() => {
+                if (isLoading.value) {
+                    showSpinner.value = true;
+                }
+            }, 200);
+
             daysInMonth.value = [];
-            
+
             const year = currentDate.value.getFullYear();
             const month = currentDate.value.getMonth();
             const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -332,11 +349,15 @@ export default {
             }
 
             if (fetchId !== latestFetchId.value) {
+                isLoading.value = false;
+                showSpinner.value = false;
                 return;
             }
 
             daysInMonth.value = days;
             updateGridRowStyle();
+            isLoading.value = false;
+            showSpinner.value = false;
         };
 
         const goToDay = (date) => {
@@ -610,12 +631,52 @@ export default {
             showCopyTicketModal,
             isToday,
             gridRowStyle,
+            isLoading,
+            showSpinner
         };
     },
 };
 </script>
 
 <style scoped>
+.loading-grid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 220px);
+    background-color: #e3f2fd;
+    border-radius: 8px;
+}
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #555;
+}
+
+.spinner {
+    width: 46px;
+    height: 32px;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #14919B;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .icon.copy-icon {
     color: #213A57;
     margin-top: 5px;
