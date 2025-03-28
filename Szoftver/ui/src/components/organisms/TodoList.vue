@@ -25,7 +25,7 @@
                 <div class="ticket-item" draggable="true" @click="openEditTicketModalFromDayView(element)" :style="{ backgroundColor: element.backgroundColor || '#CCCCCC' }">
 
                     <div class="ticket-header">
-                        <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" :id="'checkbox-' + element.id"/>
+                        <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" :id="'checkbox-' + element.id" />
                         <p class="ticket-name " :title="element.name"><strong>{{ element.name }}</strong></p>
                     </div>
 
@@ -149,6 +149,7 @@ export default {
         const showEditTicketModalFromDayView = ref(false);
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
+        const latestFetchId = ref(0);
         const editedTicket = ref({
             id: null,
             name: "",
@@ -166,7 +167,7 @@ export default {
             });
         });
         // ---------------------------------
-        // Methods	        		       |
+        // Methods		       |
         // ---------------------------------
         // --------------
         // Modals	    |
@@ -201,9 +202,14 @@ export default {
 
         const fetchTickets = async () => {
             const selectedDate = route.params.date;
+            const fetchId = ++latestFetchId.value;
             errorMessage.value = "";
             try {
                 const response = await api.get(`/api/Tickets/todolist/${selectedDate}/${calendarId.value}`);
+                if (fetchId !== latestFetchId.value) {
+
+                    return;
+                }
                 tickets.value = response.data
                     .map(ticket => ({
                         ...ticket,
@@ -211,6 +217,9 @@ export default {
                     }))
                     .sort((a, b) => a.currentPosition - b.currentPosition);
             } catch (error) {
+                if (fetchId !== latestFetchId.value) {
+                    return;
+                }
                 if (error.response && error.response.status === 403) {
                     setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
@@ -348,7 +357,6 @@ export default {
     display: none;
 }
 
-
 .container {
     display: flex;
     height: 100%;
@@ -357,8 +365,7 @@ export default {
     padding-bottom: 20px;
 }
 
-.ticket-container
-{
+.ticket-container {
     margin-right: 20px;
     margin-left: 20px;
 }
@@ -385,7 +392,7 @@ export default {
     padding: 10px;
     background: #14919B;
     border-radius: 8px;
-    margin: 20px 20px 35px 20px; 
+    margin: 20px 20px 35px 20px;
 }
 
 .ticket-item {

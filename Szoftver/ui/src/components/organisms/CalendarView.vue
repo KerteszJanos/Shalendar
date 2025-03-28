@@ -119,7 +119,7 @@ export default {
     },
     setup() {
         // ---------------------------------
-        // Constants	  		           |
+        // Constants		           |
         // --------------------------------- 
         const router = useRouter();
         const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -141,6 +141,7 @@ export default {
         const currentDate = ref(new Date());
         const currentDay = ref("");
         const errorMessage = ref("");
+        const latestFetchId = ref(0);
         const showTimeModal = ref(false);
         const modalStartTime = ref("");
         const modalEndTime = ref("");
@@ -164,7 +165,7 @@ export default {
             });
         });
         // ---------------------------------
-        // Methods			               |
+        // Methods		               |
         // ---------------------------------
         // --------------
         // Modals	    |
@@ -229,6 +230,8 @@ export default {
         const fetchCalendarDays = async () => {
             if (!calendar.value.id) return;
 
+            const fetchId = ++latestFetchId.value;
+            
             const year = currentDate.value.getFullYear();
             const month = currentDate.value.getMonth();
             const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -325,6 +328,10 @@ export default {
                     todoTickets: todoTickets,
                     scheduleTickets: scheduleTickets
                 });
+            }
+
+            if (fetchId !== latestFetchId.value) {
+                return;
             }
 
             daysInMonth.value = days;

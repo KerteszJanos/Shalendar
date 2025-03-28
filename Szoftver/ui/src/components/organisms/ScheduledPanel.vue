@@ -157,6 +157,7 @@ export default {
         const showCopyTicketModal = ref(false);
         const selectedTicketId = ref(null);
         const currentTime = ref(getCurrentTime());
+        const latestFetchId = ref(0);
         const timeIndicatorStyle = ref(getTimeIndicatorStyle());
         const editedTicket = ref({
             id: null,
@@ -212,16 +213,23 @@ export default {
 
         const fetchTickets = async () => {
             const selectedDate = route.params.date;
+            const fetchId = ++latestFetchId.value;
             errorMessage.value = "";
             try {
                 const response = await api.get(
                     `/api/Tickets/scheduled/${selectedDate}/${calendarId.value}`
                 );
+                if (fetchId !== latestFetchId.value) {
+                    return;
+                }
                 tickets.value = response.data.map((ticket) => ({
                     ...ticket,
                     backgroundColor: ticket.color || "#ffffff",
                 }));
             } catch (error) {
+                if (fetchId !== latestFetchId.value) {
+                    return;
+                }
                 if (error.response && error.response.status === 403) {
                     setErrorMessage(errorMessage, `Access denied: ${error.response.data?.message || "You do not have permission."}`);
                     console.error(`Access denied: ${error.response.data?.message || "You do not have permission."}`);
@@ -333,7 +341,7 @@ export default {
             }
 
         };
-        
+
         // ---------------------------------
         // Lifecycle hooks		           |
         // ---------------------------------
