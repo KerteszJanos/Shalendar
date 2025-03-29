@@ -37,6 +37,7 @@ import {
     LucideUser,
     LucideLogOut
 } from "lucide-vue-next";
+import { isLoggedIn } from "@/utils/authState";
 
 export default {
     components: {
@@ -50,11 +51,6 @@ export default {
         const {
             logout
         } = useLogout();
-
-        // ---------------------------------
-        // Reactive state       		   |
-        // ---------------------------------
-        const isLoggedIn = ref(!!localStorage.getItem("token"));
 
         // ---------------------------------
         // Methods		            	   |

@@ -7,6 +7,7 @@ import CalendarView from '../components/organisms/CalendarView.vue';
 import DayView from '../views/DayView.vue';
 import Calendars from '../views/Calendars.vue';
 import { jwtDecode } from "jwt-decode";
+import { isLoggedIn } from "@/utils/authState";
 
 // Vue Router setup with route definitions and authentication guard logic
 
@@ -42,6 +43,7 @@ router.beforeEach((to, from, next) => {
         console.warn("Token expired, logging out...");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        isLoggedIn.value = false;
         return next('/login');
       }
 
