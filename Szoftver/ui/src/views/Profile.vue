@@ -339,7 +339,7 @@ input {
     list-style: none;
     padding: 0;
     font-size: 0.9em;
-    margin-top: -5px;
+    margin-top: 5px;
     text-align: left;
     color: red;
 }
