@@ -67,7 +67,7 @@ export default {
 
             // Define minimum flex ratios to prevent collapsing panels
             const minHeightViewRatio = (400 / window.innerHeight) * 2;
-            const minHeightListsRatio = (300 / window.innerHeight) * 2;
+            const minHeightListsRatio = (250 / window.innerHeight) * 2;
 
             const onMouseMove = (moveEvent) => {
                 if (!isResizing) return;
