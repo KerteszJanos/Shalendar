@@ -26,7 +26,7 @@
             <div class="time-scrollable">
                 <div v-for="hour in Array.from({ length: 24 }, (_, i) => i)" :key="hour">
                     <div class="hour-marker" :style="{ top: `${hour * 400}px` }">
-                        {{ hour }}:00
+                        {{ formatHour(hour) }}
                     </div>
                     <div class="half-hour-marker" :style="{ top: `${hour * 400 + 200}px` }"></div>
                     <div class="quarter-hour-marker" :style="{ top: `${hour * 400 + 100}px` }"></div>
@@ -35,10 +35,10 @@
                 <div class="time-indicator" :style="timeIndicatorStyle">
                     <span class="time-label">{{ currentTime }}</span>
                 </div>
-                <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item" :style="getTicketStyle(ticket)" @click="openEditTicketModalFromDayView(ticket)">
+                <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item" :style="getTicketStyle(ticket)" @click="openEditTicketModalFromDayView(ticket)" title="Click to edit or remove this ticket from the schedule">
 
                     <div class="ticket-header">
-                        <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" :id="'checkbox-' + ticket.id" />
+                        <input type="checkbox" class="ticket-checkbox" :checked="ticket.isCompleted" @click.stop="toggleCompletion(ticket)" :id="'checkbox-' + ticket.id" :title="ticket.isCompleted ? 'Mark as not completed' : 'Mark as completed'" />
                         <strong class="ticket-name " :title="ticket.name">{{ ticket.name }}</strong>
                     </div>
                     <div class="ticket-time">
@@ -56,9 +56,15 @@
                             </span>
                         </div>
                         <div class="ticket-actions">
-                            <RotateCwSquare class="icon send-back-icon" @click.stop="handleSendBack(ticket.id)" />
-                            <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(ticket.id)" />
-                            <Trash2 class="icon delete-icon" @click.stop="handleDelete(ticket.id)" />
+                            <span title="Send back to the list it is assigned to">
+                                <RotateCwSquare class="icon send-back-icon" @click.stop="handleSendBack(ticket.id)" />
+                            </span>
+                            <span title="Copy this ticket to another calendar if it doesn't already exist there">
+                                <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(ticket.id)" />
+                            </span>
+                            <span title="Delete this ticket">
+                                <Trash2 class="icon delete-icon" @click.stop="handleDelete(ticket.id)" />
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -171,7 +177,7 @@ export default {
         const formattedDate = computed(() => {
             const date = new Date(route.params.date);
             date.setDate(date.getDate());
-            return date.toLocaleDateString("hu-HU", {
+            return date.toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
@@ -309,6 +315,12 @@ export default {
             });
         };
 
+        const formatHour = (hour) => {
+            const period = hour < 12 ? 'AM' : 'PM';
+            const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+            return `${displayHour}:00 ${period}`;
+        };
+
         function getCurrentTime() {
             const now = new Date();
             return now.toLocaleTimeString("en-US", {
@@ -419,7 +431,8 @@ export default {
             showCopyTicketModal,
             route,
             colorShade,
-            getPriorityColor
+            getPriorityColor,
+            formatHour
         };
     },
 };

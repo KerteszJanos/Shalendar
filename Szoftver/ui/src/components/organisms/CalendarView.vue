@@ -26,8 +26,10 @@
                 </b>
                 <h2 v-else>Loading...</h2>
                 <div class="header-buttons">
-                    <button class="add-button" @click="goToCalendars">+</button>
-                    <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(calendar.id)" />
+                    <button class="add-button" @click="goToCalendars" title="View and manage all your calendars">Manage</button>
+                    <span title="Copies non-duplicate tickets to another calendar">
+                        <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(calendar.id)" />
+                    </span>
                 </div>
             </div>
             <div class="header-divider"></div>
@@ -35,8 +37,8 @@
                 <div class="date-navigation">
                     <b>{{ formattedMonth }}</b>
                     <div class="navigation">
-                        <button @click="prevMonth">◀</button>
-                        <button @click="nextMonth">▶</button>
+                        <button @click="prevMonth" title="Go to previous month">◀</button>
+                        <button @click="nextMonth" title="Go to next month">▶</button>
                     </div>
                 </div>
             </div>
@@ -55,7 +57,7 @@
             </div>
         </div>
         <div v-else class="calendar-grid" :style="{ gridTemplateRows: gridRowStyle }">
-            <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth, 'today': isToday(day.date)}" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent>
+            <div v-for="day in daysInMonth" :key="day.date" class="calendar-day" :class="{ 'other-month': !day.isCurrentMonth, 'today': isToday(day.date)}" @click="goToDay(day.date)" @drop="onTicketDrop($event, day.date)" @dragover.prevent :title="'Click to view day details and tasks'">
                 <div class="day-number">{{ day.number }}</div>
                 <div class="ticket-lists-container">
                     <div class="ticket-list">
@@ -737,8 +739,7 @@ export default {
     color: white;
     border: none;
     padding: 5px 10px;
-    font-size: 18px;
-    border-radius: 50%;
+    border-radius: 5px;
     cursor: pointer;
 }
 

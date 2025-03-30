@@ -13,32 +13,20 @@
 
 <template>
 <div class="container">
-    <button
-  class="nav-btn left"
-  @click="goToPreviousDay"
-  @dragover.prevent
-  @drop="handleDrop('previous')"
-  :disabled="isHandlingDrop"
->
-  &#9665;
-</button>
+    <button class="nav-btn left" @click="goToPreviousDay" @dragover.prevent @drop="handleDrop('previous')" :disabled="isHandlingDrop" title="Click to go to previous day, or drop a ticket to move it there">
+        &#9665;
+    </button>
     <div class="content">
-        <button class="add-ticket-btn" @click="openAddTicketModal">+</button>
+        <button class="add-ticket-btn" @click="openAddTicketModal" title="Add new ticket to the day">+</button>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div class="panels">
             <DayPanel class="dayPanel" />
             <TodoList class="todoList" />
         </div>
     </div>
-    <button
-  class="nav-btn right"
-  @click="goToNextDay"
-  @dragover.prevent
-  @drop="handleDrop('next')"
-  :disabled="isHandlingDrop"
->
-  &#9655;
-</button>
+    <button class="nav-btn right" @click="goToNextDay" @dragover.prevent @drop="handleDrop('next')" :disabled="isHandlingDrop" title="Click to go to next day, or drop a ticket to move it there">
+        &#9655;
+    </button>
 
     <Modal :show="showAddNewTicketModal" title="Add New Ticket" confirmText="Add" @close="showAddNewTicketModal = false" @confirm="handleAddNewTicket">
         <div class="modal-content">
@@ -184,36 +172,35 @@ export default {
         };
 
         const handleDrop = async (direction) => {
-    if (isHandlingDrop.value) return;
-    isHandlingDrop.value = true;
+            if (isHandlingDrop.value) return;
+            isHandlingDrop.value = true;
 
-    const storedTicket = localStorage.getItem("draggedTicket");
-    if (!storedTicket) {
-        isHandlingDrop.value = false;
-        return;
-    }
+            const storedTicket = localStorage.getItem("draggedTicket");
+            if (!storedTicket) {
+                isHandlingDrop.value = false;
+                return;
+            }
 
-    const draggedTicket = JSON.parse(storedTicket);
+            const draggedTicket = JSON.parse(storedTicket);
 
-    let newDate = new Date(route.params.date);
-    if (direction === 'previous') {
-        newDate.setDate(newDate.getDate() - 1);
-    } else if (direction === 'next') {
-        newDate.setDate(newDate.getDate() + 1);
-    }
+            let newDate = new Date(route.params.date);
+            if (direction === 'previous') {
+                newDate.setDate(newDate.getDate() - 1);
+            } else if (direction === 'next') {
+                newDate.setDate(newDate.getDate() + 1);
+            }
 
-    const formattedDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
+            const formattedDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
 
-    try {
-        await changeTicketDate(draggedTicket.id, formattedDate);
-    } catch (error) {
-        console.error("Hiba a drop közben:", error);
-    }
+            try {
+                await changeTicketDate(draggedTicket.id, formattedDate);
+            } catch (error) {
+                console.error("Hiba a drop közben:", error);
+            }
 
-    localStorage.removeItem("draggedTicket");
-    isHandlingDrop.value = false;
-};
-
+            localStorage.removeItem("draggedTicket");
+            isHandlingDrop.value = false;
+        };
 
         const goToPreviousDay = () => {
             const previousDate = new Date(currentDate.value);

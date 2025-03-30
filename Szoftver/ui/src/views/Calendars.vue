@@ -17,7 +17,7 @@
         Default Calendar: {{ defaultCalendar.name }}
     </p>
 
-    <button @click="openModal" class="add-calendar-button">+ New Calendar</button>
+    <button @click="openModal" class="add-calendar-button">Create New Calendar</button>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     <div v-if="calendars.length > 0" class="calendar-container">
@@ -34,13 +34,13 @@
             <p class="calendar-permission">{{ getPermission(calendar.id) }}</p>
 
             <div class="calendar-actions">
-                <button @click.stop="openPermissionsModal(calendar.id)" class="btn permissions">
+                <button @click.stop="openPermissionsModal(calendar.id)" class="btn permissions" title="Control access to this calendar">
                     Manage
                 </button>
-                <button @click.stop="setDefaultCalendar(calendar.id)" class="btn default">
-                    Set Default
+                <button @click.stop="setDefaultCalendar(calendar.id)" class="btn default" title="Set this calendar as your default after login">
+                    Set As Default
                 </button>
-                <button @click.stop="confirmDeleteCalendar(calendar.id)" class="btn delete">
+                <button @click.stop="confirmDeleteCalendar(calendar.id)" class="btn delete" title="Delete this calendar and all its data if you're the last owner, or just remove your own access otherwise">
                     Delete
                 </button>
             </div>
@@ -61,13 +61,14 @@
                 <li v-for="permission in sharedPermissions" :key="permission.email" :title="permission.email" class="permission-item">
                     <span class="permission-email">{{ permission.email }}</span>
                     <div class="permission-actions">
-                        <select v-if="permission.email !== currentUserEmail" v-model="permission.permissionType" @change="updatePermission(permission.email, permission.permissionType)" class="permission-dropdown">
+                        <select v-if="permission.email !== currentUserEmail" v-model="permission.permissionType" @change="updatePermission(permission.email, permission.permissionType)" class="permission-dropdown" title="Change the permission level">
                             <option value="read">Read</option>
                             <option value="write">Write</option>
                             <option value="owner">Owner</option>
                         </select>
                         <span v-else>{{ permission.permissionType }}</span>
-                        <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button">
+                        <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button" title="Removes the current user's permission from this calendar"
+                        >
                             Remove
                         </button>
                     </div>

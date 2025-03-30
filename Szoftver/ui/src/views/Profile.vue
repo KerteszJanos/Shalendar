@@ -21,7 +21,7 @@
 
     <div class="action-buttons">
         <h2>Delete Account</h2>
-        <button @click="deleteAccount" class="btn deleteAccount">Delete Account</button>
+        <button @click="deleteAccount" class="btn deleteAccount" title="Deletes your account and all calendars where you're the last owner">Delete Account</button>
     </div>
 
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>

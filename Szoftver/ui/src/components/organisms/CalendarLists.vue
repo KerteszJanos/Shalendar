@@ -18,7 +18,7 @@
 <div class="lists-container">
     <div class="header">
         <h2>To be scheduled</h2>
-        <button class="add-button" @click="openAddNewCalendarListModal">+</button>
+        <button class="add-button" @click="openAddNewCalendarListModal" title="Create a new calendar list">+</button>
     </div>
 
     <p v-if="loading">Loading...</p>
@@ -28,16 +28,16 @@
         <div v-for="list in calendarLists" :key="list.id" class="list-item" :style="{ backgroundColor: colorShade(list.color, -20) || '#CCCCCC' }">
             <div class="list-header">
                 <p class="list-title" :title="list.name">{{ list.name }}</p>
-                <button class="edit-list-button" @click="openEditListModal(list)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
-                    Edit
+                <button class="edit-list-button" @click="openEditListModal(list)" :style="{ backgroundColor: list.color || '#CCCCCC' }" title="Edit or delete this calendar list">
+                    Manage
                 </button>
             </div>
             <div class="ticket-list" v-if="list.tickets && list.tickets.length > 0">
                 <draggable class="ticket" v-model="list.tickets" @end="onTicketDragEnd(list)" :group="{ name: 'tickets', pull: true, put: false }" itemKey="id">
                     <template #item="{ element }">
-                        <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)" :style="{ backgroundColor: list.color || '#CCCCCC' }">
+                        <div class="ticket-item" draggable="true" @dragstart="onTicketDragStart(element)" @click="openEditTicketModal(element)" :style="{ backgroundColor: list.color || '#CCCCCC' }" :title="'Click to edit. Drag to a day: drop on the left to select a time, or on the right to schedule quickly.'">
                             <div class="ticket-header">
-                                <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" :id="'checkbox-' + element.id" />
+                                <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" :id="'checkbox-' + element.id" :title="element.isCompleted ? 'Mark as not completed' : 'Mark as completed'"/>
                                 <p class="ticket-name " :title="element.name"><strong>{{ element.name }}</strong></p>
                             </div>
                             <div class="ticket-info">
@@ -46,15 +46,20 @@
                                 <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }">{{ element.priority }}</span>
                             </div>
                             <div class="ticket-actions">
-                                <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(element.id)" />
-                                <Trash2 class="icon delete-icon" @click.stop="handleDelete(element.id, list)" />
+                                <span title="Copy this ticket to another calendar if it doesn't already exist there">
+                                    <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(element.id)" />
+                                </span>
+                                <span title="Delete this ticket">
+                                    <Trash2 class="icon delete-icon" @click.stop="handleDelete(element.id, list)" />
+                                </span>
+
                             </div>
                         </div>
                     </template>
                 </draggable>
             </div>
             <p v-else>No tickets.</p>
-            <button class="add-ticket-button" @click="openAddNewTicketModal(list.id)" :style="{ backgroundColor: list.color || '#CCCCCC' }">+</button>
+            <button class="add-ticket-button" @click="openAddNewTicketModal(list.id)" :style="{ backgroundColor: list.color || '#CCCCCC' }" title="Add new ticket">+</button>
         </div>
     </div>
     <p v-else-if="!errorMessage">Add a list to start scheduling your stuff :)</p>
@@ -180,7 +185,7 @@ export default {
     },
     setup() {
         // ---------------------------------
-        // Constants	  		           |
+        // Constants		           |
         // --------------------------------- 
         const calendarListEvents = [
             "TicketCreatedInCalendarLists",

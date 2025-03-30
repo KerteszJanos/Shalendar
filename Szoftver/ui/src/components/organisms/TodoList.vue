@@ -22,10 +22,10 @@
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <draggable v-model="tickets" @start="onDragStart" @end="onDragEnd" group="tickets" itemKey="id" class="ticket-container">
             <template #item="{ element }">
-                <div class="ticket-item" draggable="true" @click="openEditTicketModalFromDayView(element)" :style="{ backgroundColor: element.backgroundColor || '#CCCCCC' }">
+                <div class="ticket-item" draggable="true" @click="openEditTicketModalFromDayView(element)" :style="{ backgroundColor: element.backgroundColor || '#CCCCCC' }" title="Click to edit or schedule this ticket">
 
                     <div class="ticket-header">
-                        <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" :id="'checkbox-' + element.id" />
+                        <input type="checkbox" class="ticket-checkbox" :checked="element.isCompleted" @click.stop="toggleCompletion(element)" :id="'checkbox-' + element.id" :title="element.isCompleted ? 'Mark as not completed' : 'Mark as completed'"/>
                         <p class="ticket-name " :title="element.name"><strong>{{ element.name }}</strong></p>
                     </div>
 
@@ -43,9 +43,15 @@
                     </div>
 
                     <div class="ticket-actions">
-                        <RotateCwSquare class="icon send-back-icon" @click.stop="handleSendBack(element.id)" />
-                        <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(element.id)" />
-                        <Trash2 class="icon delete-icon" @click.stop="handleDelete(element.id)" />
+                        <span title="Send back to the list it is assigned to">
+                            <RotateCwSquare class="icon send-back-icon" @click.stop="handleSendBack(element.id)" />
+                        </span>
+                        <span title="Copy this ticket to another calendar if it doesn't already exist there">
+                            <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(element.id)" />
+                        </span>
+                        <span title="Delete this ticket">
+                            <Trash2 class="icon delete-icon" @click.stop="handsleDelete(element.id)" />
+                        </span>
                     </div>
                 </div>
             </template>
@@ -160,7 +166,7 @@ export default {
         const formattedDate = computed(() => {
             const date = new Date(route.params.date);
             date.setDate(date.getDate());
-            return date.toLocaleDateString("hu-HU", {
+            return date.toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",

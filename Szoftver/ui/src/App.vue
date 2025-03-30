@@ -2,16 +2,16 @@
 <div class="app-container">
     <nav v-if="isLoggedIn" class="navbar">
         <div class="nav-left">
-            <router-link to="/dashboard" class="dashboard-logo">
+            <router-link to="/dashboard" class="dashboard-logo" title="Go back to dashboard">
                 <img src="@/assets/images/Shalendar_logo.png" alt="Shalendar Logo" class="logo" />
             </router-link>
         </div>
 
         <div class="nav-right">
-            <router-link to="/profile" class="profile-button">
+            <router-link to="/profile" class="profile-button" title="Open your profile">
                 <LucideUser size="20" />
             </router-link>
-            <button @click="logout" class="logout-button">
+            <button @click="logout" class="logout-button" title="Log out">
                 <LucideLogOut size="20" />
             </button>
         </div>
