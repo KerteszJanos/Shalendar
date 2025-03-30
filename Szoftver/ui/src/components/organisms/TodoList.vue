@@ -29,7 +29,7 @@
                         <p class="ticket-name " :title="element.name"><strong>{{ element.name }}</strong></p>
                     </div>
 
-                    <div class="ticket-description" v-if="element.description">
+                    <div class="ticket-description" v-if="element.description" title="">
                         <p v-html="cleanDescription(element.description)" class="description"></p>
                     </div>
 
