@@ -51,7 +51,7 @@
                             <span v-if="ticket.description" class="description-icon " :style="{ color: colorShade(ticket.backgroundColor, -50) || '#CCCCCC' }" :title="ticket.description">
                                 <FileText />
                             </span>
-                            <span v-if="ticket.priority" class="priority" :style="{ backgroundColor: getPriorityColor(ticket.priority) }">
+                            <span v-if="ticket.priority" class="priority" :style="{ backgroundColor: getPriorityColor(ticket.priority) }" title="1 is the highest priority, 9 is the lowest">
                                 {{ ticket.priority }}
                             </span>
                         </div>

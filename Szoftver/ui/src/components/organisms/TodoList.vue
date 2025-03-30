@@ -37,7 +37,7 @@
                         <span v-if="element.description" class="description-icon " :style="{ color: colorShade(element.backgroundColor, -50) || '#CCCCCC' }" :title="element.description">
                             <FileText />
                         </span>
-                        <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }">
+                        <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }" title="1 is the highest priority, 9 is the lowest">
                             {{ element.priority }}
                         </span>
                     </div>

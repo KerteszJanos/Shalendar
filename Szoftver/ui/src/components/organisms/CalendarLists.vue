@@ -43,7 +43,7 @@
                             <div class="ticket-info">
                                 <span v-if="element.description" class="description-icon " :style="{ color: colorShade(list.color, -50) || '#CCCCCC' }" :title="element.description">
                                     <FileText /></span>
-                                <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }">{{ element.priority }}</span>
+                                <span v-if="element.priority" class="priority" :style="{ backgroundColor: getPriorityColor(element.priority) }" title="1 is the highest priority, 9 is the lowest">{{ element.priority }}</span>
                             </div>
                             <div class="ticket-actions">
                                 <span title="Copy this ticket to another calendar if it doesn't already exist there">
