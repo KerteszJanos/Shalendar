@@ -50,7 +50,7 @@
                             <Copy class="icon copy-icon" @click.stop="openCopyTicketModal(element.id)" />
                         </span>
                         <span title="Delete this ticket">
-                            <Trash2 class="icon delete-icon" @click.stop="handsleDelete(element.id)" />
+                            <Trash2 class="icon delete-icon" @click.stop="handleDelete(element.id)" />
                         </span>
                     </div>
                 </div>
