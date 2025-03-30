@@ -8,7 +8,7 @@
         <h2>{{ title }}</h2>
         <slot></slot>
         <div class="modal-actions">
-            <button class="modal-button" @click="closeModal">Cancel</button>
+            <button class="modal-button" @click="closeModal">Close</button>
             <button class="modal-button" @click="confirmAction">{{ confirmText }}</button>
         </div>
     </div>
