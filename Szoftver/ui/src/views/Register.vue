@@ -97,6 +97,7 @@ export default {
                     defaultCalendarId: 0,
                 });
 
+                alert("Registration successful! You can now log in.");
                 router.push("/login");
             } catch (error) {
                 if (error.response && error.response.status === 400) {
