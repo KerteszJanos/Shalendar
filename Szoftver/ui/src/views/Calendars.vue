@@ -67,8 +67,7 @@
                             <option value="owner">Owner</option>
                         </select>
                         <span v-else>{{ permission.permissionType }}</span>
-                        <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button" title="Removes the current user's permission from this calendar"
-                        >
+                        <button v-if="permission.email !== currentUserEmail" @click="deletePermission(permission.email)" class="delete-permission-button" title="Removes the current user's permission from this calendar">
                             Remove
                         </button>
                     </div>
@@ -76,12 +75,10 @@
 
             </ul>
             <div class="permission-input modal-content">
-                <input type="email" v-model="newPermissionEmail" placeholder="Enter email" class="modal-input" />
-                <select v-model="newPermissionType" class="modal-select">
-                    <option value="read">Read</option>
-                    <option value="write">Write</option>
-                    <option value="owner">Owner</option>
-                </select>
+                <h2 for="emailInput" class="modal-h2">
+                    Add permission
+                </h2>
+                <input id="emailInput" type="email" v-model="newPermissionEmail" placeholder="Enter email" class="modal-input" title="Users will be granted 'read' permission by default, which can be changed later."/>
             </div>
         </div>
         <p v-else>No permissions set for this calendar.</p>
@@ -112,7 +109,7 @@ export default {
     },
     setup() {
         // ---------------------------------
-        // Constants	  		           |
+        // Constants		           |
         // --------------------------------- 
         const defaultCalendarId = JSON.parse(localStorage.getItem("user"))?.defaultCalendarId || null;
         const currentUserEmail = JSON.parse(localStorage.getItem("user"))?.email || "";
@@ -144,11 +141,10 @@ export default {
         const showPermissionsModal = ref(false);
         const sharedPermissions = ref([]);
         const newPermissionEmail = ref("");
-        const newPermissionType = ref("read");
         const selectedCalendarId = ref(null);
 
         // ---------------------------------
-        // Methods			               |
+        // Methods		               |
         // ---------------------------------
         // --------------
         // Modals   	|
@@ -164,7 +160,7 @@ export default {
             showPermissionsModal.value = false;
             sharedPermissions.value = [];
         };
-        
+
         const openModal = () => {
             showNewCalendarModal.value = true;
             newCalendarName.value = "";
@@ -327,10 +323,9 @@ export default {
             }
 
             try {
-                await api.post(`/api/Calendars/${selectedCalendarId.value}/permissions/${newPermissionEmail.value}/${newPermissionType.value}`);
+                await api.post(`/api/Calendars/${selectedCalendarId.value}/permissions/${newPermissionEmail.value}/read`);
                 await fetchPermissions(selectedCalendarId.value);
                 newPermissionEmail.value = "";
-                newPermissionType.value = "read";
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 403) {
@@ -374,7 +369,7 @@ export default {
                 }
             }
         };
-        
+
         // ---------------------------------
         // Lifecycle hooks		           |
         // ---------------------------------
@@ -399,7 +394,6 @@ export default {
             sharedPermissions,
             addPermission,
             newPermissionEmail,
-            newPermissionType,
             deletePermission,
             defaultCalendar,
             currentUserEmail,
@@ -413,6 +407,10 @@ export default {
 </script>
 
 <style scoped>
+.modal-h2
+{
+    margin-bottom: 5px;
+}
 .permission-item {
     display: flex;
     justify-content: space-between;
@@ -509,7 +507,6 @@ export default {
 .permission-input {
     display: flex;
     flex-direction: column;
-    align-items: end;
 }
 
 .calendar-box:hover {
