@@ -1,9 +1,9 @@
 import { registerUserIfNotExists } from "../support/happyPathTests/register";
 import { loginUser } from "../support/happyPathTests/login";
-import { calendarListsTests } from "../support/happyPathTests/calendarLists";
-import { calendarViewTests } from "../support/happyPathTests/calendarView";
+import { calendarListsTests, createCalendarList, createTicket, copyTicket } from "../support/happyPathTests/calendarLists";
+import { calendarViewTests, NavigateMonth } from "../support/happyPathTests/calendarView";
 import { dayViewTests } from "../support/happyPathTests/dayView";
-import { profileTests, deleteUserFromProfile } from "../support/happyPathTests/profile";
+import { changePasswordInProfile, deleteUserFromProfile } from "../support/happyPathTests/profile";
 import { sharePermissionOnNewCalendarAndDeletesDefault, chooseSharedCalendar } from "../support/happyPathTests/calendars";
 
 describe("Registration, Login, Profile Access and Deletion – Happy Path", () => {
@@ -32,7 +32,7 @@ describe("Registration, Login, Profile Access and Deletion – Happy Path", () =
 
     loginUser(userEmail, userPassword);
     clickManageCalendars();
-    chooseSharedCalendar(); //TODO: implementálni hogy átirányítson a dashboardra és mehessen tovább a cuccos
+    chooseSharedCalendar("Test Calendar");
 
     calendarListsTests();
 
@@ -42,11 +42,30 @@ describe("Registration, Login, Profile Access and Deletion – Happy Path", () =
     clickDashboardLogo();
     calendarViewTests();
 
+    createCalendarList("CopyList");
+    createTicket("CopyList", "CopyTicket");
+    copyTicket("CopyTicket");
+    clickManageCalendars();
+    chooseSharedCalendar("CypressTestUser's Default Calendar");
+    TicketANdCalendarCopyTest();
+
     clickProfile();
-    profileTests();
+    changePasswordInProfile();
+    clickLogoutButton();
+    loginUser(userEmail, "NewPassword123");
+
+    clickProfile();
+    deleteUserFromProfile();
 
     loginUser(friendEmail, friendPassword);
-    //TODO: itt ellenőrizheti hogy léteznek-e a naptárban a ticketek
+
+    clickManageCalendars();
+    chooseSharedCalendar("Test Calendar");
+    NavigateMonth("prev");
+    NavigateMonth("next");
+    NavigateMonth("next");
+    NavigateMonth("prev");
+
     clickProfile();
     deleteUserFromProfile();
   });
@@ -80,4 +99,16 @@ function clickManageCalendars() {
 
 function clickLogoutButton() {
   cy.get(".logout-button").click();
+}
+
+function TicketANdCalendarCopyTest()
+{
+  NavigateMonth("prev");
+  NavigateMonth("next");
+  NavigateMonth("next");
+  NavigateMonth("prev");
+
+  cy.get('.list-item').contains('CopyList').should('exist');
+  cy.get('.ticket-item').contains('CopyTicket').should('exist'); 
+  cy.get('.ticket').should('have.attr', 'title', 'Cypress Ticket ScheduledList 2');
 }

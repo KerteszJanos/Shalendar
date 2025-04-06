@@ -1,5 +1,5 @@
 export function calendarListsTests() {
-    cy.url().should("include", "/dashboard");
+    cy.url().should("include", "/Dashboard");
   
     const listName = `Cypress List`;
     const updatedListName = `Renamed List`;
@@ -20,7 +20,7 @@ export function calendarListsTests() {
   }
   
   
-  function createCalendarList(name) {
+  export function createCalendarList(name) {
     const color = "#ff8800";
     cy.get(".header button.add-button").click();
     cy.get("input#list-name").type(name);
@@ -48,7 +48,7 @@ export function calendarListsTests() {
     cy.contains(".list-title", name).should("not.exist");
   }
   
-  function createTicket(listName, ticketName) {
+  export function createTicket(listName, ticketName) {
     const description = "This is a Cypress-created ticket.";
     const priority = 5;
   
@@ -92,4 +92,15 @@ export function calendarListsTests() {
       cy.get(".delete-icon").click();
     });
     cy.contains(".ticket-name", name).should("not.exist");
+  }
+
+  export function copyTicket(name) {
+    cy.contains(".ticket-item", name).within(() => {
+      cy.get(".copy-icon").click();
+    });
+    cy.get(".modal-content").should("be.visible");
+    cy.get(".selected-option").click();
+    cy.get(".options-list").should("be.visible");
+    cy.get(".options-list li").first().click();
+    cy.get("button").contains("Copy").click();
   }

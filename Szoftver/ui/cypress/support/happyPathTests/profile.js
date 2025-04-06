@@ -1,5 +1,12 @@
-export function profileTests() {
-  deleteUserFromProfile();
+export function changePasswordInProfile() {
+  cy.get("button.changePassword").click();
+  cy.get(".modal-content").should("be.visible");
+  cy.get("#oldPassword").type("Password123");
+  cy.get("#newPassword").type("NewPassword123");
+  cy.get("#confirmPassword").type("NewPassword123");
+  cy.get("form").submit();
+  cy.get(".success").should("contain.text", "Password changed successfully!");
+  cy.get(".modal-content").should("not.exist");
 }
 
 export function deleteUserFromProfile() {

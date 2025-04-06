@@ -5,10 +5,13 @@ export function sharePermissionOnNewCalendarAndDeletesDefault(userEmail) {
     setPermissionOnCreatedCalendar(userEmail, "Test Calendar", "Owner");
   }
   
-export function chooseSharedCalendar()
-{
-
-}
+  export function chooseSharedCalendar(calendarName) {
+    cy.get(".calendar-name").contains(calendarName).should("be.visible").then((calendar) => {
+      cy.wrap(calendar)
+        .parents(".calendar-box")
+        .click();
+    });
+  }
 
   function createNewCalendar(calendarName) {
     cy.get(".add-calendar-button").click();
