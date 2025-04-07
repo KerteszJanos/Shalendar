@@ -4,7 +4,7 @@ import { calendarListsTests, createCalendarList, createTicket, copyTicket } from
 import { calendarViewTests, NavigateMonth } from "../support/happyPathTests/calendarView";
 import { dayViewTests } from "../support/happyPathTests/dayView";
 import { changePasswordInProfile, deleteUserFromProfile } from "../support/happyPathTests/profile";
-import { sharePermissionOnNewCalendarAndDeletesDefault, chooseSharedCalendar } from "../support/happyPathTests/calendars";
+import { sharePermissionOnNewCalendar, chooseSharedCalendar } from "../support/happyPathTests/calendars";
 
 describe("Registration, Login, Profile Access and Deletion – Happy Path", () => {
   const userUsername = "CypressTestUser";
@@ -15,6 +15,10 @@ describe("Registration, Login, Profile Access and Deletion – Happy Path", () =
   const friendEmail = "cypressuserFriend@example.com";
   const friendPassword = "Password123";
 
+  const testerUsername = "CypressTestTester";
+  const testerEmail = "CypressTestTester@example.com";
+  const testerPassword = "Password123";
+
   it("registers OR logs in, navigates to profile and deletes the user", () => {
     cy.window().then((win) => {
       if (!win.confirm.isSinonProxy) {
@@ -24,10 +28,11 @@ describe("Registration, Login, Profile Access and Deletion – Happy Path", () =
 
     registerUserIfNotExists(userUsername, userEmail, userPassword);
     registerUserIfNotExists(friendUsername, friendEmail, friendPassword);
+    registerUserIfNotExists(testerUsername, testerEmail, testerPassword);
     
     loginUser(friendEmail, friendPassword);
     clickManageCalendars();
-    sharePermissionOnNewCalendarAndDeletesDefault(userEmail);
+    sharePermissionOnNewCalendar(userEmail, testerEmail);
     clickLogoutButton();
 
     loginUser(userEmail, userPassword);

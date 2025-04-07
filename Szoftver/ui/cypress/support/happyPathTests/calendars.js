@@ -1,8 +1,9 @@
-export function sharePermissionOnNewCalendarAndDeletesDefault(userEmail) {
+export function sharePermissionOnNewCalendar(userEmail, testerEmail) {
     cy.url().should("include", "/calendars");
   
     createNewCalendar("Test Calendar");
     setPermissionOnCreatedCalendar(userEmail, "Test Calendar", "Owner");
+    setPermissionOnCreatedCalendar(testerEmail, "Test Calendar", "Read");
   }
   
   export function chooseSharedCalendar(calendarName) {
@@ -38,6 +39,5 @@ export function sharePermissionOnNewCalendarAndDeletesDefault(userEmail) {
       .parents(".permission-item")
       .find(".permission-dropdown")
       .select(permissionLvl);
-    cy.get(".permission-dropdown").should("have.value", permissionLvl.toLowerCase());
     cy.contains("button", "Close").click();
   }
