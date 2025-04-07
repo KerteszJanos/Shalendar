@@ -1,0 +1,1 @@
+C:\Users\Jani\Desktop\ELTE\6_felev\Szakdoga\Shalendar\Szoftver\ui>npx cypress open

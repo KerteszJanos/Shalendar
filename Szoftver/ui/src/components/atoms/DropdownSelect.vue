@@ -6,7 +6,7 @@ Displays the selected list with background color and name.
 <template>
 <div class="dropdown">
     <div class="dropdown-selected" @click="toggleDropdown" :style="{ backgroundColor: selectedColor }" :title="selectedName">
-        {{ selectedName || "Select a calendar" }}
+        {{ selectedName || "Select a calendar list" }}
     </div>
     <ul v-if="isOpen" class="dropdown-list">
         <li v-for="list in calendarLists" :key="list.id" @click="selectItem(list)" :style="{ backgroundColor: list.color }" :title="list.name">

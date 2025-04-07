@@ -37,6 +37,9 @@
             <label for="ticket-calendar-list" class="required-label">Select Calendar List</label>
             <DropdownSelect v-model="newTicket.calendarListId" :calendarLists="calendarLists" />
             <p v-if="calendarListError" class="error">{{ calendarListError }}</p>
+            <p v-if="calendarLists && calendarLists.length === 0" class="error">
+                No calendar lists available. Please create one first!
+            </p>
 
             <label for="ticket-description">Description (optional)</label>
             <textarea id="ticket-description" v-model="newTicket.description" placeholder="Enter description"></textarea>
