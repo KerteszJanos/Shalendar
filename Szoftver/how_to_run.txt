@@ -1,1 +1,0 @@
-ui: cmd > npm run dev
